@@ -24,8 +24,10 @@
     <dimen name="size_large_72">72dp</dimen>
     <dimen name="size_large_80">80dp</dimen>
     <dimen name="size_large_88">88dp</dimen>
+    <dimen name="size_huge_112">112dp</dimen>
 
-    <!-- Spaces -->
+    <!-- Spaces // Determine placement of type and icons from edges of elements. -->
+    <!-- The text box offset is set to Leading (Type > Area Type Options).-->
     <dimen name="spacing_tiny_4">4dp</dimen>
     <dimen name="spacing_small_8">8dp</dimen>
     <dimen name="spacing_normal_16">16dp</dimen>
@@ -34,12 +36,7 @@
     <dimen name="spacing_large_56">56dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
 
-    <!-- Offsets // Determine placement of type and icons from edges of elements. -->
-    <!-- The text box offset is set to Leading (Type > Area Type Options).-->
-    <dimen name="offset_small_8">8dp</dimen>
-    <dimen name="offset_normal_16">16dp</dimen>
-    <dimen name="offset_medial_24">24dp</dimen>
-    <dimen name="offset_medium_32">32dp</dimen>
-    <dimen name="offset_large_56">56dp</dimen>
-    <dimen name="offset_larger_72">72dp</dimen>
+    <!--Lines -->
+    <dimen name="line_size">1dp</dimen>
+
 </resources>
