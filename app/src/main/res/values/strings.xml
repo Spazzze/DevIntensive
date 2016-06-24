@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">DevIntensive</string>
+    <string name="app_name">Космова Елена</string>
+    <string name="phone_hint">Мобильный</string>
+    <string name="email_hint">E-mail</string>
+    <string name="phone_text">+7 (123) 456-78-90</string>
+    <string name="email_text">my_Secret_Email@emaila.net</string>
+    <string name="vk_text">vk.com/spaze</string>
+    <string name="vk_hint">Профиль в VK</string>
+    <string name="gitHub_repo_hint">Репозиторий</string>
+    <string name="gitHub_repo_text">github.com/Spazzze/DevIntensive</string>
+    <string name="about_text">Feugiat nostrum eos an, blandit atomorum tractatos ei per. Alia putant reprimique nec eu, magna senserit cum ei. Quo ei sale eruditi epicuri, nec illud saperet accommodare an. Soluta lucilius constituto mel et, usu elitr tation ut. Nam id ignota noluisse aliquando, id omnium disputationi has, sed ei numquam singulis deterruisset.</string>
+    <string name="about_hint">О себе</string>
+    <string name="scoreBox_ratingText">Рейтинг</string>
+    <string name="scoreBox_ratingCount">5</string>
+    <string name="scoreBox_codeCount">100500</string>
+    <string name="scoreBox_codeText">Написано строк кода</string>
+    <string name="scoreBox_projectsCount">1</string>
+    <string name="scoreBox_projectsText">Проектов</string>
 </resources>
