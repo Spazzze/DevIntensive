@@ -1,19 +1,25 @@
 <resources>
     <string name="app_name">Космова Елена</string>
-    <string name="phone_hint">Мобильный</string>
-    <string name="email_hint">E-mail</string>
-    <string name="phone_text">+7 (123) 456-78-90</string>
-    <string name="email_text">my_Secret_Email@emaila.net</string>
-    <string name="vk_text">vk.com/spaze</string>
-    <string name="vk_hint">Профиль в VK</string>
-    <string name="gitHub_repo_hint">Репозиторий</string>
-    <string name="gitHub_repo_text">github.com/Spazzze/DevIntensive</string>
-    <string name="about_text">Feugiat nostrum eos an, blandit atomorum tractatos ei per. Alia putant reprimique nec eu, magna senserit cum ei. Quo ei sale eruditi epicuri, nec illud saperet accommodare an. Soluta lucilius constituto mel et, usu elitr tation ut. Nam id ignota noluisse aliquando, id omnium disputationi has, sed ei numquam singulis deterruisset.</string>
-    <string name="about_hint">О себе</string>
+    <string name="profile_phone_hint">Мобильный</string>
+    <string name="profile_email_hint">E-mail</string>
+    <string name="profile_phone_dummy">+7(123)456&#8211;7890</string>
+    <string name="profile_email_dummy">myMail@mail.com</string>
+    <string name="profile_vk_dummy">vk.com/id00000000</string>
+    <string name="profile_vk_hint">Профиль в VK</string>
+    <string name="profile_gitHubRepo_hint">Репозиторий</string>
+    <string name="profile_gitHubRepo_dummy">github.com/Example/ExampleRepo</string>
+    <string name="profile_about_dummy">Feugiat nostrum eos an, blandit atomorum tractatos ei per. Alia putant reprimique nec eu, magna senserit cum ei. Quo ei sale eruditi epicuri, nec illud saperet accommodare an. Soluta lucilius constituto mel et, usu elitr tation ut. Nam id ignota noluisse aliquando, id omnium disputationi has, sed ei numquam singulis deterruisset.</string>
+    <string name="profile_about_hint">О себе</string>
     <string name="scoreBox_ratingText">Рейтинг</string>
     <string name="scoreBox_ratingCount">5</string>
     <string name="scoreBox_codeCount">100500</string>
     <string name="scoreBox_codeText">Написано строк кода</string>
     <string name="scoreBox_projectsCount">1</string>
     <string name="scoreBox_projectsText">Проектов</string>
+    <string name="menu_myProfile_txt">Мой профиль</string>
+    <string name="menu_myContacts_txt">Контакты</string>
+    <string name="menu_myTeam_txt">Команда</string>
+    <string name="menu_myTasks_txt">Задачи</string>
+    <string name="menu_myNotifications_txt">Уведомления</string>
+    <string name="menu_myBookmarks_txt">Закладки</string>
 </resources>

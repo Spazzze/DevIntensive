@@ -39,4 +39,9 @@
     <!--Lines -->
     <dimen name="line_size">1dp</dimen>
 
+    <!-- Etc -->
+    <dimen name="profileImage_size">256dp</dimen>
+    <dimen name="fab_right_space">8dp</dimen>
+    <dimen name="toolbar_top_offset">0dp</dimen>
+
 </resources>
