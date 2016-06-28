@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/size_medium_56"
+              android:orientation="horizontal">
+
+    <!-- Rating -->
+    <LinearLayout
+        style="@style/scoreBox_sectionLayout"
+        android:layout_weight="0.25">
+
+        <TextView
+            android:id="@+id/scoreBox_ratingCount"
+            style="@style/scoreBox_text.count"
+            android:text="@string/scoreBox_ratingCount"/>
+
+        <TextView
+            style="@style/scoreBox_text"
+            android:text="@string/scoreBox_ratingText"/>
+
+    </LinearLayout>
+
+    <View style="@style/scoreBox_lineSeparator"/>
+
+    <!-- Lines of code -->
+    <LinearLayout
+        style="@style/scoreBox_sectionLayout"
+        android:layout_weight="0.5">
+
+        <TextView
+            android:id="@+id/scoreBox_codeCount"
+            style="@style/scoreBox_text.count"
+            android:text="@string/scoreBox_codeCount"/>
+
+        <TextView
+            style="@style/scoreBox_text"
+            android:text="@string/scoreBox_codeText"/>
+
+    </LinearLayout>
+
+    <View style="@style/scoreBox_lineSeparator"/>
+
+    <!-- Projects -->
+    <LinearLayout
+        style="@style/scoreBox_sectionLayout"
+        android:layout_weight="0.25">
+
+        <TextView
+            android:id="@+id/scoreBox_projectsCount"
+            style="@style/scoreBox_text.count"
+            android:text="@string/scoreBox_projectsCount"/>
+
+        <TextView
+            style="@style/scoreBox_text"
+            android:text="@string/scoreBox_projectsText"/>
+
+    </LinearLayout>
+
+</LinearLayout>

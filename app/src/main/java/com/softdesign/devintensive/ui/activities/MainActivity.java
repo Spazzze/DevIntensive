@@ -37,7 +37,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private ArrayList<EditText> mUserInfoList;
 
     private DataManager mDataManager;
-    NavigationView mNavigationView;
     private EditText mEditText_userPhone, mEditText_userEmail, mEditText_userGitHub, mEditText_userVk, mEditText_userAbout;
     private ImageView mMakeCall_img;
     private CoordinatorLayout mCoordinatorLayout;
@@ -181,7 +180,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
-            updateDrawerItems();
             navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(MenuItem item) {
@@ -243,6 +241,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         for (int i = 0; i < userData.size(); i++) {
             mUserInfoList.get(i).setText(userData.get(i));
         }
+        updateDrawerItems();
     }
 
     private void saveUserInfoValue() {
@@ -259,8 +258,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @Override
     public void onBackPressed() {
         Log.d(TAG, "onBackPressed");
-
-        if (mNavigationView != null && mNavigationView.isShown()) {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
