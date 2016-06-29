@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Build;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.Display;
@@ -27,17 +28,26 @@ public class LinearLayout_AppBarBehavior<LinearLayout extends View> extends Coor
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, LinearLayout child, View dependency) {
 
-/*        Log.d(TAG, "onDependentViewChanged " + child.getClass().getSimpleName() + " depends on " + dependency.getClass().getSimpleName());*/
+       /* Log.d(TAG, "onDependentViewChanged " + child.getClass().getSimpleName() + " depends on " + dependency.getClass().getSimpleName());*/
 
-        if (!dependency.getClass().getSimpleName().equals("AppBarLayout")) return false;
-
-        if (minLLSize == 0) {
-            initProperties(parent, child, dependency);
+        final CoordinatorLayout.LayoutParams lp =
+                (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+        AppBarLayout appBarLayout;
+        if (dependency instanceof AppBarLayout) {
+            appBarLayout = (AppBarLayout) dependency;
+            if (lp.getAnchorId() != appBarLayout.getId()) {
+                // The anchor ID doesn't match the dependency
+                return false;
+            }
+        } else {
+            return false;
         }
-        float curDependencyY = dependency.getBottom() - minDependencyScrollY;
+        if (minLLSize == 0.0f) {
+            initProperties(parent, child, appBarLayout);
+        }
+        float curDependencyY = appBarLayout.getBottom() - minDependencyScrollY;
         float expandedPercentageFactor = curDependencyY / maxScrollDistance;
 
-        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
         lp.height = (int) (minLLSize + minLLSize * expandedPercentageFactor);
         child.setLayoutParams(lp);
 
@@ -45,11 +55,11 @@ public class LinearLayout_AppBarBehavior<LinearLayout extends View> extends Coor
         return true;
     }
 
-    private void initProperties(CoordinatorLayout parent, LinearLayout child, View dependency) {  //расчет начальных параметров
-
+    private void initProperties(CoordinatorLayout parent, LinearLayout child, AppBarLayout dependency) {  //расчет начальных параметров
+        /*Log.d(TAG, "initProperties ");*/
         minLLSize = getHeight(child);  //найдет минимальную высоту child, которая полностью вместит его контент, т.е. высоту если будет wrap_content
 
-        minDependencyScrollY = getStatusBarHeight() + getActionBarSize();
+        minDependencyScrollY = getStatusBarHeight() + getAppBarSize();
         maxScrollDistance = dependency.getHeight() - minDependencyScrollY;
     }
 
@@ -63,7 +73,7 @@ public class LinearLayout_AppBarBehavior<LinearLayout extends View> extends Coor
         return result;
     }
 
-    private float getActionBarSize() {
+    private float getAppBarSize() {
         final TypedArray styledAttributes = mContext.getTheme().obtainStyledAttributes(
                 new int[]{android.R.attr.actionBarSize});
         float mActionBarSize = styledAttributes.getDimension(0, 0);
