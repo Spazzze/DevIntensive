@@ -31,7 +31,7 @@
         <TextView
             android:id="@+id/menu_userEmail_txt"
             style="@style/navView_Text.header_Email"
-            android:text="@string/profile_email_dummy"/>
+            android:text="@string/dummy.profile_email"/>
     </LinearLayout>
 
 </RelativeLayout>

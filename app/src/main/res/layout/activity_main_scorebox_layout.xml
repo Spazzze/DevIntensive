@@ -12,11 +12,11 @@
         <TextView
             android:id="@+id/scoreBox_ratingCount"
             style="@style/scoreBox_text.count"
-            android:text="@string/scoreBox_ratingCount"/>
+            android:text="@string/dummy.scoreBox_ratingCount"/>
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/scoreBox_ratingText"/>
+            android:text="@string/header.scoreBox_ratingText"/>
 
     </LinearLayout>
 
@@ -30,11 +30,11 @@
         <TextView
             android:id="@+id/scoreBox_codeCount"
             style="@style/scoreBox_text.count"
-            android:text="@string/scoreBox_codeCount"/>
+            android:text="@string/dummy.scoreBox_codeCount"/>
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/scoreBox_codeText"/>
+            android:text="@string/header.scoreBox_codeText"/>
 
     </LinearLayout>
 
@@ -48,11 +48,11 @@
         <TextView
             android:id="@+id/scoreBox_projectsCount"
             style="@style/scoreBox_text.count"
-            android:text="@string/scoreBox_projectsCount"/>
+            android:text="@string/dummy.scoreBox_projectsCount"/>
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/scoreBox_projectsText"/>
+            android:text="@string/header.scoreBox_projectsText"/>
 
     </LinearLayout>
 

@@ -22,7 +22,7 @@
                 <EditText
                     android:id="@+id/phone_EditText"
                     style="@style/profileItem_editText"
-                    android:hint="@string/profile_phone_hint"
+                    android:hint="@string/hint.profile_phone"
                     android:inputType="phone"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
@@ -53,7 +53,7 @@
                 <EditText
                     android:id="@+id/email_EditText"
                     style="@style/profileItem_editText"
-                    android:hint="@string/profile_email_hint"
+                    android:hint="@string/hint.profile_email"
                     android:inputType="textEmailAddress"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
@@ -83,7 +83,7 @@
                 <EditText
                     android:id="@+id/vk_EditText"
                     style="@style/profileItem_editText"
-                    android:hint="@string/profile_vk_hint"
+                    android:hint="@string/hint.profile_vk"
                     android:inputType="textUri"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
@@ -113,7 +113,7 @@
                 <EditText
                     android:id="@+id/gitHub_EditText"
                     style="@style/profileItem_editText"
-                    android:hint="@string/profile_gitHubRepo_hint"
+                    android:hint="@string/hint.profile_gitHubRepo"
                     android:inputType="textUri"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
@@ -151,7 +151,7 @@
                 <EditText
                     android:id="@+id/about_EditText"
                     style="@style/profileItem_editText"
-                    android:hint="@string/profile_about_hint"/>
+                    android:hint="@string/hint.profile_about"/>
             </android.support.design.widget.TextInputLayout>
 
         </LinearLayout>

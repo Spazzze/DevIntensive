@@ -5,26 +5,26 @@
             android:id="@+id/user_profile_menu"
             android:checkable="true"
             android:icon="@drawable/ic_account_circle_black_24dp"
-            android:title="@string/menu_myProfile_txt"/>
+            android:title="@string/header.menu_myProfile"/>
         <item
             android:id="@+id/contacts_menu"
             android:icon="@drawable/ic_people_black_24dp"
-            android:title="@string/menu_myContacts_txt"/>
+            android:title="@string/header.menu_myContacts"/>
         <item
             android:id="@+id/team_menu"
             android:icon="@drawable/ic_team_black_24dp"
-            android:title="@string/menu_myTeam_txt"/>
+            android:title="@string/header.menu_myTeam"/>
         <item
             android:id="@+id/tasks_menu"
             android:icon="@drawable/ic_tasks_black_24dp"
-            android:title="@string/menu_myTasks_txt"/>
+            android:title="@string/header.menu_myTasks"/>
         <item
             android:id="@+id/notifications_menu"
             android:icon="@drawable/ic_notifications"
-            android:title="@string/menu_myNotifications_txt"/>
+            android:title="@string/header.menu_myNotifications"/>
         <item
             android:id="@+id/bookmarks_menu"
             android:icon="@drawable/ic_bookmarks"
-            android:title="@string/menu_myBookmarks_txt"/>
+            android:title="@string/header.menu_myBookmarks"/>
     </group>
 </menu>

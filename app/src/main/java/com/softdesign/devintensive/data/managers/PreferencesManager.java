@@ -30,11 +30,11 @@ public class PreferencesManager {
     public List<String> loadUserProfileData (){
         List<String> userFields = new ArrayList<>();
         List<String> defaultUserData = new ArrayList<>();
-        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.profile_phone_dummy));
-        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.profile_email_dummy));
-        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.profile_vk_dummy));
-        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.profile_gitHubRepo_dummy));
-        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.profile_about_dummy));
+        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.dummy_profile_phone));
+        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.dummy_profile_email));
+        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.dummy_profile_vk));
+        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.dummy_profile_gitHubRepo));
+        defaultUserData.add(DevIntensiveApplication.getContext().getResources().getString(R.string.dummy_profile_about));
         for (int i = 0; i < USER_FIELDS.length ; i++) {
             userFields.add(mSharedPreferences.getString(USER_FIELDS[i], defaultUserData.get(i)));
         }
