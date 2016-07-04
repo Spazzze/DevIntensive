@@ -6,10 +6,11 @@
     android:id="@+id/navigation_drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activities.MainActivity">
+    tools:context=".ui.activities.MainActivity"
+    tools:ignore="contentDescription">
 
     <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_coordinator_container"
+        android:id="@+id/main_coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -28,23 +29,17 @@
                 app:contentScrim="@color/color_grey"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-                <ImageView
-                    android:id="@+id/user_photo_img"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/profileImage_size"
-                    android:fitsSystemWindows="true"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/userphoto"
-                    />
+                <!-- Photo -->
+                <include layout="@layout/activity_main_profile_photo"/>
 
+                <!-- Toolbar -->
                 <android.support.v7.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_marginTop="@dimen/toolbar_top_offset"
                     android:theme="@style/AppTheme.PopupOverlay"
-                    app:layout_collapseMode="pin"
-                    app:titleTextColor="@color/color_white"/>
+                    app:layout_collapseMode="pin"/>
 
             </android.support.design.widget.CollapsingToolbarLayout>
 
@@ -55,12 +50,9 @@
             android:id="@+id/scoreBox_layout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/size_huge_112"
-            android:layout_gravity="bottom"
             android:background="@color/color_grey"
             android:gravity="center"
             android:orientation="vertical"
-            app:layout_anchor="@id/appbar_layout"
-            app:layout_anchorGravity="bottom"
             app:layout_behavior=".ui.view.behaviors.LinearLayout_AppBarBehavior">
 
             <include layout="@layout/activity_main_scorebox_layout"/>
