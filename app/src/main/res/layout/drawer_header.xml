@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/nav_header_bg"
-                android:orientation="vertical"
-                android:paddingBottom="@dimen/size_small_8"
-                android:paddingLeft="@dimen/spacing_normal_16"
-                android:paddingRight="@dimen/spacing_normal_16"
-                android:paddingTop="@dimen/spacing_medial_24"
-                tools:ignore="contentDescription">
+    android:layout_width="match_parent"
+    android:layout_height="172dp"
+    android:background="@drawable/header_bg"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/size_small_8"
+    android:paddingLeft="@dimen/spacing_normal_16"
+    android:paddingRight="@dimen/spacing_normal_16"
+    android:paddingTop="@dimen/spacing_medial_24">
 
     <ImageView
         android:id="@+id/rounded_avatar"

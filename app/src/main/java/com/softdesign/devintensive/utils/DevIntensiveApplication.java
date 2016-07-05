@@ -5,11 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-/**
- * Used to get SharedPreferences
- */
 public class DevIntensiveApplication extends Application{
-    private static SharedPreferences sSharedPreferences;
+    public static SharedPreferences sSharedPreferences;
     private static Context mContext;
 
     public static Context getContext() {

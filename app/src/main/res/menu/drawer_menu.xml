@@ -2,41 +2,29 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/navMenu_userProfile"
+            android:id="@+id/user_profile_menu"
             android:checkable="true"
             android:icon="@drawable/ic_account_circle_black_24dp"
             android:title="@string/header.menu_myProfile"/>
         <item
-            android:id="@+id/navMenu_contacts"
+            android:id="@+id/contacts_menu"
             android:icon="@drawable/ic_people_black_24dp"
             android:title="@string/header.menu_myContacts"/>
         <item
-            android:id="@+id/navMenu_team"
+            android:id="@+id/team_menu"
             android:icon="@drawable/ic_team_black_24dp"
             android:title="@string/header.menu_myTeam"/>
         <item
-            android:id="@+id/navMenu_tasks"
+            android:id="@+id/tasks_menu"
             android:icon="@drawable/ic_tasks_black_24dp"
             android:title="@string/header.menu_myTasks"/>
         <item
-            android:id="@+id/navMenu_notifications"
+            android:id="@+id/notifications_menu"
             android:icon="@drawable/ic_notifications"
             android:title="@string/header.menu_myNotifications"/>
         <item
-            android:id="@+id/navMenu_bookmarks"
+            android:id="@+id/bookmarks_menu"
             android:icon="@drawable/ic_bookmarks"
             android:title="@string/header.menu_myBookmarks"/>
     </group>
-    <item android:title="@string/header.options">
-        <menu>
-            <item
-                android:id="@+id/navMenu_options"
-                android:icon="@drawable/ic_settings_black_24dp"
-                android:title="@string/header.options" />
-            <item
-                android:id="@+id/navMenu_logout"
-                android:icon="@drawable/ic_logout_black_24dp"
-                android:title="@string/header.logout" />
-        </menu>
-    </item>
 </menu>

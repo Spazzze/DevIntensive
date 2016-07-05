@@ -11,8 +11,8 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.utils.ConstantManager;
 
 public class BaseActivity extends AppCompatActivity {
-    private static final String TAG = ConstantManager.TAG_PREFIX + "BaseActivity";
-    private ProgressDialog mProgressDialog;
+    static final String TAG = ConstantManager.TAG_PREFIX + "BaseActivity";
+    protected ProgressDialog mProgressDialog;
 
     public void showProgress() {
         if (mProgressDialog == null) {
