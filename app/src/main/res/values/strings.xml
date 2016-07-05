@@ -7,7 +7,24 @@
     <string name="dummy.profile_email">myMail@mail.com</string>
     <string name="dummy.profile_vk">vk.com/id00000000</string>
     <string name="dummy.profile_gitHubRepo">github.com/Example/ExampleRepo</string>
-    <string name="dummy.profile_about">Lorem ipsum dolor sit amet, ius libris definiebas no, cum natum denique philosophia ut, corpora adipisci qui id. Ad vix suas enim sententiae, cu eos nusquam commune, an autem reprimique deterruisset nec. Purto aliquip in vim, te usu sale equidem. Ex suas ubique maiestatis vis, qui fugit facer in. His tation copiosae et, cum assum tollit reprimique ex. Elitr ignota tibique vel at. Vix discere sanctus ne, no esse adipisci definitiones mea. Eu sit eius decore convenire. Vix ceteros deseruisse ut. Esse meliore te sed. Quis regione tacimates nec id, cu sea dicta inciderint, vide lorem virtute ad mel. Duo no veri doctus delenit, etiam bonorum no pro, dico aperiri his id. Te gloriatur incorrupte sit, soleat menandri te mel. Accusata expetenda mea id. Quo ei sint officiis moderatius, cum diam veri tation id. Vim propriae deserunt et, minimum invenire dissentiunt qui ei, in vim paulo legere. Mea ei appetere invidunt pericula, et etiam similique vis. Ut per verterem accusamus, vix hinc prima dignissim ad. Per sumo quidam labores eu, tation salutandi democritum eam id, nec graece facilis probatus ea. Quis putant ancillae eos at. Latine mediocrem argumentum mel cu, te dicunt viderer cum. Posse petentium ius cu. An vis sonet periculis deseruisse. Vel amet facilisis concludaturque no, ea idque putent mel. Dolor inimicus mediocrem at per. No ius essent corpora. Et harum fierent vis, choro possim te sea, ius ullum qualisque no. Purto liber an usu.</string>
+    <string name="dummy.profile_about">Lorem ipsum dolor sit amet, ius libris definiebas no, cum
+        natum denique philosophia ut, corpora adipisci qui id. Ad vix suas enim sententiae, cu eos
+        nusquam commune, an autem reprimique deterruisset nec. Purto aliquip in vim, te usu sale
+        equidem. Ex suas ubique maiestatis vis, qui fugit facer in. His tation copiosae et, cum
+        assum tollit reprimique ex. Elitr ignota tibique vel at. Vix discere sanctus ne, no esse
+        adipisci definitiones mea. Eu sit eius decore convenire. Vix ceteros deseruisse ut. Esse
+        meliore te sed. Quis regione tacimates nec id, cu sea dicta inciderint, vide lorem virtute
+        ad mel. Duo no veri doctus delenit, etiam bonorum no pro, dico aperiri his id. Te gloriatur
+        incorrupte sit, soleat menandri te mel. Accusata expetenda mea id. Quo ei sint officiis
+        moderatius, cum diam veri tation id. Vim propriae deserunt et, minimum invenire dissentiunt
+        qui ei, in vim paulo legere. Mea ei appetere invidunt pericula, et etiam similique vis. Ut
+        per verterem accusamus, vix hinc prima dignissim ad. Per sumo quidam labores eu, tation
+        salutandi democritum eam id, nec graece facilis probatus ea. Quis putant ancillae eos at.
+        Latine mediocrem argumentum mel cu, te dicunt viderer cum. Posse petentium ius cu. An vis
+        sonet periculis deseruisse. Vel amet facilisis concludaturque no, ea idque putent mel. Dolor
+        inimicus mediocrem at per. No ius essent corpora. Et harum fierent vis, choro possim te sea,
+        ius ullum qualisque no. Purto liber an usu.
+    </string>
     <string name="hint.profile_phone">Мобильный</string>
     <string name="hint.profile_email">E-mail</string>
     <string name="hint.profile_vk">Профиль в VK</string>
@@ -22,4 +39,29 @@
     <string name="header.menu_myTasks">Задачи</string>
     <string name="header.menu_myNotifications">Уведомления</string>
     <string name="header.menu_myBookmarks">Закладки</string>
+    <string name="hint.profile_placeHolder">Изменить фотографию профиля</string>
+    <string name="hint.profile_placeHolder_loadPhotoDialog_title">Изменить фотографию профиля
+    </string>
+    <string name="hint.choosePhotoFromGallery">Выберите фотографию</string>
+    <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать
+        требуемые разрешения
+    </string>
+    <string name="error.cannot_save_file">"Проблема при сохранении файла: "</string>
+    <string name="header.allow">Разрешить</string>
+    <string name="header.authorization_enter">ВОЙТИ</string>
+    <string name="hint.authorization_password">Пароль</string>
+    <string name="hint.authorization_forgotten_password">Забыли пароль?</string>
+    <string name="header.logout">Выйти</string>
+    <string name="header.options">Настройки</string>
+    <string name="error.editText_email">Введите существующий e-mail</string>
+    <string name="error.editText_vk">Формат ввода: vk.com/***</string>
+    <string name="error.editText_gitHub">Формат ввода: github.com/***</string>
+    <string name="error.editText_phone_wrong_symbols">Вводите только цифры</string>
+    <string name="error.editText_phone_wrong_length">Номер должен состоять из 11 цифр</string>
+    <string name="error.editText_phone_wrong_code">Номер должен начинаться с 7 или 8</string>
+    <string-array name="profile_placeHolder_loadPhotoDialog">
+        <item>Сделать снимок</item>
+        <item>Выбрать из галереи</item>
+        <item>Отмена</item>
+    </string-array>
 </resources>
