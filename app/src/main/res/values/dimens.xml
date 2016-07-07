@@ -44,6 +44,6 @@
     <dimen name="fab_right_space">8dp</dimen>
     <dimen name="toolbar_top_offset">0dp</dimen>
     <dimen name="placeholder_photo_size_90">90dp</dimen>
-    <dimen name="authScreen_authBox_sideOffset">72dp</dimen>
+    <dimen name="auth_cardView_size_240">240dp</dimen>
 
 </resources>
