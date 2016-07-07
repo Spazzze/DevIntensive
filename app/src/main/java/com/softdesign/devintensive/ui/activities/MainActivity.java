@@ -99,19 +99,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private File mPhotoFile = null;
     private Uri mUri_SelectedImage = null;
 
-    /**
-     * метод вызывается при создании активити (после изменения/возврата к текущей
-     * активности после ее уничтожения)
-     * <p/>
-     * в данном методе инициализируется/производится:
-     * - UI statics;
-     * - init activity's static data;
-     * - link data to lists (init adapters);
-     * <p/>
-     * DO NOT EXECUTE LONGTIME OPERATIONS IN THIS METHOD!!!
-     *
-     * @param savedInstanceState - объект со значениями, сохраненными в Bundle - состояние UI
-     */
+    //region OnCreate
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,6 +135,38 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         return true;
     }
 
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+            case ConstantManager.LOAD_PROFILE_PHOTO:
+                String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.hint_profile_placeHolder_loadPhotoDialog_title));
+                builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int chosenItem) {
+                        switch (chosenItem) {
+                            case 0:
+                                loadPhotoFromCamera();
+                                break;
+                            case 1:
+                                loadPhotoFromGallery();
+                                break;
+                            case 2:
+                                dialog.cancel();
+                                break;
+                        }
+                    }
+                });
+                return builder.create();
+            default:
+                return null;
+        }
+    }
+
+    //endregion
+
+    //region OnClick
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -198,14 +218,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d(TAG, "onSaveInstanceState");
-
-        outState.putInt(ConstantManager.EDIT_MODE_KEY, mCurrentEditMode);
-        outState.putInt(ConstantManager.TOOLBAR_SCROLL_KEY, mToolBarScrollFlag);
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed");
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else if (mCurrentEditMode == 1) {
+            changeEditMode(0);
+        } else {
+            super.onBackPressed();
+        }
     }
+    //endregion
 
+    //region Activity's LifeCycle
     @Override
     protected void onStart() {
         super.onStart();
@@ -245,104 +271,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
     }
+    //endregion
 
-    @Override
-    public void onBackPressed() {
-        Log.d(TAG, "onBackPressed");
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else if (mCurrentEditMode == 1) {
-            changeEditMode(0);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        switch (requestCode) {
-            case ConstantManager.REQUEST_GALLERY_PICTURE:
-                if (resultCode == RESULT_OK && data != null) {
-                    mUri_SelectedImage = data.getData();
-                    Log.d(TAG, "onActivityResult: 1" + mUri_SelectedImage.toString());
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
-                }
-                break;
-            case ConstantManager.REQUEST_CAMERA_PICTURE:
-                if (resultCode == RESULT_OK && mPhotoFile != null) {
-                    mUri_SelectedImage = Uri.fromFile(mPhotoFile);
-                    Log.d(TAG, "onActivityResult: 2" + mUri_SelectedImage.toString());
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
-                }
-                break;
-            case ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
-                }
-                break;
-            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
-                }
-                break;
-        }
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case ConstantManager.LOAD_PROFILE_PHOTO:
-                String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.hint_profile_placeHolder_loadPhotoDialog_title));
-                builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int chosenItem) {
-                        switch (chosenItem) {
-                            case 0:
-                                loadPhotoFromCamera();
-                                break;
-                            case 1:
-                                loadPhotoFromGallery();
-                                break;
-                            case 2:
-                                dialog.cancel();
-                                break;
-                        }
-                    }
-                });
-                return builder.create();
-            default:
-                return null;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case ConstantManager.REQUEST_PERMISSIONS_CAMERA:
-                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
-                }
-                break;
-            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
-                }
-                break;
-        }
-    }
-
-    private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
-
+    //region Setup Ui Items
     private void setupToolbar() {
         setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -402,6 +333,146 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void setupUserInfoLayout() {
+        mImageView_makeCall.setOnClickListener(this);
+        mImageView_sendEmail.setOnClickListener(this);
+        mImageView_openVK.setOnClickListener(this);
+        mImageView_openGitHub.setOnClickListener(this);
+
+        mEditText_userPhone.addTextChangedListener(
+                new UserInfoTextWatcher(this, mEditText_userPhone, mTextInputLayout_phone, mLinearLayout_phone));
+        mEditText_userEmail.addTextChangedListener(
+                new UserInfoTextWatcher(this, mEditText_userEmail, mTextInputLayout_email, mLinearLayout_email));
+        mEditText_userVk.addTextChangedListener(
+                new UserInfoTextWatcher(this, mEditText_userVk, mTextInputLayout_vk, mLinearLayout_vk));
+        mEditText_userGitHub.addTextChangedListener(
+                new UserInfoTextWatcher(this, mEditText_userGitHub, mTextInputLayout_gitHub, mLinearLayout_gitHub));
+
+        final View.OnFocusChangeListener focusListener = new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    if (v instanceof EditText) {
+                        EditText et = (EditText) v;
+                        if (!et.isEnabled() && !et.isFocusable()) return;
+                        et.setSelection(et.getText().length());
+                        /*((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(et, 0);*/
+                    }
+                } else {
+                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+                            .hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        };
+
+        mEditText_userPhone.setOnFocusChangeListener(focusListener);
+        mEditText_userEmail.setOnFocusChangeListener(focusListener);
+        mEditText_userVk.setOnFocusChangeListener(focusListener);
+        mEditText_userGitHub.setOnFocusChangeListener(focusListener);
+    }
+
+    private void placeProfilePicture(Uri selectedImage) {
+        Picasso.with(this)
+                .load(selectedImage)
+                .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
+                .centerInside()
+                .placeholder(R.drawable.user_bg)
+                .into(mImageView_profilePhoto);
+    }
+
+    private void showSnackBar(String message) {
+        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
+    }
+
+    //endregion
+
+    //region Save and Load preferences and current state
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState");
+
+        outState.putInt(ConstantManager.EDIT_MODE_KEY, mCurrentEditMode);
+        outState.putInt(ConstantManager.TOOLBAR_SCROLL_KEY, mToolBarScrollFlag);
+    }
+
+    private void loadUserInfoValue() {
+        Log.d(TAG, "loadUserInfoValue");
+        List<String> userData = mDataManager.getPreferencesManager().loadUserProfileData();
+
+        for (int i = 0; i < userData.size(); i++) {
+            mUserInfoList.get(i).setText(userData.get(i));
+        }
+        placeProfilePicture(mDataManager.getPreferencesManager().loadUserPhoto());
+    }
+
+    private void saveUserInfoValue() {
+        Log.d(TAG, "saveUserInfoValue");
+
+        List<String> userData = new ArrayList<>();
+        for (int i = 0; i < mUserInfoList.size(); i++) {
+            userData.add(mUserInfoList.get(i).getText().toString());
+        }
+        mDataManager.getPreferencesManager().saveUserProfileData(userData);
+        mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+        updateDrawerItems();
+    }
+    //endregion
+
+    //region Activity Results
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        switch (requestCode) {
+            case ConstantManager.REQUEST_GALLERY_PICTURE:
+                if (resultCode == RESULT_OK && data != null) {
+                    mUri_SelectedImage = data.getData();
+                    Log.d(TAG, "onActivityResult: 1" + mUri_SelectedImage.toString());
+                    placeProfilePicture(mUri_SelectedImage);
+                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                }
+                break;
+            case ConstantManager.REQUEST_CAMERA_PICTURE:
+                if (resultCode == RESULT_OK && mPhotoFile != null) {
+                    mUri_SelectedImage = Uri.fromFile(mPhotoFile);
+                    Log.d(TAG, "onActivityResult: 2" + mUri_SelectedImage.toString());
+                    placeProfilePicture(mUri_SelectedImage);
+                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                }
+                break;
+            case ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromCamera();
+                }
+                break;
+            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromGallery();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case ConstantManager.REQUEST_PERMISSIONS_CAMERA:
+                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromCamera();
+                }
+                break;
+            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromGallery();
+                }
+                break;
+        }
+    }
+    //endregion
+
+    //region functional methods
     private void changeEditMode(int mode) {
         Log.d(TAG, "changeEditMode: " + mode);
         if (mode == 1) {  //editing
@@ -429,28 +500,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             mCollapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.color_white));
             mCurrentEditMode = 0;
         }
-    }
-
-    private void loadUserInfoValue() {
-        Log.d(TAG, "loadUserInfoValue");
-        List<String> userData = mDataManager.getPreferencesManager().loadUserProfileData();
-
-        for (int i = 0; i < userData.size(); i++) {
-            mUserInfoList.get(i).setText(userData.get(i));
-        }
-        placeProfilePicture(mDataManager.getPreferencesManager().loadUserPhoto());
-    }
-
-    private void saveUserInfoValue() {
-        Log.d(TAG, "saveUserInfoValue");
-
-        List<String> userData = new ArrayList<>();
-        for (int i = 0; i < mUserInfoList.size(); i++) {
-            userData.add(mUserInfoList.get(i).getText().toString());
-        }
-        mDataManager.getPreferencesManager().saveUserProfileData(userData);
-        mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
-        updateDrawerItems();
     }
 
     private void loadPhotoFromGallery() {
@@ -522,55 +571,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         startActivityForResult(appSettingsIntent, flag);
     }
 
-    private void placeProfilePicture(Uri selectedImage) {
-        Picasso.with(this)
-                .load(selectedImage)
-                .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
-                .centerInside()
-                .placeholder(R.drawable.user_bg)
-                .into(mImageView_profilePhoto);
-    }
-
     private void logout() {
         mDataManager.getPreferencesManager().removeCurrentAuthorization();
         startActivity(new Intent(this, AuthorizationActivity.class));
     }
-
-    private void setupUserInfoLayout() {
-        mImageView_makeCall.setOnClickListener(this);
-        mImageView_sendEmail.setOnClickListener(this);
-        mImageView_openVK.setOnClickListener(this);
-        mImageView_openGitHub.setOnClickListener(this);
-
-        mEditText_userPhone.addTextChangedListener(
-                new UserInfoTextWatcher(this, mEditText_userPhone, mTextInputLayout_phone, mLinearLayout_phone));
-        mEditText_userEmail.addTextChangedListener(
-                new UserInfoTextWatcher(this, mEditText_userEmail, mTextInputLayout_email, mLinearLayout_email));
-        mEditText_userVk.addTextChangedListener(
-                new UserInfoTextWatcher(this, mEditText_userVk, mTextInputLayout_vk, mLinearLayout_vk));
-        mEditText_userGitHub.addTextChangedListener(
-                new UserInfoTextWatcher(this, mEditText_userGitHub, mTextInputLayout_gitHub, mLinearLayout_gitHub));
-
-        final View.OnFocusChangeListener focusListener = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    if (v instanceof EditText) {
-                        EditText et = (EditText) v;
-                        if (!et.isEnabled() && !et.isFocusable()) return;
-                        et.setSelection(et.getText().length());
-                        /*((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(et, 0);*/
-                    }
-                } else {
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-                            .hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-            }
-        };
-
-        mEditText_userPhone.setOnFocusChangeListener(focusListener);
-        mEditText_userEmail.setOnFocusChangeListener(focusListener);
-        mEditText_userVk.setOnFocusChangeListener(focusListener);
-        mEditText_userGitHub.setOnFocusChangeListener(focusListener);
-    }
+    //endregion
 }

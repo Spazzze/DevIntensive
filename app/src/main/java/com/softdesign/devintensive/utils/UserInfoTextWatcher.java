@@ -28,19 +28,23 @@ public class UserInfoTextWatcher implements TextWatcher {
     private Boolean handlerIsAlive = false;
     private int mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_NORMAL;
 
+    //region inheritable methods
     public UserInfoTextWatcher(Context context, EditText editText, TextInputLayout textInputLayout, LinearLayout linearLayout) {
         this.mResources = context.getResources();
         this.mEditText = editText;
         this.mTextInputLayout = textInputLayout;
         this.mLinearLayout = linearLayout;
     }
+
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
     }
+
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
+
     @Override
     public void afterTextChanged(Editable s) {
         switch (mEditText.getId()) {
@@ -58,48 +62,13 @@ public class UserInfoTextWatcher implements TextWatcher {
                 break;
         }
     }
+    //endregion
 
-    /**
-     * displays or removes error at current TextInputLayout
-     * @param isError - if true - displays an error, if false - removes
-     * @param errorType - error message
-     */
-    private void errorHandler(Boolean isError, String errorType) {
-        if (!mEditText.isEnabled() && !mEditText.isFocusable()) return;
-        if (isError) {
-            final LinearLayout.LayoutParams lp =
-                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
-            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_88);
-            mLinearLayout.setLayoutParams(lp);
-
-            mTextInputLayout.setErrorEnabled(true);
-            mTextInputLayout.setError(errorType);
-
-            if (!handlerIsAlive) {
-                handlerIsAlive = true;
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mTextInputLayout.setError(null);
-                        mTextInputLayout.setErrorEnabled(false);
-                        lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
-                        mLinearLayout.setLayoutParams(lp);
-                        handlerIsAlive = false;
-                    }
-                }, mTimerLength);
-            }
-        } else {
-            LinearLayout.LayoutParams lp =
-                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
-            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
-            mLinearLayout.setLayoutParams(lp);
-            mTextInputLayout.setError(null);
-            mTextInputLayout.setErrorEnabled(false);
-        }
-    }
+    //region Main check methods
 
     /**
      * validates and reformats cellphone number into ru.locale format
+     *
      * @param s editText text
      */
     private void validateAndReformatPhone(Editable s) {
@@ -161,6 +130,7 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     /**
      * validates email if it matches format ***@**.**
+     *
      * @param s editText text
      */
     private void validateEmail(Editable s) {
@@ -172,6 +142,7 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     /**
      * cuts https(s) and validates vk link to match format vk.com/***
+     *
      * @param s editText text
      */
     private void validateVK(Editable s) {
@@ -190,8 +161,10 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_vk));
     }
+
     /**
      * cuts https(s) and validates gitHub link to match format gitHub.com/***
+     *
      * @param s editText text
      */
     private void validateGitHub(Editable s) {
@@ -211,9 +184,13 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_gitHub));
     }
+    //endregion
+
+    //region Simple validation methods
 
     /**
      * validates cellphone number if it matches ru.locale format
+     *
      * @param phone cellphone number
      * @return error message if phone is not valid; null if it is valid;
      */
@@ -247,8 +224,7 @@ public class UserInfoTextWatcher implements TextWatcher {
     }
 
     /**
-     *
-     * @param email   email
+     * @param email email
      * @return true if it matches format ***@**.**
      */
     public static boolean isValidEmail(String email) {
@@ -257,7 +233,6 @@ public class UserInfoTextWatcher implements TextWatcher {
     }
 
     /**
-     *
      * @param vk vk link
      * @return true if it matches format vk.com/***
      */
@@ -267,7 +242,6 @@ public class UserInfoTextWatcher implements TextWatcher {
     }
 
     /**
-     *
      * @param s gitHub link
      * @return true if it matches format gitHub.com/***
      */
@@ -275,9 +249,51 @@ public class UserInfoTextWatcher implements TextWatcher {
         String pattern = "^github.com\\/\\w{3,256}(\\/\\w+)?$";
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
+    //endregion
+
+    /**
+     * displays or removes error at current TextInputLayout
+     *
+     * @param isError   - if true - displays an error, if false - removes
+     * @param errorType - error message
+     */
+    private void errorHandler(Boolean isError, String errorType) {
+        if (!mEditText.isEnabled() && !mEditText.isFocusable()) return;
+        if (isError) {
+            final LinearLayout.LayoutParams lp =
+                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
+            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_88);
+            mLinearLayout.setLayoutParams(lp);
+
+            mTextInputLayout.setErrorEnabled(true);
+            mTextInputLayout.setError(errorType);
+
+            if (!handlerIsAlive) {
+                handlerIsAlive = true;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextInputLayout.setError(null);
+                        mTextInputLayout.setErrorEnabled(false);
+                        lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
+                        mLinearLayout.setLayoutParams(lp);
+                        handlerIsAlive = false;
+                    }
+                }, mTimerLength);
+            }
+        } else {
+            LinearLayout.LayoutParams lp =
+                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
+            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
+            mLinearLayout.setLayoutParams(lp);
+            mTextInputLayout.setError(null);
+            mTextInputLayout.setErrorEnabled(false);
+        }
+    }
 
     /**
      * reformats cellphone number into +7(***)***-**-**
+     *
      * @param phone cellphone number
      * @return String reformatted phone
      */

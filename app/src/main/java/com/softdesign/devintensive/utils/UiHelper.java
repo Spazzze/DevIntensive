@@ -21,11 +21,12 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *  Helper class to work with UI
+ * Helper class to work with UI
  */
 public class UiHelper {
+    //region UI calculations
+
     /**
-     *
      * @param context cur context
      * @return StatusBarHeight in current context
      */
@@ -40,7 +41,6 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param context cur context
      * @return Action bar height in current context
      */
@@ -54,7 +54,6 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param v examined view
      * @return minimum view height which this view needs to wrap its content
      */
@@ -66,7 +65,6 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param context cur context
      * @return current screen width
      */
@@ -83,25 +81,13 @@ public class UiHelper {
         }
         return deviceWidth;
     }
+    //endregion
 
-    /**
-     *
-     * @param context cur context
-     * @param packageName package to check
-     * @return true if packageName is installed
-     */
-    public static boolean isPackageInstalled(Context context, String packageName) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-    }
+    //region IO system methods
 
     /**
      * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
+     *
      * @param context context
      * @return file
      */
@@ -119,9 +105,13 @@ public class UiHelper {
 
         return image;
     }
+    //endregion
+
+    //region Packages and Activities methods
 
     /**
      * checks if there some apps that can handle this implicit intent
+     *
      * @param intent to check
      * @return true if there any
      */
@@ -137,4 +127,20 @@ public class UiHelper {
             return activities.size() > 0;
         }
     }
+
+    /**
+     * @param context     cur context
+     * @param packageName package to check
+     * @return true if packageName is installed
+     */
+    public static boolean isPackageInstalled(Context context, String packageName) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+    //endregion
 }
