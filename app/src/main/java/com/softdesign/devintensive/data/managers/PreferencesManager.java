@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import com.facebook.AccessToken;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -66,28 +67,37 @@ public class PreferencesManager {
     public void saveVKAuthorizationInfo(VKAccessToken res) {
         if (res != null) {
             res.saveTokenToSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
+            saveAuthorizationSystem(ConstantManager.AUTH_VK);
+        }
+    }
+
+    public void saveAuthorizationSystem(String system) {
+        if (system != null) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.AUTHORIZATION_SYSTEM, ConstantManager.VK);
+            editor.putString(ConstantManager.AUTHORIZATION_SYSTEM, system);
             editor.apply();
         }
     }
 
     public Boolean checkAuthorizationStatus() {
         switch (mSharedPreferences.getString(ConstantManager.AUTHORIZATION_SYSTEM, "")) {
-            case ConstantManager.VK:
-                VKAccessToken token = VKAccessToken.tokenFromSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
-                return token != null && !token.isExpired();
-            case ConstantManager.FACEBOOK:
+            case ConstantManager.AUTH_VK:
+                VKAccessToken vkToken = VKAccessToken.tokenFromSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
+                return vkToken != null && !vkToken.isExpired();
+            case ConstantManager.AUTH_FACEBOOK:
+                AccessToken fbToken = AccessToken.getCurrentAccessToken();
+                return fbToken != null && !fbToken.isExpired();
+            case ConstantManager.AUTH_BUILTIN:
                 return false;
-            case ConstantManager.BUILTIN:
+            default:
                 return false;
         }
-        return false;
     }
 
     public void removeCurrentAuthorization() {
         //removing all received tokens and auth status
         VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
+        AccessToken.setCurrentAccessToken(null);
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.remove(ConstantManager.AUTHORIZATION_SYSTEM);
         editor.apply();

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.facebook.FacebookSdk;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKSdk;
@@ -29,6 +30,7 @@ public class DevIntensiveApplication extends Application {
             }
         }
     };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -36,6 +38,7 @@ public class DevIntensiveApplication extends Application {
         mContext = this;
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
+        FacebookSdk.sdkInitialize(this);
     }
 
     public static SharedPreferences getSharedPreferences() {

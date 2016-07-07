@@ -20,9 +20,9 @@ public interface ConstantManager {
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
 
     //Authorization systems
-    String VK = "VK";
-    String FACEBOOK = "FACEBOOK";
-    String BUILTIN = "BUILTIN";
+    String AUTH_VK = "AUTH_VK";
+    String AUTH_FACEBOOK = "AUTH_FACEBOOK";
+    String AUTH_BUILTIN = "AUTH_BUILTIN";
 
     //Dialog constants
     int LOAD_PROFILE_PHOTO = 1;

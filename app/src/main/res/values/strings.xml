@@ -66,4 +66,5 @@
         <item>Отмена</item>
     </string-array>
     <integer name="com_vk_sdk_AppId">5535661</integer>
+    <string name="facebook_app_id">1741889442760936</string>
 </resources>

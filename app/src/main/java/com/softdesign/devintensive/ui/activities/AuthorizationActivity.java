@@ -7,6 +7,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.utils.ConstantManager;
@@ -16,6 +22,8 @@ import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKError;
 
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -23,9 +31,11 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
 
     public static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
     @BindView(R.id.auth_enter_button) Button mButton_authenticate;
+    /*@BindView(R.id.fb_login_button) Button mButton_fbLogin;*/
     @BindView(R.id.forgot_pass_button) TextView mButton_forgot_pass;
 
     private DataManager mDataManager;
+    private CallbackManager mCallbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +44,29 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
+        mCallbackManager = CallbackManager.Factory.create();
 
         mButton_authenticate.setOnClickListener(this);
         mButton_forgot_pass.setOnClickListener(this);
+
+        LoginManager.getInstance().registerCallback(mCallbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_FACEBOOK);
+                        AuthorizationActivity.this.finish();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        // App code
+                    }
+
+                    @Override
+                    public void onError(FacebookException exception) {
+                        // App code
+                    }
+                });
     }
 
     @Override
@@ -44,6 +74,9 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         switch (view.getId()) {
             case R.id.auth_enter_button:
                 VKSdk.login(this, VKScope.PHOTOS, VKScope.NOTIFY);
+                break;
+            case R.id.forgot_pass_button:
+                LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
                 break;
         }
     }
@@ -63,6 +96,7 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
             }
         })) {
             super.onActivityResult(requestCode, resultCode, data);
+            mCallbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 }
