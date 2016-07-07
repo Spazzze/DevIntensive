@@ -1,7 +1,9 @@
 package com.softdesign.devintensive.utils;
 
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Point;
@@ -16,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  *  Helper class to work with UI
@@ -115,5 +118,23 @@ public class UiHelper {
         context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
         return image;
+    }
+
+    /**
+     * checks if there some apps that can handle this implicit intent
+     * @param intent to check
+     * @return true if there any
+     */
+    public static Boolean queryIntentActivities(Context context, Intent intent) {
+        if (intent.getAction().equals("android.intent.action.SENDTO")) {
+            ComponentName emailApp = intent.resolveActivity(context.getPackageManager());
+            ComponentName unsupportedAction = ComponentName.unflattenFromString("com.android.fallback/.Fallback");
+            return emailApp != null && !emailApp.equals(unsupportedAction);
+        } else {
+            PackageManager packageManager = context.getPackageManager();
+            List activities = packageManager.queryIntentActivities(intent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            return activities.size() > 0;
+        }
     }
 }

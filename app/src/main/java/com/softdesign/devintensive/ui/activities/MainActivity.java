@@ -57,6 +57,7 @@ import butterknife.BindViews;
 import butterknife.ButterKnife;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
+import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
 
@@ -179,7 +180,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.sendEmail_img:
                 Intent sendEmail = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", mEditText_userEmail.getText().toString(), null));
-                startActivity(sendEmail);
+                if (queryIntentActivities(this, sendEmail)) {
+                    startActivity(sendEmail);
+                } else {
+                    showSnackBar(getString(R.string.error_email_client_not_configured));
+                }
                 break;
             case R.id.openVK_img:
                 Intent openVK = new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditText_userVk.getText().toString()));
