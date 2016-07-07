@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -101,7 +102,7 @@ public class UiHelper {
      * @param context context
      * @return file
      */
-    public static File createImageFile(Context context) {
+    public static File createImageFile(Context context) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMG_" + timeStamp;
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);

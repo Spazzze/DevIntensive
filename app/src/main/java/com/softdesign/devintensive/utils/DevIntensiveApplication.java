@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKAccessTokenTracker;
+import com.vk.sdk.VKSdk;
+
 /**
  * Used to get SharedPreferences
  */
-public class DevIntensiveApplication extends Application{
+public class DevIntensiveApplication extends Application {
     private static SharedPreferences sSharedPreferences;
     private static Context mContext;
 
@@ -16,12 +20,22 @@ public class DevIntensiveApplication extends Application{
         return mContext;
     }
 
+    VKAccessTokenTracker vkAccessTokenTracker = new VKAccessTokenTracker() {
+        @Override
+        public void onVKAccessTokenChanged(VKAccessToken oldToken, VKAccessToken newToken) {
+            if (newToken == null) {
+                // VKAccessToken is invalid
+                VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
+            }
+        }
+    };
     @Override
     public void onCreate() {
         super.onCreate();
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mContext = this;
-
+        vkAccessTokenTracker.startTracking();
+        VKSdk.initialize(this);
     }
 
     public static SharedPreferences getSharedPreferences() {

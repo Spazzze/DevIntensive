@@ -59,9 +59,11 @@
     <string name="error.editText_phone_wrong_symbols">Вводите только цифры</string>
     <string name="error.editText_phone_wrong_length">Номер должен состоять из 11 цифр</string>
     <string name="error.editText_phone_wrong_code">Номер должен начинаться с 7 или 8</string>
+    <string name="error.cannot_create_file">"Ошибка при сохранении файла: "</string>
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
         <item>Выбрать из галереи</item>
         <item>Отмена</item>
     </string-array>
+    <integer name="com_vk_sdk_AppId">5535661</integer>
 </resources>

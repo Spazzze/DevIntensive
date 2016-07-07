@@ -13,6 +13,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".utils.DevIntensiveApplication"
@@ -32,6 +33,7 @@
 
         <activity android:name=".ui.activities.AuthorizationActivity"/>
         <activity android:name=".ui.activities.BaseActivity"/>
+        <activity android:name="com.vk.sdk.VKServiceActivity" android:label="ServiceActivity" android:theme="@style/VK.Transparent" />
 
     </application>
 

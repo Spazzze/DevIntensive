@@ -1,11 +1,13 @@
 package com.softdesign.devintensive.data.managers;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
+import com.vk.sdk.VKAccessToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +17,14 @@ import java.util.List;
  */
 public class PreferencesManager {
 
+    public static final String TAG = ConstantManager.TAG_PREFIX + "PreferencesManager";
     private final SharedPreferences mSharedPreferences;
+    private final Context mContext;
     private static final String[] USER_FIELDS = {ConstantManager.USER_PHONE_KEY, ConstantManager.USER_EMAIL_KEY, ConstantManager.USER_VK_KEY, ConstantManager.USER_GITHUB_KEY, ConstantManager.USER_ABOUT_KEY};
 
     public PreferencesManager() {
         mSharedPreferences = DevIntensiveApplication.getSharedPreferences();
+        mContext = DevIntensiveApplication.getContext();
     }
 
     public void saveUserProfileData(List<String> userFields) {
@@ -56,5 +61,35 @@ public class PreferencesManager {
     public Uri loadUserPhoto() {
         return Uri.parse(mSharedPreferences.getString(ConstantManager.USER_PROFILE_PHOTO_URI,
                 ""));
+    }
+
+    public void saveVKAuthorizationInfo(VKAccessToken res) {
+        if (res != null) {
+            res.saveTokenToSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putString(ConstantManager.AUTHORIZATION_SYSTEM, ConstantManager.VK);
+            editor.apply();
+        }
+    }
+
+    public Boolean checkAuthorizationStatus() {
+        switch (mSharedPreferences.getString(ConstantManager.AUTHORIZATION_SYSTEM, "")) {
+            case ConstantManager.VK:
+                VKAccessToken token = VKAccessToken.tokenFromSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
+                return token != null && !token.isExpired();
+            case ConstantManager.FACEBOOK:
+                return false;
+            case ConstantManager.BUILTIN:
+                return false;
+        }
+        return false;
+    }
+
+    public void removeCurrentAuthorization() {
+        //removing all received tokens and auth status
+        VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.remove(ConstantManager.AUTHORIZATION_SYSTEM);
+        editor.apply();
     }
 }

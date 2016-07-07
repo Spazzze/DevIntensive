@@ -16,6 +16,13 @@ public interface ConstantManager {
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
     String TOOLBAR_SCROLL_KEY = "TOOLBAR_SCROLL_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
+    String AUTHORIZATION_SYSTEM = "AUTHORIZATION_SYSTEM";
+    String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
+
+    //Authorization systems
+    String VK = "VK";
+    String FACEBOOK = "FACEBOOK";
+    String BUILTIN = "BUILTIN";
 
     //Dialog constants
     int LOAD_PROFILE_PHOTO = 1;

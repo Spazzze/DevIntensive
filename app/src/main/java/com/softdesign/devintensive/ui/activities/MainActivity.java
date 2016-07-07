@@ -48,6 +48,7 @@ import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,12 +101,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     /**
      * метод вызывается при создании активити (после изменения/возврата к текущей
      * активности после ее уничтожения)
-     * <p>
+     * <p/>
      * в данном методе инициализируется/производится:
      * - UI statics;
      * - init activity's static data;
      * - link data to lists (init adapters);
-     * <p>
+     * <p/>
      * DO NOT EXECUTE LONGTIME OPERATIONS IN THIS METHOD!!!
      *
      * @param savedInstanceState - объект со значениями, сохраненными в Bundle - состояние UI
@@ -216,6 +217,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
+            logout();
+        }
     }
 
     @Override
@@ -467,7 +471,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            mPhotoFile = createImageFile(this);
+            try {
+                mPhotoFile = createImageFile(this);
+            } catch (IOException e) {
+                showSnackBar(getString(R.string.error_cannot_create_file) + e.getMessage());
+            }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
                 startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
@@ -519,6 +527,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void logout() {
+        mDataManager.getPreferencesManager().removeCurrentAuthorization();
         startActivity(new Intent(this, AuthorizationActivity.class));
     }
 
