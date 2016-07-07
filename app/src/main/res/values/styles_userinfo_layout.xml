@@ -38,7 +38,7 @@
 
     <style name="profileItem_textInputLayout_error" parent="TextAppearance.Design.Hint">
         <item name="android:fontFamily">sans-serif-condensed</item>
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">@dimen/font_normal_14</item>
     </style>
 
     <style name="profileItem_editText">

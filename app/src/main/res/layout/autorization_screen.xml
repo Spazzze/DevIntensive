@@ -50,15 +50,15 @@
                     android:background="@color/color_accent" />
 
                 <!--TEXT ENTER-->
-                <TextView
-                    android:id="@+id/auth_email_editText"
+                <com.devspark.robototextview.widget.RobotoTextView
+                    android:id="@+id/auth_enter_textView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/spacing_medial_24"
-                    android:fontFamily="sans-serif-medium"
                     android:text="@string/header.authorization_enter"
                     android:textColor="@color/color_accent"
-                    android:textSize="@dimen/font_medium_20" />
+                    android:textSize="@dimen/font_medium_20"
+                    app:typeface="roboto_medium" />
 
             </LinearLayout>
 
@@ -80,13 +80,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <EditText
-                            android:id="@+id/auth_login_editText"
-                            style="@style/authorization_editText"
-                            android:hint="@string/hint.profile_email"
-                            android:inputType="textEmailAddress"
-                            android:text="@string/dummy.profile_email"
-                            android:textSize="@dimen/font_normal_14" />
+                    <EditText
+                        android:id="@+id/auth_login_editText"
+                        style="@style/authorization_editText"
+                        android:hint="@string/hint.profile_email"
+                        android:inputType="textEmailAddress" />
 
                     </android.support.design.widget.TextInputLayout>
 
@@ -111,12 +109,13 @@
                 </LinearLayout>
 
                 <!-- Button 'ENTER' -->
-                <Button
+                <com.devspark.robototextview.widget.RobotoButton
                     android:id="@+id/auth_enter_button"
                     style="@style/authorization_buttonEnter"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/size_normal_36"
-                    android:text="@string/header.authorization_enter" />
+                    android:text="@string/header.authorization_enter"
+                    app:typeface="roboto_medium"/>
 
                 <!-- Forgotten password -->
                 <TextView
