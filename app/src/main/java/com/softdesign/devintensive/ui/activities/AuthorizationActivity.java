@@ -12,10 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -41,17 +38,13 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class AuthorizationActivity extends BaseActivity implements View.OnClickListener {
+public class AuthorizationActivity extends BaseActivity {
 
-    public static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
-    private final String GOOGLE_SCOPES = ConstantManager.G_PLUS_SCOPE + " " + ConstantManager.USER_INFO_SCOPE + " " + ConstantManager.EMAIL_SCOPE;
+    private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
+    private static final String GOOGLE_SCOPES = ConstantManager.G_PLUS_SCOPE + " " + ConstantManager.USER_INFO_SCOPE + " " + ConstantManager.EMAIL_SCOPE;
 
-    @BindView(R.id.auth_enter_button) Button mButton_authenticate;
-    @BindView(R.id.forgot_pass_button) TextView mButton_forgot_pass;
-    @BindView(R.id.login_with_vk_icon) ImageView mButton_vkLogin;
-    @BindView(R.id.login_with_fb_icon) ImageView mButton_fbLogin;
-    @BindView(R.id.login_with_google_icon) ImageView mButton_googleLogin;
     @BindView(R.id.auth_screen) FrameLayout mFrameLayout;
 
     private DataManager mDataManager;
@@ -69,19 +62,13 @@ public class AuthorizationActivity extends BaseActivity implements View.OnClickL
             googleSilentSignIn();
         }
 
-        mButton_authenticate.setOnClickListener(this);
-        mButton_forgot_pass.setOnClickListener(this);
-        mButton_vkLogin.setOnClickListener(this);
-        mButton_fbLogin.setOnClickListener(this);
-        mButton_googleLogin.setOnClickListener(this);
-
         //fb
         mCallbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(mCallbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
-                        showToast("Authorized with Facebook");
+                        showToast(getString(R.string.notify_auth_by_Facebook));
                         mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_FACEBOOK);
                         AuthorizationActivity.this.finish();
                     }
@@ -98,8 +85,9 @@ public class AuthorizationActivity extends BaseActivity implements View.OnClickL
                 });
     }
 
-    @Override
-    public void onClick(View view) {
+    @OnClick({R.id.auth_enter_button, R.id.forgot_pass_button, R.id.login_with_vk_icon,
+                     R.id.login_with_fb_icon, R.id.login_with_google_icon})
+    void submitAuthButton(View view) {
         switch (view.getId()) {
             case R.id.auth_enter_button:
 
@@ -123,7 +111,7 @@ public class AuthorizationActivity extends BaseActivity implements View.OnClickL
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //google sign in
         if (requestCode == ConstantManager.REQUEST_GOOGLE_SIGN_IN && resultCode == RESULT_OK) {
-            showToast("Authorized with Google");
+            showToast(getString(R.string.notify_auth_by_Google));
             final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
             final String accountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
             AsyncTask<Void, Void, String> getToken = new AsyncTask<Void, Void, String>() {
@@ -133,20 +121,18 @@ public class AuthorizationActivity extends BaseActivity implements View.OnClickL
                     try {
                         token = GoogleAuthUtil.getToken(AuthorizationActivity.this, accountName,
                                 GOOGLE_SCOPES);
-                        return token;
                     } catch (UserRecoverableAuthException userAuthEx) {
                         startActivityForResult(userAuthEx.getIntent(), ConstantManager.REQUEST_GOOGLE_SIGN_IN);
                     } catch (IOException ioEx) {
-                        Log.d(TAG, "IOException");
+                        Log.e(TAG, "IOException");
                     } catch (GoogleAuthException fatalAuthEx) {
-                        Log.d(TAG, "Fatal Authorization Exception" + fatalAuthEx.getLocalizedMessage());
+                        Log.e(TAG, "Fatal Authorization Exception" + fatalAuthEx.getLocalizedMessage());
                     }
                     return token;
                 }
 
                 @Override
                 protected void onPostExecute(String token) {
-                    Log.d(TAG, "onPostExecute: " + token);
                     mDataManager.getPreferencesManager().saveGoogleAuthorizationInfo(accountName, accountType, token);
                     AuthorizationActivity.this.finish();
                 }
@@ -156,7 +142,7 @@ public class AuthorizationActivity extends BaseActivity implements View.OnClickL
                 (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
                     @Override
                     public void onResult(VKAccessToken res) {
-                        showToast("Authorized with VK");
+                        showToast(getString(R.string.notify_auth_by_VK));
                         mDataManager.getPreferencesManager().saveVKAuthorizationInfo(res);
                         AuthorizationActivity.this.finish();
                     }

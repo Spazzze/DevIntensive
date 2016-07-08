@@ -70,4 +70,10 @@
     <string name="error.email_client_not_configured">Невозможно отправить сообщение, не настроено ни одного почтового клиента</string>
     <string name="error.connection_failed">Невозможно соединиться с сервером</string>
     <string name="notify.google_silent_auth_request_permission">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
+    <string name="pattern.link_gitHub">^github.com\\/\\w{3,}([\\/]\\w*)*$</string>
+    <string name="pattern.link_vk">^vk.com\\/\\w{3,}$</string>
+    <string name="pattern.email">^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$</string>
+    <string name="notify.auth_by_Facebook">Authorized by Facebook</string>
+    <string name="notify.auth_by_Google">Authorized by Google</string>
+    <string name="notify.auth_by_VK">Authorized by VK</string>
 </resources>

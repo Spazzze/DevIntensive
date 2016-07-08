@@ -14,7 +14,6 @@ public interface ConstantManager {
     String USER_VK_KEY = "USER_VK_KEY";
     String USER_ABOUT_KEY = "USER_ABOUT_KEY";
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
-    String TOOLBAR_SCROLL_KEY = "TOOLBAR_SCROLL_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
     String AUTHORIZATION_SYSTEM = "AUTHORIZATION_SYSTEM";
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
@@ -38,21 +37,13 @@ public interface ConstantManager {
     int REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS = 103;
     int REQUEST_PERMISSIONS_GET_ACCOUNTS = 104;
 
-
     //Other request constants
     int REQUEST_CAMERA_PICTURE = 99;
     int REQUEST_GALLERY_PICTURE = 98;
     int REQUEST_GOOGLE_SIGN_IN = 97;
 
-    //Timers constants
-    int ET_ERROR_TIMER_LENGTH_LONG = 5000;
-    int ET_ERROR_TIMER_LENGTH_NORMAL = 3000;
-    int ET_ERROR_TIMER_LENGTH_SHORT = 1500;
-
     //Google scopes
     String G_PLUS_SCOPE = "oauth2:https://www.googleapis.com/auth/plus.me";
     String USER_INFO_SCOPE = "https://www.googleapis.com/auth/userinfo.profile";
     String EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
-
-
 }

@@ -18,6 +18,7 @@
         android:id="@+id/placeholder_profilePhoto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:onClick="submitButton"
         android:visibility="gone">
 
         <com.devspark.robototextview.widget.RobotoTextView

@@ -79,6 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/fab_right_space"
             android:src="@drawable/ic_edit_black_24dp"
+            android:onClick="submitButton"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right"/>
 

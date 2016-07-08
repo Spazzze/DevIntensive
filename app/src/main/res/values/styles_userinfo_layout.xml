@@ -28,7 +28,8 @@
 
     <style name="profileItem_LL_infoBox">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">@dimen/size_large_72</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/size_large_72</item>
         <item name="android:layout_marginLeft">@dimen/spacing_medium_32</item>
         <item name="android:layout_marginRight">@dimen/spacing_normal_16</item>
         <item name="android:layout_weight">1</item>
