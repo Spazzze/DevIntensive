@@ -68,4 +68,6 @@
     <integer name="com_vk_sdk_AppId">5535661</integer>
     <string name="facebook_app_id">1741889442760936</string>
     <string name="error.email_client_not_configured">Невозможно отправить сообщение, не настроено ни одного почтового клиента</string>
+    <string name="error.connection_failed">Невозможно соединиться с сервером</string>
+    <string name="notify.google_silent_auth_request_permission">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
 </resources>

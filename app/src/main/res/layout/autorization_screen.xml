@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_screen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_grey_background"
@@ -52,13 +53,38 @@
                 <!--TEXT ENTER-->
                 <com.devspark.robototextview.widget.RobotoTextView
                     android:id="@+id/auth_enter_textView"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/spacing_medial_24"
                     android:text="@string/header.authorization_enter"
                     android:textColor="@color/color_accent"
                     android:textSize="@dimen/font_medium_20"
                     app:typeface="roboto_medium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right">
+
+                    <ImageView
+                        android:id="@+id/login_with_vk_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_vk_colored_24" />
+
+                    <ImageView
+                        android:id="@+id/login_with_google_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_google_plus_box_colored_24" />
+
+                    <ImageView
+                        android:id="@+id/login_with_fb_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_facebook_box_colored_24" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -80,19 +106,18 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                    <EditText
-                        android:id="@+id/auth_login_editText"
-                        style="@style/authorization_editText"
-                        android:hint="@string/hint.profile_email"
-                        android:inputType="textEmailAddress" />
+                        <EditText
+                            android:id="@+id/auth_login_editText"
+                            style="@style/authorization_editText"
+                            android:hint="@string/hint.profile_email"
+                            android:inputType="textEmailAddress" />
 
                     </android.support.design.widget.TextInputLayout>
 
                 </LinearLayout>
 
                 <!-- Password -->
-                <LinearLayout
-                    style="@style/authorization_LL_infoBox">
+                <LinearLayout style="@style/authorization_LL_infoBox">
 
                     <android.support.design.widget.TextInputLayout
                         android:layout_width="match_parent"
@@ -115,7 +140,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/size_normal_36"
                     android:text="@string/header.authorization_enter"
-                    app:typeface="roboto_medium"/>
+                    app:typeface="roboto_medium" />
 
                 <!-- Forgotten password -->
                 <TextView

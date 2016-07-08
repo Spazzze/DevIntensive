@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.utils;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,9 +8,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Helper class to work with UI
@@ -68,6 +72,7 @@ public class UiHelper {
      * @param context cur context
      * @return current screen width
      */
+    @SuppressWarnings("deprecation")
     public static int screenWidth(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -92,7 +97,7 @@ public class UiHelper {
      * @return file
      */
     public static File createImageFile(Context context) throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "IMG_" + timeStamp;
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File image = new File(storageDir, imageFileName + ".png");
@@ -141,6 +146,11 @@ public class UiHelper {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
+    }
+
+    public static void openApplicationSetting(Activity activity, int flag) {
+        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()));
+        activity.startActivityForResult(appSettingsIntent, flag);
     }
     //endregion
 }

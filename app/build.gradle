@@ -31,5 +31,8 @@ dependencies {
     compile 'com.github.johnkil.android-robototextview:robototextview:2.5.0'
     compile 'com.vk:androidsdk:1.6.5'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
+    compile 'com.google.android.gms:play-services:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.1.0'
 }
+
+apply plugin: 'com.google.gms.google-services'

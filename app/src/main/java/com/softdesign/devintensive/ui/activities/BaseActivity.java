@@ -14,7 +14,7 @@ public class BaseActivity extends AppCompatActivity {
     private static final String TAG = ConstantManager.TAG_PREFIX + "BaseActivity";
     private ProgressDialog mProgressDialog;
 
-    public void showProgress() {
+    public void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this, R.style.custom_dialog);
             mProgressDialog.setCancelable(false);
@@ -24,7 +24,7 @@ public class BaseActivity extends AppCompatActivity {
         mProgressDialog.setContentView(R.layout.progress_splash);
     }
 
-    public void hideProgress() {
+    public void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.hide();
         }

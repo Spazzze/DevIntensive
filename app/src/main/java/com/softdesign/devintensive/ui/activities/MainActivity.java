@@ -57,6 +57,7 @@ import butterknife.BindViews;
 import butterknife.ButterKnife;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
+import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
@@ -119,7 +120,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         loadUserInfoValue();
 
         if (savedInstanceState == null) {
-            showToast("activity запущено впервые");
             AppBarLayout.LayoutParams appBarLayoutParams = (AppBarLayout.LayoutParams) mCollapsingToolbarLayout.getLayoutParams();
             mToolBarScrollFlag = appBarLayoutParams.getScrollFlags();
         } else {
@@ -136,6 +136,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected Dialog onCreateDialog(int id) {
         switch (id) {
             case ConstantManager.LOAD_PROFILE_PHOTO:
@@ -182,6 +183,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.floating_action_button:
@@ -249,7 +251,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         super.onResume();
         Log.d(TAG, "onResume");
         if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
-            logout();
+            if (mDataManager.getPreferencesManager().getAuthorizationSystem().equals(ConstantManager.AUTH_GOOGLE)) {
+                startActivity(new Intent(this, AuthorizationActivity.class));
+            } else {
+                logout();
+            }
         }
     }
 
@@ -270,6 +276,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
+        mDataManager.getPreferencesManager().removeGoogleAuthorizationOnDestroy();
     }
     //endregion
 
@@ -473,6 +480,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     //endregion
 
     //region functional methods
+    @SuppressWarnings("deprecation")
     private void changeEditMode(int mode) {
         Log.d(TAG, "changeEditMode: " + mode);
         if (mode == 1) {  //editing
@@ -515,7 +523,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     .setAction(R.string.header_allow, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            openApplicationSetting(ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
+                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
                         }
                     }).show();
         }
@@ -542,7 +550,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     .setAction(R.string.header_allow, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            openApplicationSetting(ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
+                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
                         }
                     }).show();
         }
@@ -560,15 +568,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         /*AppBarLayout.LayoutParams appBarLayoutParams = (AppBarLayout.LayoutParams) mCollapsingToolbarLayout.getLayoutParams();*/
         /*appBarLayoutParams.setScrollFlags(scrollFlag);*/
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        if (displayMetrics.density < 3 && scrollFlag == 0) {
+        if (displayMetrics.densityDpi < DisplayMetrics.DENSITY_XXHIGH && scrollFlag == 0) {
             mAppBarLayout.setExpanded(false, true);
         }
         /*mCollapsingToolbarLayout.setLayoutParams(appBarLayoutParams);*/
-    }
-
-    private void openApplicationSetting(int flag) {
-        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
-        startActivityForResult(appSettingsIntent, flag);
     }
 
     private void logout() {
