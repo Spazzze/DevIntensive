@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.utils;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -13,7 +12,7 @@ import com.vk.sdk.VKSdk;
 /**
  * Used to get SharedPreferences
  */
-public class DevIntensiveApplication extends Application {
+public class DevIntensiveApplication extends android.support.multidex.MultiDexApplication {      //// TODO: 08.07.2016  разобраться с proguard
     private static SharedPreferences sSharedPreferences;
     private static Context mContext;
 

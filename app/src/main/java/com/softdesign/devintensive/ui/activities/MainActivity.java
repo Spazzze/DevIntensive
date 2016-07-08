@@ -299,6 +299,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupMenuAvatar() {    //setup menu avatar with rounded corners from picture
+        //// TODO: 08.07.2016 setup real avatar and get avatars from social info
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
