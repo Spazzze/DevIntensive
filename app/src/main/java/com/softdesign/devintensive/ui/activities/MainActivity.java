@@ -221,7 +221,7 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "onResume");
         if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
             if (mDataManager.getPreferencesManager().getAuthorizationSystem().equals(ConstantManager.AUTH_GOOGLE)) {
-                startActivity(new Intent(this, AuthorizationActivity.class));
+                startActivity(new Intent(this, AuthActivity.class));
             } else {
                 logout();
             }
@@ -541,7 +541,7 @@ public class MainActivity extends BaseActivity {
 
     private void logout() {
         mDataManager.getPreferencesManager().removeCurrentAuthorization();
-        startActivity(new Intent(this, AuthorizationActivity.class));
+        startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion
 }

@@ -40,7 +40,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class AuthorizationActivity extends BaseActivity {
+public class AuthActivity extends BaseActivity {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
     private static final String GOOGLE_SCOPES = ConstantManager.G_PLUS_SCOPE + " " + ConstantManager.USER_INFO_SCOPE + " " + ConstantManager.EMAIL_SCOPE;
@@ -53,7 +53,7 @@ public class AuthorizationActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.autorization_screen);
+        setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
@@ -70,7 +70,7 @@ public class AuthorizationActivity extends BaseActivity {
                     public void onSuccess(LoginResult loginResult) {
                         showToast(getString(R.string.notify_auth_by_Facebook));
                         mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_FACEBOOK);
-                        AuthorizationActivity.this.finish();
+                        AuthActivity.this.finish();
                     }
 
                     @Override
@@ -119,7 +119,7 @@ public class AuthorizationActivity extends BaseActivity {
                 protected String doInBackground(Void... params) {
                     String token = "";
                     try {
-                        token = GoogleAuthUtil.getToken(AuthorizationActivity.this, accountName,
+                        token = GoogleAuthUtil.getToken(AuthActivity.this, accountName,
                                 GOOGLE_SCOPES);
                     } catch (UserRecoverableAuthException userAuthEx) {
                         startActivityForResult(userAuthEx.getIntent(), ConstantManager.REQUEST_GOOGLE_SIGN_IN);
@@ -134,7 +134,7 @@ public class AuthorizationActivity extends BaseActivity {
                 @Override
                 protected void onPostExecute(String token) {
                     mDataManager.getPreferencesManager().saveGoogleAuthorizationInfo(accountName, accountType, token);
-                    AuthorizationActivity.this.finish();
+                    AuthActivity.this.finish();
                 }
             };
             getToken.execute(null, null, null);
@@ -144,7 +144,7 @@ public class AuthorizationActivity extends BaseActivity {
                     public void onResult(VKAccessToken res) {
                         showToast(getString(R.string.notify_auth_by_VK));
                         mDataManager.getPreferencesManager().saveVKAuthorizationInfo(res);
-                        AuthorizationActivity.this.finish();
+                        AuthActivity.this.finish();
                     }
 
                     @Override

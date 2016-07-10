@@ -65,7 +65,6 @@
             android:id="@+id/nested_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_anchor="@id/scoreBox_layout"
             app:layout_behavior=".ui.view.behaviors.NestedScrollViewBehavior">
 
             <include layout="@layout/activity_main_userinfo_layout"/>

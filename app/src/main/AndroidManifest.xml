@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.activities.AuthorizationActivity" />
+        <activity android:name=".ui.activities.AuthActivity" />
         <activity android:name=".ui.activities.BaseActivity" />
         <activity
             android:name="com.vk.sdk.VKServiceActivity"
