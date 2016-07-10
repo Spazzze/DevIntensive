@@ -48,7 +48,7 @@
     </string>
     <string name="error.cannot_save_file">"Проблема при сохранении файла: "</string>
     <string name="header.allow">Разрешить</string>
-    <string name="header.authorization_enter">ВОЙТИ</string>
+    <string name="header.authorization_enter">Войти</string>
     <string name="hint.authorization_password">Пароль</string>
     <string name="hint.authorization_forgotten_password">Забыли пароль?</string>
     <string name="header.logout">Выйти</string>

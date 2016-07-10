@@ -32,15 +32,14 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:paddingBottom="@dimen/spacing_medial_28"
-            android:paddingTop="@dimen/spacing_medial_28">
+            android:paddingTop="@dimen/spacing_medial_24">
 
             <!-- HEADER 'ENTER' -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_small_8"
-                android:layout_marginRight="@dimen/spacing_medial_28"
+                android:layout_marginRight="@dimen/spacing_medial_24"
                 android:orientation="horizontal">
 
                 <!--Small orange box-->
@@ -57,6 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/spacing_medial_24"
                     android:text="@string/header.authorization_enter"
+                    android:textAllCaps="true"
                     android:textColor="@color/color_accent"
                     android:textSize="@dimen/font_medium_20"
                     app:typeface="roboto_medium" />
@@ -95,10 +95,11 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/spacing_medial_28"
-                android:layout_marginRight="@dimen/spacing_medial_28"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/spacing_medial_24"
+                android:paddingLeft="@dimen/spacing_medial_24"
+                android:paddingRight="@dimen/spacing_medial_24">
 
                 <!-- Login -->
                 <LinearLayout
@@ -139,12 +140,17 @@
                 <!-- Button 'ENTER' -->
                 <com.devspark.robototextview.widget.RobotoButton
                     android:id="@+id/auth_enter_button"
-                    style="@style/authorization_buttonEnter"
+                    style="@style/AppTheme.Button.Red"
                     android:layout_width="wrap_content"
-                    android:layout_height="@dimen/size_normal_36"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medial_24"
+                    android:gravity="center"
+                    android:minWidth="@dimen/button_width_126"
                     android:onClick="submitAuthButton"
                     android:text="@string/header.authorization_enter"
-                    app:typeface="roboto_medium" />
+                    android:textAllCaps="true"
+                    android:theme="@style/AppTheme.Button.Red"
+                    app:typeface="roboto_medium"/>
 
                 <!-- Forgotten password -->
                 <TextView

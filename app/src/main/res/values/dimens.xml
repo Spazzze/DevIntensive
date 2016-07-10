@@ -45,5 +45,6 @@
     <dimen name="toolbar_top_offset">0dp</dimen>
     <dimen name="placeholder_photo_size_90">90dp</dimen>
     <dimen name="auth_cardView_size_240">240dp</dimen>
+    <dimen name="button_width_126">126dp</dimen>
 
 </resources>
