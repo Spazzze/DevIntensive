@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "700451692990",
+    "project_id": "elena-space-devintensive"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700451692990:android:b1b73a31877dd338",
+        "android_client_info": {
+          "package_name": "com.softdesign.devintensive"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700451692990-mdd2uag6r321p6o4flrv8kjfml560jlg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.softdesign.devintensive",
+            "certificate_hash": "4312CEBCD8EF36895F634C3FF473D0E1D1009D03"
+          }
+        },
+        {
+          "client_id": "700451692990-mfp81j3mbpkl54snk90lrb4uqa471l4u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAX82speYmEVc-nE0VSkVN4zZW1fm9Q5wQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

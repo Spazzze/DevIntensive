@@ -1,27 +1,36 @@
 package com.softdesign.devintensive.utils;
 
+import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /**
- *  Helper class to work with UI
+ * Helper class to work with UI
  */
 public class UiHelper {
+    //region UI calculations
+
     /**
-     *
      * @param context cur context
      * @return StatusBarHeight in current context
      */
@@ -36,7 +45,6 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param context cur context
      * @return Action bar height in current context
      */
@@ -50,7 +58,6 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param v examined view
      * @return minimum view height which this view needs to wrap its content
      */
@@ -62,10 +69,10 @@ public class UiHelper {
     }
 
     /**
-     *
      * @param context cur context
      * @return current screen width
      */
+    @SuppressWarnings("deprecation")
     public static int screenWidth(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -79,10 +86,55 @@ public class UiHelper {
         }
         return deviceWidth;
     }
+    //endregion
+
+    //region IO system methods
 
     /**
+     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
      *
-     * @param context cur context
+     * @param context context
+     * @return file
+     */
+    public static File createImageFile(Context context) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "IMG_" + timeStamp;
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File image = new File(storageDir, imageFileName + ".png");
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.DATA, image.getAbsolutePath());
+
+        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        return image;
+    }
+    //endregion
+
+    //region Packages and Activities methods
+
+    /**
+     * checks if there some apps that can handle this implicit intent
+     *
+     * @param intent to check
+     * @return true if there any
+     */
+    public static Boolean queryIntentActivities(Context context, Intent intent) {
+        if (intent.getAction().equals("android.intent.action.SENDTO")) {
+            ComponentName emailApp = intent.resolveActivity(context.getPackageManager());
+            ComponentName unsupportedAction = ComponentName.unflattenFromString("com.android.fallback/.Fallback");
+            return emailApp != null && !emailApp.equals(unsupportedAction);
+        } else {
+            PackageManager packageManager = context.getPackageManager();
+            List activities = packageManager.queryIntentActivities(intent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            return activities.size() > 0;
+        }
+    }
+
+    /**
+     * @param context     cur context
      * @param packageName package to check
      * @return true if packageName is installed
      */
@@ -96,23 +148,9 @@ public class UiHelper {
         }
     }
 
-    /**
-     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
-     * @param context context
-     * @return file
-     */
-    public static File createImageFile(Context context) {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "IMG_" + timeStamp;
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File image = new File(storageDir, imageFileName + ".png");
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        values.put(MediaStore.MediaColumns.DATA, image.getAbsolutePath());
-
-        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-        return image;
+    public static void openApplicationSetting(Activity activity, int flag) {
+        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()));
+        activity.startActivityForResult(appSettingsIntent, flag);
     }
+    //endregion
 }

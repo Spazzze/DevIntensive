@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.utils;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.support.design.widget.TextInputLayout;
@@ -8,7 +7,6 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 
 import com.softdesign.devintensive.R;
 
@@ -19,30 +17,35 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + UserInfoTextWatcher.class
             .getSimpleName();
+    private static final int ERROR_TIMER_LENGTH = 3000;
     private static final int MAX_DIGITS_COUNT = 11;
-    private static final int MAX_SYMBOLS_COUNT = 15;
+    private static final int MAX_SYMBOLS_COUNT = 16;
+    private static final String RUSSIAN_PHONE_CODE = "7";
+    private static final String RUSSIAN_PHONE_CODE_2 = "8";
+    private static final Handler ERROR_STOP_HANDLER = new Handler();
     private final Resources mResources;
     private final EditText mEditText;
     private final TextInputLayout mTextInputLayout;
-    private final LinearLayout mLinearLayout;
-    private Boolean handlerIsAlive = false;
-    private int mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_NORMAL;
 
-    public UserInfoTextWatcher(Context context, EditText editText, TextInputLayout textInputLayout, LinearLayout linearLayout) {
-        this.mResources = context.getResources();
+    //region inheritable methods
+    public UserInfoTextWatcher(EditText editText, TextInputLayout textInputLayout) {
+        this.mResources = editText.getContext().getResources();
         this.mEditText = editText;
         this.mTextInputLayout = textInputLayout;
-        this.mLinearLayout = linearLayout;
     }
+
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
     }
+
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
+
     @Override
     public void afterTextChanged(Editable s) {
+        if (!mEditText.isEnabled() && !mEditText.isFocusable()) return;
         switch (mEditText.getId()) {
             case R.id.phone_EditText:
                 validateAndReformatPhone(s);
@@ -58,48 +61,13 @@ public class UserInfoTextWatcher implements TextWatcher {
                 break;
         }
     }
+    //endregion
 
-    /**
-     * displays or removes error at current TextInputLayout
-     * @param isError - if true - displays an error, if false - removes
-     * @param errorType - error message
-     */
-    private void errorHandler(Boolean isError, String errorType) {
-        if (!mEditText.isEnabled() && !mEditText.isFocusable()) return;
-        if (isError) {
-            final LinearLayout.LayoutParams lp =
-                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
-            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_88);
-            mLinearLayout.setLayoutParams(lp);
-
-            mTextInputLayout.setErrorEnabled(true);
-            mTextInputLayout.setError(errorType);
-
-            if (!handlerIsAlive) {
-                handlerIsAlive = true;
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mTextInputLayout.setError(null);
-                        mTextInputLayout.setErrorEnabled(false);
-                        lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
-                        mLinearLayout.setLayoutParams(lp);
-                        handlerIsAlive = false;
-                    }
-                }, mTimerLength);
-            }
-        } else {
-            LinearLayout.LayoutParams lp =
-                    (LinearLayout.LayoutParams) mLinearLayout.getLayoutParams();
-            lp.height = mResources.getDimensionPixelSize(R.dimen.size_large_72);
-            mLinearLayout.setLayoutParams(lp);
-            mTextInputLayout.setError(null);
-            mTextInputLayout.setErrorEnabled(false);
-        }
-    }
+    //region Main check methods
 
     /**
      * validates and reformats cellphone number into ru.locale format
+     *
      * @param s editText text
      */
     private void validateAndReformatPhone(Editable s) {
@@ -123,14 +91,14 @@ public class UserInfoTextWatcher implements TextWatcher {
         /////////// Reformatting section ///////////
 
         int a = 0;
-        if (phone.startsWith("+")) a = 1;
+        if (!phone.startsWith("+")) a = 1;
         //Убираем превышение по количеству символов
-        if (phone.length() > MAX_SYMBOLS_COUNT + a) {
+        if (phone.length() > MAX_SYMBOLS_COUNT - a) {
             if (setCursorPosToEnd || cursorPosition == 0 ||
-                    (phone.startsWith("7") || phone.startsWith("8")) && cursorPosition == 1 ||
-                    (phone.startsWith("(7") || phone.startsWith("(8")) && cursorPosition == 2) {
+                    (phone.startsWith(RUSSIAN_PHONE_CODE) || phone.startsWith(RUSSIAN_PHONE_CODE_2)) && cursorPosition == 1 ||
+                    (phone.startsWith("(" + RUSSIAN_PHONE_CODE) || phone.startsWith("(" + RUSSIAN_PHONE_CODE_2)) && cursorPosition == 2) {
                 cursorPosition = cursorPosition + 1;
-                phone = phone.substring(0, MAX_SYMBOLS_COUNT + a); //отсекаем лишние символы в конце номера
+                phone = phone.substring(0, MAX_SYMBOLS_COUNT - a); //отсекаем лишние символы в конце номера
             } else {
                 //Удаляем только что введенный символ
                 phone = phone.substring(0, cursorPosition - 1) + phone.substring(cursorPosition);
@@ -161,6 +129,7 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     /**
      * validates email if it matches format ***@**.**
+     *
      * @param s editText text
      */
     private void validateEmail(Editable s) {
@@ -172,6 +141,7 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     /**
      * cuts https(s) and validates vk link to match format vk.com/***
+     *
      * @param s editText text
      */
     private void validateVK(Editable s) {
@@ -190,8 +160,10 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_vk));
     }
+
     /**
      * cuts https(s) and validates gitHub link to match format gitHub.com/***
+     *
      * @param s editText text
      */
     private void validateGitHub(Editable s) {
@@ -211,9 +183,13 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_gitHub));
     }
+    //endregion
+
+    //region Simple validation methods
 
     /**
      * validates cellphone number if it matches ru.locale format
+     *
      * @param phone cellphone number
      * @return error message if phone is not valid; null if it is valid;
      */
@@ -223,23 +199,19 @@ public class UserInfoTextWatcher implements TextWatcher {
 
         //Ошибка: вводите только цифры
         if (checkPhone.matches("(\\d*\\D\\d*)*")) {
-            mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_LONG;
             return mResources.getString(R.string.error_editText_phone_wrong_symbols);
         }
 
         //Ошибка: цифр в номере менее 11
         if (checkPhone.length() < MAX_DIGITS_COUNT) {
-            mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_LONG;
             return mResources.getString(R.string.error_editText_phone_wrong_length);
         } else {
             //Ошибка: номер должен начинаться с цифры 7 или 8
-            if (!checkPhone.startsWith("7") && !checkPhone.startsWith("8")) {
-                mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_LONG;
+            if (!checkPhone.startsWith(RUSSIAN_PHONE_CODE) && !checkPhone.startsWith(RUSSIAN_PHONE_CODE_2)) {
                 return mResources.getString(R.string.error_editText_phone_wrong_code);
             }
             //Ошибка: цифр в номере больше 11
             if (checkPhone.length() > MAX_DIGITS_COUNT) {
-                mTimerLength = ConstantManager.ET_ERROR_TIMER_LENGTH_SHORT;
                 return mResources.getString(R.string.error_editText_phone_wrong_length);
             }
         }
@@ -247,37 +219,61 @@ public class UserInfoTextWatcher implements TextWatcher {
     }
 
     /**
-     *
-     * @param email   email
+     * @param email email
      * @return true if it matches format ***@**.**
      */
-    public static boolean isValidEmail(String email) {
-        String pattern = "^[\\w\\+\\.\\%\\-]{3,256}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";
+    private boolean isValidEmail(String email) {
+        String pattern = mResources.getString(R.string.pattern_email);
         return !TextUtils.isEmpty(email) && email.matches(pattern);
     }
 
     /**
-     *
      * @param vk vk link
      * @return true if it matches format vk.com/***
      */
-    public static boolean isValidVK(String vk) {
-        String pattern = "^vk.com\\/\\w{3,256}$";
+    private boolean isValidVK(String vk) {
+        String pattern = mResources.getString(R.string.pattern_link_vk);
         return !TextUtils.isEmpty(vk) && vk.matches(pattern);
     }
 
     /**
-     *
      * @param s gitHub link
      * @return true if it matches format gitHub.com/***
      */
-    public static boolean isValidGitHub(String s) {
-        String pattern = "^github.com\\/\\w{3,256}(\\/\\w+)?$";
+    private boolean isValidGitHub(String s) {
+        String pattern = mResources.getString(R.string.pattern_link_gitHub);
         return !TextUtils.isEmpty(s) && s.matches(pattern);
+    }
+    //endregion
+
+    /**
+     * displays or removes error at current TextInputLayout
+     *
+     * @param isError   - if true - displays an error, if false - removes
+     * @param errorType - error message
+     */
+    private void errorHandler(Boolean isError, final String errorType) {
+        if (isError) {
+            mTextInputLayout.setErrorEnabled(true);
+            mTextInputLayout.setError(errorType);
+
+            ERROR_STOP_HANDLER.removeCallbacksAndMessages(null);
+            ERROR_STOP_HANDLER.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mTextInputLayout.setError(null);
+                    mTextInputLayout.setErrorEnabled(false);
+                }
+            }, ERROR_TIMER_LENGTH);
+        } else {
+            mTextInputLayout.setError(null);
+            mTextInputLayout.setErrorEnabled(false);
+        }
     }
 
     /**
      * reformats cellphone number into +7(***)***-**-**
+     *
      * @param phone cellphone number
      * @return String reformatted phone
      */
@@ -290,8 +286,8 @@ public class UserInfoTextWatcher implements TextWatcher {
 
         int index = 0;
         //countryCode
-        if (phone.startsWith("7") || phone.startsWith("8")) {
-            countryCode = "+7";
+        if (phone.startsWith(RUSSIAN_PHONE_CODE) || phone.startsWith(RUSSIAN_PHONE_CODE_2)) {
+            countryCode = "+" + RUSSIAN_PHONE_CODE;
             index = 1;
         }
 

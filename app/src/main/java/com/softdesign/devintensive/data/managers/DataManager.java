@@ -1,7 +1,7 @@
 package com.softdesign.devintensive.data.managers;
 
 /**
- * Used to manage all
+ * Used to manage all data
  */
 public class DataManager {
     private static final DataManager ourInstance = new DataManager();
