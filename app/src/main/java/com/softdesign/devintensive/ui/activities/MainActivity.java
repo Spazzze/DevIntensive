@@ -43,19 +43,19 @@ import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.api.res.UserModelRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
+import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -100,6 +100,7 @@ public class MainActivity extends BaseActivity {
     private File mPhotoFile = null;
     private Uri mUri_SelectedProfileImage = null;
     private String mUri_SelectedAvatarImage = null;
+    private UserModelRes mUserData = null;
 
     //region OnCreate
     @Override
@@ -169,7 +170,7 @@ public class MainActivity extends BaseActivity {
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.toolbar_logout:
-                logout();
+                logout(1);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -290,10 +291,10 @@ public class MainActivity extends BaseActivity {
                             startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
                             break;
                         case R.id.navMenu_logout:
-                            logout();
+                            logout(1);
                             break;
                         default:
-                            showSnackBar(item.getTitle().toString());
+                            showToast(item.getTitle().toString());
                             item.setChecked(true);
                             break;
                     }
@@ -415,18 +416,33 @@ public class MainActivity extends BaseActivity {
 
     private void initUserProfileInfo() {
         Log.d(TAG, "initUserProfileInfo");
+
         mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
         mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
-        ArrayList<EditText> mainEditTexts = new ArrayList<>(mEditTexts_userInfoList.subList(0, 4));
-        mainEditTexts.add(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1));
 
-        List<String> userProfileDataList = mDataManager.getPreferencesManager().loadUserProfileData();
-        ButterKnife.apply(mainEditTexts, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
+        if (mUserData == null) return;
 
-        List<String> userProfileValuesList = mDataManager.getPreferencesManager().loadUserProfileValues();
-        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList.toArray(new String[userProfileValuesList.size()]));
+        UserModelRes.Data.User user = mUserData.getData().getUser();
 
-        String userFullName = mDataManager.getPreferencesManager().loadUserName().get(ConstantManager.USER_FULL_NAME_KEY);
+        List<String> userProfileDataList = new ArrayList<>();
+
+        userProfileDataList.add(user.getContacts().getPhone());
+        userProfileDataList.add(user.getContacts().getEmail());
+        userProfileDataList.add(user.getContacts().getVk());
+        userProfileDataList.add(user.getRepositories().getRepo().get(0).getGit());
+        userProfileDataList.add(user.getPublicInfo().getBio());
+
+        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+
+        String[] userProfileValuesList = {
+                String.valueOf(user.getProfileValues().getRating()),
+                String.valueOf(user.getProfileValues().getLinesCode()),
+                String.valueOf(user.getProfileValues().getProjects())};
+
+        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
+
+        String userFullName = String.format("%s %s", user.getSecondName(), user.getFirstName());
         MainActivity.this.setTitle(userFullName);
     }
 
@@ -447,15 +463,15 @@ public class MainActivity extends BaseActivity {
             mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
         }
 
-        Map<String, String> userInfo = new HashMap<>();
+        UserModelRes.Data.User user = mUserData.getData().getUser();
 
-        userInfo.put(ConstantManager.USER_PHONE_KEY, mEditTexts_userInfoList.get(0).getText().toString());
-        userInfo.put(ConstantManager.USER_EMAIL_KEY, mEditTexts_userInfoList.get(1).getText().toString());
-        userInfo.put(ConstantManager.USER_VK_KEY, mEditTexts_userInfoList.get(2).getText().toString());
-        userInfo.put(ConstantManager.USER_GITHUB_KEY, mEditTexts_userInfoList.get(3).getText().toString());
-        userInfo.put(ConstantManager.USER_ABOUT_KEY, mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+        user.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
+        user.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
+        user.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
+        user.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
+        user.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
 
-        mDataManager.getPreferencesManager().saveUserProfileData(userInfo);
+        mDataManager.getPreferencesManager().saveAllUserData(mUserData);
         refresh();
     }
     //endregion
@@ -513,6 +529,8 @@ public class MainActivity extends BaseActivity {
 
     private void uploadUserPhoto(Uri uri_SelectedImage) {
 
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
+
         File file = new File(filePathFromUri(uri_SelectedImage));
 
         final RequestBody requestFile =
@@ -537,11 +555,14 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onFailure(Call<UserPhotoRes> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                logout(0);
             }
         });
     }
 
     private void uploadUserAvatar(String uri_SelectedImage) {
+
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
 
         File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
 
@@ -567,6 +588,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onFailure(Call<UserPhotoRes> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                logout(0);
             }
         });
     }
@@ -666,10 +688,12 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void logout() {
+    private void logout(int mode) {
         Log.d(TAG, "logout: ");
         mNotSavingUserValues = true;
-        mDataManager.getPreferencesManager().totalLogout();
+        if (mode == 1)
+            mDataManager.getPreferencesManager().totalLogout();
+        else mDataManager.getPreferencesManager().softLogout();
         startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion

@@ -2,22 +2,23 @@ package com.softdesign.devintensive.data.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
 
 import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
-import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.network.api.res.UserModelRes;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKSdk;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.softdesign.devintensive.utils.UiHelper.getJsonFromObject;
+import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
 
 /**
  * saves and loads Shared Preferences of this app
@@ -27,18 +28,6 @@ public class PreferencesManager {
     public static final String TAG = ConstantManager.TAG_PREFIX + "PreferencesManager";
     private final SharedPreferences mSharedPreferences;
     private final Context mContext;
-    private static final String[] USER_FIELDS = {
-            ConstantManager.USER_PHONE_KEY,
-            ConstantManager.USER_EMAIL_KEY,
-            ConstantManager.USER_VK_KEY,
-            ConstantManager.USER_GITHUB_KEY,
-            ConstantManager.USER_ABOUT_KEY};
-    private static final String[] USER_PROFILE_VALUES = {
-            ConstantManager.USER_PROFILE_RATING_KEY,
-            ConstantManager.USER_PROFILE_LINES_CODE_KEY,
-            ConstantManager.USER_PROFILE_PROJECTS_KEY};
-
-    //// TODO: 12.07.2016 ревью save&load
 
     public PreferencesManager() {
         mSharedPreferences = DevIntensiveApplication.getSharedPreferences();
@@ -50,99 +39,39 @@ public class PreferencesManager {
     }
 
     //region User Data save & load
-    public String loadLogin() {
-        if (isLoginSavingEnabled())
-            return mSharedPreferences.getString(ConstantManager.SAVED_LOGIN, "");
-        else return "";
+
+    public void saveAllUserData(UserModelRes res) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString(ConstantManager.USER_JSON_OBJ, getJsonFromObject(res, UserModelRes.class));
+        editor.apply();
     }
-    public Boolean isLoginSavingEnabled(){
+
+    public UserModelRes loadAllUserData() {
+        String json = mSharedPreferences.getString(ConstantManager.USER_JSON_OBJ, null);
+        if (json != null) return (UserModelRes) getObjectFromJson(json, UserModelRes.class);
+        else return null;
+    }
+
+    //region Login name
+    public Boolean isLoginNameSavingEnabled() {
         return mSharedPreferences.getBoolean(ConstantManager.SAVE_LOGIN, false);
     }
 
-    public void saveLogin(String login) {
+    public void saveLoginName(String login) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putBoolean(ConstantManager.SAVE_LOGIN, true);
-        editor.putString(ConstantManager.SAVED_LOGIN, login);
+        editor.putString(ConstantManager.SAVED_LOGIN_NAME, login);
         editor.apply();
     }
 
-    public void saveUserName(String userFirstName, String userLastName) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putString(ConstantManager.USER_FIRST_NAME_KEY, userFirstName);
-        editor.putString(ConstantManager.USER_LAST_NAME_KEY, userLastName);
-        editor.putString(ConstantManager.USER_FULL_NAME_KEY, String.format("%s %s", userLastName, userFirstName));
-        editor.apply();
+    public String loadLoginName() {
+        if (isLoginNameSavingEnabled())
+            return mSharedPreferences.getString(ConstantManager.SAVED_LOGIN_NAME, "");
+        else return "";
     }
+    //endregion
 
-    public Map<String, String> loadUserName() {
-        Resources res = DevIntensiveApplication.getContext().getResources();
-        Map<String, String> namesMap = new HashMap<>();
-        namesMap.put(ConstantManager.USER_FIRST_NAME_KEY, mSharedPreferences.getString(ConstantManager.USER_FIRST_NAME_KEY, ""));
-        namesMap.put(ConstantManager.USER_LAST_NAME_KEY, mSharedPreferences.getString(ConstantManager.USER_FIRST_NAME_KEY, ""));
-        namesMap.put(ConstantManager.USER_FULL_NAME_KEY, mSharedPreferences.getString(ConstantManager.USER_FULL_NAME_KEY, res.getString(R.string.dummy_app_name)));
-        return namesMap;
-    }
-
-    public void saveUserProfileData(Map<String, String> userFieldsMap) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-
-        for (Map.Entry<String, String> pair : userFieldsMap.entrySet()) {
-            editor.putString(pair.getKey(), pair.getValue());
-        }
-
-        editor.apply();
-    }
-
-    public List<String> loadUserProfileData() {
-        Log.d(TAG, "loadUserProfileData: ");
-        List<String> userFields = new ArrayList<>();
-        List<String> defaultUserData = new ArrayList<>();
-        Resources res = DevIntensiveApplication.getContext().getResources();
-        defaultUserData.add(res.getString(R.string.dummy_profile_phone));
-        defaultUserData.add(res.getString(R.string.dummy_profile_email));
-        defaultUserData.add(res.getString(R.string.dummy_profile_vk));
-        defaultUserData.add(res.getString(R.string.dummy_profile_gitHubRepo));
-        defaultUserData.add(res.getString(R.string.dummy_profile_about));
-        for (int i = 0; i < USER_FIELDS.length; i++) {
-            userFields.add(mSharedPreferences.getString(USER_FIELDS[i], defaultUserData.get(i)));
-        }
-        return userFields;
-    }
-
-    public List<String> loadUserAdditionalGitHubRepo() {
-        List<String> userFields = new ArrayList<>();
-
-        //достаем дополнительные ссылки на репо Гитхаба
-        for (int i = 1; i < mSharedPreferences.getAll().size(); i++) {
-            String key = ConstantManager.USER_GITHUB_KEY + i;
-            if (mSharedPreferences.contains(key)) {
-                String s = mSharedPreferences.getString(key, "");
-                if (!s.isEmpty()) userFields.add(mSharedPreferences.getString(key, ""));
-            } else break;
-        }
-
-        return userFields;
-    }
-
-    public void saveUserProfileValues(int[] userProfileValues) {
-
-        if (USER_PROFILE_VALUES.length != userProfileValues.length) return;
-
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        for (int i = 0; i < USER_PROFILE_VALUES.length; i++) {
-            editor.putString(USER_PROFILE_VALUES[i], String.valueOf(userProfileValues[i]));
-        }
-        editor.apply();
-    }
-
-    public List<String> loadUserProfileValues() {
-        List<String> userFields = new ArrayList<>();
-        for (String s : USER_PROFILE_VALUES) {
-            userFields.add(mSharedPreferences.getString(s, "0"));
-        }
-        return userFields;
-    }
-
+    //region User Photo
     public void saveUserPhoto(Uri uri) {
         Log.d(TAG, "saveUserPhoto: " + uri);
         if (uri != null) {
@@ -156,7 +85,9 @@ public class PreferencesManager {
         return Uri.parse(mSharedPreferences.getString(ConstantManager.USER_PROFILE_PHOTO_URI,
                 ""));
     }
+    //endregion
 
+    //region User Avatar
     public void saveUserAvatar(String uri) {
         Log.d(TAG, "saveUserAvatar: " + uri);
         if (uri != null) {
@@ -169,6 +100,7 @@ public class PreferencesManager {
     public String loadUserAvatar() {
         return mSharedPreferences.getString(ConstantManager.USER_PROFILE_AVATAR_URI, "");
     }
+    //endregion
 
     //endregion
 
@@ -268,7 +200,7 @@ public class PreferencesManager {
         List<String> exclusionKeys = new ArrayList<>();
         if (mSharedPreferences.getBoolean(ConstantManager.SAVE_LOGIN, false)) {
             exclusionKeys.add(ConstantManager.SAVE_LOGIN);
-            exclusionKeys.add(ConstantManager.SAVED_LOGIN);
+            exclusionKeys.add(ConstantManager.SAVED_LOGIN_NAME);
         }
 
         Map<String, ?> spMap = mSharedPreferences.getAll();

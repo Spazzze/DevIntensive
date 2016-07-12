@@ -115,6 +115,18 @@ public class UserModelRes {
                 @Expose
                 private String updated;
 
+                public void setVk(String vk) {
+                    this.vk = vk;
+                }
+
+                public void setPhone(String phone) {
+                    this.phone = phone;
+                }
+
+                public void setEmail(String email) {
+                    this.email = email;
+                }
+
                 public String getVk() {
                     return vk;
                 }
@@ -174,6 +186,10 @@ public class UserModelRes {
                 @Expose
                 private String updated;
 
+                public void setBio(String bio) {
+                    this.bio = bio;
+                }
+
                 public String getBio() {
                     return bio;
                 }
@@ -211,6 +227,10 @@ public class UserModelRes {
                     @SerializedName("title")
                     @Expose
                     private String title;
+
+                    public void setGit(String git) {
+                        this.git = git;
+                    }
 
                     public String getGit() {
                         return git;

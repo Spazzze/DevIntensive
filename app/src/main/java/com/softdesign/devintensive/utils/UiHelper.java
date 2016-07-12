@@ -19,6 +19,9 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -96,6 +99,7 @@ public class UiHelper {
 
     /**
      * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
+     *
      * @return file
      */
     public static File createImageFile() throws IOException {
@@ -125,16 +129,15 @@ public class UiHelper {
         return image;
     }
 
-    public static String filePathFromUri(@NonNull Uri uri){
+    public static String filePathFromUri(@NonNull Uri uri) {
         String filePath = null;
         if ("content".equals(uri.getScheme())) {
-            Cursor cursor = CONTEXT.getContentResolver().query(uri, new String[] { android.provider.MediaStore.Images.ImageColumns.DATA }, null, null, null);
-            if (cursor != null){
+            Cursor cursor = CONTEXT.getContentResolver().query(uri, new String[]{android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            if (cursor != null) {
                 cursor.moveToFirst();
                 filePath = cursor.getString(0);
                 cursor.close();
             }
-
         } else {
             filePath = uri.getPath();
         }
@@ -181,6 +184,21 @@ public class UiHelper {
     public static void openApplicationSetting(Activity activity, int flag) {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()));
         activity.startActivityForResult(appSettingsIntent, flag);
+    }
+
+    //endregion
+
+    //region Converters
+    public static String getJsonFromObject(Object object, Class<?> typeClass) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.toJson(object, typeClass);
+    }
+
+    public static Object getObjectFromJson(String json, Class<?> typeClass) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.fromJson(json, typeClass);
     }
     //endregion
 }

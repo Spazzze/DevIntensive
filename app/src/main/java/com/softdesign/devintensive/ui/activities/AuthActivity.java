@@ -50,9 +50,7 @@ import com.vk.sdk.api.VKError;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -88,9 +86,9 @@ public class AuthActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
         mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
-        if (!mUserDataEmpty && mDataManager.getPreferencesManager().isLoginSavingEnabled()) {
+        if (!mUserDataEmpty && mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
             mCheckBox_saveLogin.setChecked(true);
-            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLogin());
+            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
             mEditText_login_email.setSelection(mEditText_login_email.length());
         }
 
@@ -313,7 +311,7 @@ public class AuthActivity extends BaseActivity {
     //region Other functional methods
     private void onLoginSuccess(UserModelRes userModelRes) {
         if (mCheckBox_saveLogin.isChecked()) {
-            mDataManager.getPreferencesManager().saveLogin(mEditText_login_email.getText().toString());
+            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
         } else {
             mEditText_login_email.setText("");
         }
@@ -324,9 +322,7 @@ public class AuthActivity extends BaseActivity {
     private void saveUserInfoFromServer(UserModelRes userModelRes) {
         saveUserAuthData(userModelRes);
         UserModelRes.Data.User user = userModelRes.getData().getUser();
-        saveUserNameFromServer(user);
-        saveUserProfileValuesFromServer(user);
-        saveUserProfileInfoFromServer(user);
+        mDataManager.getPreferencesManager().saveAllUserData(userModelRes);
         saveUserPhotosFromServer(user);
     }
 
@@ -336,38 +332,6 @@ public class AuthActivity extends BaseActivity {
                 userModelRes.getData().getUser().getId(),
                 userModelRes.getData().getToken()
         );
-    }
-
-    private void saveUserNameFromServer(UserModelRes.Data.User user) {
-        mDataManager.getPreferencesManager().saveUserName(user.getFirstName(), user.getSecondName());
-    }
-
-    private void saveUserProfileValuesFromServer(UserModelRes.Data.User user) {
-        int[] userValues = {
-                user.getProfileValues().getRating(),
-                user.getProfileValues().getLinesCode(),
-                user.getProfileValues().getProjects()
-        };
-        mDataManager.getPreferencesManager().saveUserProfileValues(userValues);
-    }
-
-    private void saveUserProfileInfoFromServer(UserModelRes.Data.User user) {
-        Map<String, String> userInfo = new HashMap<>();
-
-        userInfo.put(ConstantManager.USER_PHONE_KEY, user.getContacts().getPhone());
-        userInfo.put(ConstantManager.USER_EMAIL_KEY, user.getContacts().getEmail());
-        userInfo.put(ConstantManager.USER_VK_KEY, user.getContacts().getVk());
-        userInfo.put(ConstantManager.USER_ABOUT_KEY, user.getPublicInfo().getBio());
-
-        List<UserModelRes.Data.User.Repositories.Repo> repositories = user.getRepositories().getRepo();
-        if (repositories.size() > 0) {
-            for (int i = 0; i < repositories.size(); i++) {
-                String key = ConstantManager.USER_GITHUB_KEY;
-                if (i != 0) key += i;
-                userInfo.put(key, repositories.get(i).getGit());
-            }
-        }
-        mDataManager.getPreferencesManager().saveUserProfileData(userInfo);
     }
 
     private void saveUserPhotosFromServer(UserModelRes.Data.User user) {
