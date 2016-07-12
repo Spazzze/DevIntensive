@@ -257,7 +257,7 @@ public class PreferencesManager {
                 //а хрен вам а не проверка на expired, мы Гугл, мы шлем вас снова отправить запрос авторизации.
                 return !(loadGoogleAuthorizationInfo().get(2)).isEmpty();   //токен пуст, если после последней авторизации вызывался метод onDestroy()
             case ConstantManager.AUTH_BUILTIN:
-                return false;
+                return true;
             default:
                 return false;
         }

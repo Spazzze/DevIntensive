@@ -7,12 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -65,19 +67,18 @@ public class UiHelper {
      * @return minimum view height which this view needs to wrap its content
      */
     public static int getHeight(View v) {
-        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(screenWidth(v.getContext()), View.MeasureSpec.AT_MOST);
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(getScreenWidth(), View.MeasureSpec.AT_MOST);
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         v.measure(widthMeasureSpec, heightMeasureSpec);
         return v.getMeasuredHeight();
     }
 
     /**
-     * @param context cur context
      * @return current screen width
      */
     @SuppressWarnings("deprecation")
-    public static int screenWidth(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    public static int getScreenWidth() {
+        WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         int deviceWidth;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
@@ -122,6 +123,22 @@ public class UiHelper {
         CONTEXT.getContentResolver().insert(MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
 
         return image;
+    }
+
+    public static String filePathFromUri(@NonNull Uri uri){
+        String filePath = null;
+        if ("content".equals(uri.getScheme())) {
+            Cursor cursor = CONTEXT.getContentResolver().query(uri, new String[] { android.provider.MediaStore.Images.ImageColumns.DATA }, null, null, null);
+            if (cursor != null){
+                cursor.moveToFirst();
+                filePath = cursor.getString(0);
+                cursor.close();
+            }
+
+        } else {
+            filePath = uri.getPath();
+        }
+        return filePath;
     }
     //endregion
 

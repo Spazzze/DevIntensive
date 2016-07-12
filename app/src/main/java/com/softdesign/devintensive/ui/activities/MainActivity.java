@@ -38,13 +38,15 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 import com.squareup.picasso.Picasso;
 
@@ -59,8 +61,15 @@ import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
+import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
 import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
@@ -70,15 +79,11 @@ public class MainActivity extends BaseActivity {
 
     @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
 
-    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText,
-                       R.id.gitHub_EditText1, R.id.gitHub_EditText2, R.id.about_EditText})
+    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText, R.id.about_EditText})
     List<EditText> mEditTexts_userInfoList;
 
-    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout,
-                       R.id.gitHub_TextInputLayout, R.id.gitHub_TextInputLayout1, R.id.gitHub_TextInputLayout2})
+    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout, R.id.gitHub_TextInputLayout})
     List<TextInputLayout> mTextInputLayouts_userInfoList;
-
-    @BindViews({R.id.gitHub_LL1, R.id.gitHub_LL2}) List<LinearLayout> mLinearLayouts_gitHubAdditional;
 
     @BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;
     @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
@@ -93,8 +98,8 @@ public class MainActivity extends BaseActivity {
     private Boolean mNotSavingUserValues = false;
     private DataManager mDataManager;
     private File mPhotoFile = null;
-    private Uri mUri_SelectedImage = null;
-
+    private Uri mUri_SelectedProfileImage = null;
+    private String mUri_SelectedAvatarImage = null;
 
     //region OnCreate
     @Override
@@ -111,7 +116,6 @@ public class MainActivity extends BaseActivity {
         initUserProfileInfo();
         setupDrawer();
         setupToolbar();
-        refresh();
 
         if (savedInstanceState != null) {
             mCurrentEditMode = savedInstanceState.getBoolean(ConstantManager.EDIT_MODE_KEY);
@@ -174,7 +178,7 @@ public class MainActivity extends BaseActivity {
 
     @SuppressWarnings("deprecation")
     @OnClick({R.id.floating_action_button, R.id.placeholder_profilePhoto, R.id.makeCall_img,
-                     R.id.sendEmail_img, R.id.openVK_img, R.id.openGitHub_img, R.id.openGitHub_img1, R.id.openGitHub_img2})
+                     R.id.sendEmail_img, R.id.openVK_img, R.id.openGitHub_img})
     void submitButton(View view) {
         switch (view.getId()) {
             case R.id.floating_action_button:
@@ -199,12 +203,6 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.openGitHub_img:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(3).getText().toString())));
-                break;
-            case R.id.openGitHub_img1:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(4).getText().toString())));
-                break;
-            case R.id.openGitHub_img2:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(5).getText().toString())));
                 break;
         }
     }
@@ -242,6 +240,8 @@ public class MainActivity extends BaseActivity {
         if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
             mDataManager.getPreferencesManager().softLogout();
             startActivity(new Intent(this, AuthActivity.class));
+        } else {
+            refresh();
         }
     }
 
@@ -319,24 +319,6 @@ public class MainActivity extends BaseActivity {
 
     private void updateGitHubFields() {
         //// TODO: 12.07.2016 переделать на ListView
-        for (int i = 0; i < mEditTexts_userInfoList.size(); i++) {
-            String s = mEditTexts_userInfoList.get(i).getText().toString();
-            switch (mEditTexts_userInfoList.get(i).getId()) {
-                case R.id.gitHub_EditText1:
-                    if (!s.isEmpty()) {
-                        mLinearLayouts_gitHubAdditional.get(0).setVisibility(View.VISIBLE);
-                    } else {
-                        mLinearLayouts_gitHubAdditional.get(0).setVisibility(View.GONE);
-                    }
-                    break;
-                case R.id.gitHub_EditText2:
-                    if (!s.isEmpty()) {
-                        mLinearLayouts_gitHubAdditional.get(1).setVisibility(View.VISIBLE);
-                    } else {
-                        mLinearLayouts_gitHubAdditional.get(1).setVisibility(View.GONE);
-                    }
-            }
-        }
     }
 
     private void setupMenuAvatar() {    //setup menu avatar with rounded corners from picture
@@ -383,7 +365,7 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "placeProfilePicture: " + selectedImage);
         Picasso.with(this)
                 .load(selectedImage)
-                .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
+                .fit()
                 .centerInside()
                 .placeholder(R.drawable.user_bg)
                 .into(mImageView_profilePhoto);
@@ -397,11 +379,11 @@ public class MainActivity extends BaseActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                placeProfilePicture(mUri_SelectedImage);
+                placeProfilePicture(mUri_SelectedProfileImage);
                 updateGitHubFields();
                 updateDrawerItems();
             }
-        }, 500);
+        }, AppConfig.REFRESH_DELAY);
     }
 
     static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
@@ -433,7 +415,8 @@ public class MainActivity extends BaseActivity {
 
     private void initUserProfileInfo() {
         Log.d(TAG, "initUserProfileInfo");
-        mUri_SelectedImage = mDataManager.getPreferencesManager().loadUserPhoto();
+        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
+        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
         ArrayList<EditText> mainEditTexts = new ArrayList<>(mEditTexts_userInfoList.subList(0, 4));
         mainEditTexts.add(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1));
 
@@ -442,12 +425,6 @@ public class MainActivity extends BaseActivity {
 
         List<String> userProfileValuesList = mDataManager.getPreferencesManager().loadUserProfileValues();
         ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList.toArray(new String[userProfileValuesList.size()]));
-
-        List<String> additionalGitHubList = mDataManager.getPreferencesManager().loadUserAdditionalGitHubRepo();
-        for (int i = 0; i < additionalGitHubList.size(); i++) {
-            mEditTexts_userInfoList.get(4 + i).setText(additionalGitHubList.get(i));
-            if (i == 1) break;
-        }
 
         String userFullName = mDataManager.getPreferencesManager().loadUserName().get(ConstantManager.USER_FULL_NAME_KEY);
         MainActivity.this.setTitle(userFullName);
@@ -459,6 +436,17 @@ public class MainActivity extends BaseActivity {
 
         Log.d(TAG, "saveUserInfoData");
 
+        if (!mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
+            Log.d(TAG, "saveUserInfoData: uploading avatar to server");
+            uploadUserAvatar(mUri_SelectedAvatarImage);
+            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
+        }
+        if (!mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
+            Log.d(TAG, "saveUserInfoData: uploading photo to server");
+            uploadUserPhoto(mUri_SelectedProfileImage);
+            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
+        }
+
         Map<String, String> userInfo = new HashMap<>();
 
         userInfo.put(ConstantManager.USER_PHONE_KEY, mEditTexts_userInfoList.get(0).getText().toString());
@@ -467,19 +455,8 @@ public class MainActivity extends BaseActivity {
         userInfo.put(ConstantManager.USER_GITHUB_KEY, mEditTexts_userInfoList.get(3).getText().toString());
         userInfo.put(ConstantManager.USER_ABOUT_KEY, mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
 
-        int m = 1;
-        //indexes of additional gitHub repo;
-        for (int i = 4; i <= 5; i++) {
-            String s = mEditTexts_userInfoList.get(i).getText().toString();
-            String key = ConstantManager.USER_GITHUB_KEY + m;
-            userInfo.put(key, s);
-            m++;
-        }
         mDataManager.getPreferencesManager().saveUserProfileData(userInfo);
-
-        mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
-        updateDrawerItems();
-        updateGitHubFields();
+        refresh();
     }
     //endregion
 
@@ -490,16 +467,14 @@ public class MainActivity extends BaseActivity {
         switch (requestCode) {
             case ConstantManager.REQUEST_GALLERY_PICTURE:
                 if (resultCode == RESULT_OK && data != null) {
-                    mUri_SelectedImage = data.getData();
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                    mUri_SelectedProfileImage = data.getData();
+                    placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
             case ConstantManager.REQUEST_CAMERA_PICTURE:
                 if (resultCode == RESULT_OK && mPhotoFile != null) {
-                    mUri_SelectedImage = Uri.fromFile(mPhotoFile);
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                    mUri_SelectedProfileImage = Uri.fromFile(mPhotoFile);
+                    placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
             case ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
@@ -535,6 +510,66 @@ public class MainActivity extends BaseActivity {
     //endregion
 
     //region functional methods
+
+    private void uploadUserPhoto(Uri uri_SelectedImage) {
+
+        File file = new File(filePathFromUri(uri_SelectedImage));
+
+        final RequestBody requestFile =
+                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+
+        Call<UserPhotoRes> call = mDataManager.uploadUserPhoto(
+                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
+        call.enqueue(new Callback<UserPhotoRes>() {
+            @Override
+            public void onResponse(Call<UserPhotoRes> call,
+                                   Response<UserPhotoRes> response) {
+                //// TODO: 12.07.2016 обработать успешный респонс
+                if (!response.isSuccessful()) {
+                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
+                    showToast(error.getErrMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+            }
+        });
+    }
+
+    private void uploadUserAvatar(String uri_SelectedImage) {
+
+        File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
+
+        final RequestBody requestFile =
+                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+
+        Call<UserPhotoRes> call = mDataManager.uploadUserAvatar(
+                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
+        call.enqueue(new Callback<UserPhotoRes>() {
+            @Override
+            public void onResponse(Call<UserPhotoRes> call,
+                                   Response<UserPhotoRes> response) {
+                //// TODO: 12.07.2016 обработать успешный респонс
+                if (!response.isSuccessful()) {
+                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
+                    showToast(error.getErrMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+            }
+        });
+    }
 
     /**
      * enables or disables editing profile info

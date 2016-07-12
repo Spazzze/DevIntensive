@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -34,20 +35,18 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserModelRes;
+import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKError;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -62,7 +61,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.softdesign.devintensive.utils.UiHelper.createFile;
+import static com.softdesign.devintensive.utils.UiHelper.getScreenWidth;
 
 public class AuthActivity extends BaseActivity {
 
@@ -73,6 +72,7 @@ public class AuthActivity extends BaseActivity {
     @BindView(R.id.auth_email_editText) EditText mEditText_login_email;
     @BindView(R.id.auth_password_editText) EditText mEditText_login_password;
     @BindView(R.id.save_login_checkbox) CheckBox mCheckBox_saveLogin;
+    @BindView(R.id.signIn_vk_icon) ImageView mImageView_vk;
 
     private DataManager mDataManager;
     private CallbackManager mCallbackManager;
@@ -224,20 +224,10 @@ public class AuthActivity extends BaseActivity {
                     hideProgressDialog();
                     switch (response.code()) {
                         case ConstantManager.HTTP_RESPONSE_NOT_FOUND:
-                            mWrongPasswordCount++;
-                            mEditText_login_password.setText("");
-                            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                            v.vibrate(500);
-                            showToast(getString(R.string.error_wrong_credentials));
-                            if (!mUserDataEmpty && mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
-                                mDataManager.getPreferencesManager().totalLogout();
-                                mEditText_login_email.setText("");
-                                showSnackBar(getString(R.string.error_current_user_data_erased));
-                            } else if (!mUserDataEmpty && mWrongPasswordCount < AppConfig.MAX_LOGIN_TRIES) {
-                                String s = MessageFormat.format("{0}: {1}",
-                                        getString(R.string.error_tries_before_erase),
-                                        AppConfig.MAX_LOGIN_TRIES - mWrongPasswordCount);
-                                showSnackBar(s);
+                            wrongPasswordAnnounce();
+                            if (!mUserDataEmpty) {
+                                mWrongPasswordCount++;
+                                actionDependsOnFailTriesCount(mWrongPasswordCount);
                             }
                             break;
                         default:
@@ -298,6 +288,26 @@ public class AuthActivity extends BaseActivity {
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
+
+    private void actionDependsOnFailTriesCount(int failsCount) {
+        if (failsCount == AppConfig.MAX_LOGIN_TRIES) {
+            mDataManager.getPreferencesManager().totalLogout();
+            mEditText_login_email.setText("");
+            showSnackBar(getString(R.string.error_current_user_data_erased));
+        } else if (failsCount < AppConfig.MAX_LOGIN_TRIES) {
+            String s = MessageFormat.format("{0}: {1}",
+                    getString(R.string.error_tries_before_erase),
+                    AppConfig.MAX_LOGIN_TRIES - mWrongPasswordCount);
+            showSnackBar(s);
+        }
+    }
+
+    private void wrongPasswordAnnounce() {
+        mEditText_login_password.setText("");
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(AppConfig.ERROR_VIBRATE_TIME);
+        showToast(getString(R.string.error_wrong_credentials));
+    }
     //endregion
 
     //region Other functional methods
@@ -309,18 +319,15 @@ public class AuthActivity extends BaseActivity {
         }
         mEditText_login_password.setText("");
         saveUserInfoFromServer(userModelRes);
-        hideProgressDialog();
-        showToast(getString(R.string.notify_auth_successful));
-        startActivity(new Intent(this, MainActivity.class));
     }
 
     private void saveUserInfoFromServer(UserModelRes userModelRes) {
         saveUserAuthData(userModelRes);
         UserModelRes.Data.User user = userModelRes.getData().getUser();
-        saveUserPhotosFromServer(user);
         saveUserNameFromServer(user);
         saveUserProfileValuesFromServer(user);
         saveUserProfileInfoFromServer(user);
+        saveUserPhotosFromServer(user);
     }
 
     private void saveUserAuthData(UserModelRes userModelRes) {
@@ -368,57 +375,40 @@ public class AuthActivity extends BaseActivity {
         String pathToAvatar = user.getPublicInfo().getAvatar();
         String pathToPhoto = user.getPublicInfo().getPhoto();
 
-        PicassoTargetByName photoTarget = new PicassoTargetByName("photo");
+        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar");
+        PicassoTargetByName photoTarget = new PicassoTargetByName("photo") {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                super.onBitmapLoaded(bitmap, from);
+                hideProgressDialog();
+                showToast(getString(R.string.notify_auth_successful));
+                startActivity(new Intent(AuthActivity.this, MainActivity.class));
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                hideProgressDialog();
+                showToast(getString(R.string.error_connection_failed));
+            }
+        };
+        mImageView_vk.setTag(photoTarget);
+
         Picasso.with(this)
                 .load(Uri.parse(pathToPhoto))
-                .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
+                .resize(getScreenWidth(),
+                        getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
                 .centerCrop()
                 .into(photoTarget);
-        mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(photoTarget.getFile()));
 
-        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar");
         Picasso.with(this)
                 .load(Uri.parse(pathToAvatar))
-                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64), getResources().getDimensionPixelSize(R.dimen.size_medium_64))
+                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
+                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
                 .centerCrop()
                 .into(avatarTarget);
+
+        mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(photoTarget.getFile()));
         mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
-    }
-
-    private class PicassoTargetByName implements Target {
-
-        private File file;
-
-        public PicassoTargetByName(String fileName) {
-            try {
-                file = createFile(fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-            try {
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-                fileOutputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-        }
-
-        public File getFile() {
-            return file;
-        }
     }
     //endregion
 }
