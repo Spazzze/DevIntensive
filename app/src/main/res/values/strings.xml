@@ -1,9 +1,7 @@
 <resources>
     <integer name="com_vk_sdk_AppId">5535661</integer>
     <string name="facebook_app_id">1741889442760936</string>
-    <string name="pattern.link_gitHub">^github.com\\/\\w{3,}([\\/]\\w*)*$</string>
-    <string name="pattern.link_vk">^vk.com\\/\\w{3,}$</string>
-    <string name="pattern.email">^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$</string>
+
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
         <item>Выбрать из галереи</item>
@@ -86,5 +84,6 @@
     </string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.max_login_fails_reached">Вы достигли максимального количества неудачных попыток.</string>
+    <string name="header.auth_save_email">Сохранять e-mail</string>
 
 </resources>

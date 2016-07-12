@@ -30,6 +30,9 @@ public interface ConstantManager {
     String GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";
     String BUILTIN_ACCESS_ID = "BUILTIN_ACCESS_ID";
     String BUILTIN_ACCESS_TOKEN = "BUILTIN_ACCESS_TOKEN";
+    String SAVE_LOGIN = "SAVE_LOGIN";
+    String SAVED_LOGIN = "SAVED_LOGIN";
+
 
     //Authorization systems
     String AUTH_VK = "AUTH_VK";

@@ -3,6 +3,7 @@ package com.softdesign.devintensive.ui.activities;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,12 +11,14 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.facebook.CallbackManager;
@@ -69,10 +72,12 @@ public class AuthActivity extends BaseActivity {
     @BindView(R.id.auth_CoordinatorL) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.auth_email_editText) EditText mEditText_login_email;
     @BindView(R.id.auth_password_editText) EditText mEditText_login_password;
+    @BindView(R.id.save_login_checkbox) CheckBox mCheckBox_saveLogin;
 
     private DataManager mDataManager;
     private CallbackManager mCallbackManager;
     private int mWrongPasswordCount;
+    private Boolean mUserDataEmpty;
 
     //region onCreate
     @Override
@@ -82,6 +87,13 @@ public class AuthActivity extends BaseActivity {
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
+        mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
+        if (!mUserDataEmpty && mDataManager.getPreferencesManager().isLoginSavingEnabled()) {
+            mCheckBox_saveLogin.setChecked(true);
+            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLogin());
+            mEditText_login_email.setSelection(mEditText_login_email.length());
+        }
+
         //fb
         mCallbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(mCallbackManager,
@@ -197,7 +209,7 @@ public class AuthActivity extends BaseActivity {
     //endregion
 
     //region Login methods
-    private void login() {                        //// TODO: 10.07.2016 галочку "сохранять емейл"
+    private void login() {
         Call<UserModelRes> call = mDataManager.loginUser(new UserLoginReq(
                 mEditText_login_email.getText().toString(),
                 mEditText_login_password.getText().toString()));
@@ -213,11 +225,15 @@ public class AuthActivity extends BaseActivity {
                     switch (response.code()) {
                         case ConstantManager.HTTP_RESPONSE_NOT_FOUND:
                             mWrongPasswordCount++;
+                            mEditText_login_password.setText("");
+                            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            v.vibrate(500);
                             showToast(getString(R.string.error_wrong_credentials));
-                            if (mWrongPasswordCount == 3) {
+                            if (!mUserDataEmpty && mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
                                 mDataManager.getPreferencesManager().totalLogout();
+                                mEditText_login_email.setText("");
                                 showSnackBar(getString(R.string.error_current_user_data_erased));
-                            } else if (mWrongPasswordCount < 3){
+                            } else if (!mUserDataEmpty && mWrongPasswordCount < AppConfig.MAX_LOGIN_TRIES) {
                                 String s = MessageFormat.format("{0}: {1}",
                                         getString(R.string.error_tries_before_erase),
                                         AppConfig.MAX_LOGIN_TRIES - mWrongPasswordCount);
@@ -286,7 +302,11 @@ public class AuthActivity extends BaseActivity {
 
     //region Other functional methods
     private void onLoginSuccess(UserModelRes userModelRes) {
-        mEditText_login_email.setText("");
+        if (mCheckBox_saveLogin.isChecked()) {
+            mDataManager.getPreferencesManager().saveLogin(mEditText_login_email.getText().toString());
+        } else {
+            mEditText_login_email.setText("");
+        }
         mEditText_login_password.setText("");
         saveUserInfoFromServer(userModelRes);
         hideProgressDialog();

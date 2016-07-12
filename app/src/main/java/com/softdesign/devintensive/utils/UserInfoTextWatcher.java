@@ -222,7 +222,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format ***@**.**
      */
     private boolean isValidEmail(String email) {
-        String pattern = mResources.getString(R.string.pattern_email);
+        String pattern = AppConfig.PATTERN_EMAIL;
         return !TextUtils.isEmpty(email) && email.matches(pattern);
     }
 
@@ -231,7 +231,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format vk.com/***
      */
     private boolean isValidVK(String vk) {
-        String pattern = mResources.getString(R.string.pattern_link_vk);
+        String pattern = AppConfig.PATTERN_VK_LINK;
         return !TextUtils.isEmpty(vk) && vk.matches(pattern);
     }
 
@@ -240,7 +240,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format gitHub.com/***
      */
     private boolean isValidGitHub(String s) {
-        String pattern = mResources.getString(R.string.pattern_link_gitHub);
+        String pattern = AppConfig.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
     //endregion

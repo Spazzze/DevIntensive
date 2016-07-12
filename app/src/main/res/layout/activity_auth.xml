@@ -142,13 +142,24 @@
 
                     </LinearLayout>
 
+                    <CheckBox
+                        android:id="@+id/save_login_checkbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small_8"
+                        android:layout_marginRight="@dimen/spacing_small_8"
+                        android:checked="false"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="@string/header.auth_save_email"
+                        android:textColor="@color/color_grey_light" />
+
                     <!-- Button 'ENTER' -->
                     <com.devspark.robototextview.widget.RobotoButton
                         android:id="@+id/login_button"
                         style="@style/AppTheme.Button.Red"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_medial_24"
+                        android:layout_marginTop="@dimen/spacing_normal_16"
                         android:gravity="center"
                         android:minWidth="@dimen/button_width_126"
                         android:text="@string/header.login"

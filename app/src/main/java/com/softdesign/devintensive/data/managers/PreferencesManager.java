@@ -45,7 +45,27 @@ public class PreferencesManager {
         mContext = DevIntensiveApplication.getContext();
     }
 
+    public Boolean isEmpty() {
+        return mSharedPreferences.getAll().isEmpty();
+    }
+
     //region User Data save & load
+    public String loadLogin() {
+        if (isLoginSavingEnabled())
+            return mSharedPreferences.getString(ConstantManager.SAVED_LOGIN, "");
+        else return "";
+    }
+    public Boolean isLoginSavingEnabled(){
+        return mSharedPreferences.getBoolean(ConstantManager.SAVE_LOGIN, false);
+    }
+
+    public void saveLogin(String login) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(ConstantManager.SAVE_LOGIN, true);
+        editor.putString(ConstantManager.SAVED_LOGIN, login);
+        editor.apply();
+    }
+
     public void saveUserName(String userFirstName, String userLastName) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putString(ConstantManager.USER_FIRST_NAME_KEY, userFirstName);
@@ -237,10 +257,27 @@ public class PreferencesManager {
                 //а хрен вам а не проверка на expired, мы Гугл, мы шлем вас снова отправить запрос авторизации.
                 return !(loadGoogleAuthorizationInfo().get(2)).isEmpty();   //токен пуст, если после последней авторизации вызывался метод onDestroy()
             case ConstantManager.AUTH_BUILTIN:
-                return true;
+                return false;
             default:
                 return false;
         }
+    }
+
+    public void softLogout() {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        List<String> exclusionKeys = new ArrayList<>();
+        if (mSharedPreferences.getBoolean(ConstantManager.SAVE_LOGIN, false)) {
+            exclusionKeys.add(ConstantManager.SAVE_LOGIN);
+            exclusionKeys.add(ConstantManager.SAVED_LOGIN);
+        }
+
+        Map<String, ?> spMap = mSharedPreferences.getAll();
+        for (String key : spMap.keySet()) {
+            if (!exclusionKeys.contains(key)) {
+                editor.remove(key);
+            }
+        }
+        editor.apply();
     }
 
     /**

@@ -211,7 +211,6 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        //// TODO: 12.07.2016 изменить поведение кнопки, чтобы не возвращало в authactivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -241,7 +240,8 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         Log.d(TAG, "onResume");
         if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
-            finish();
+            mDataManager.getPreferencesManager().softLogout();
+            startActivity(new Intent(this, AuthActivity.class));
         }
     }
 
@@ -340,7 +340,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupMenuAvatar() {    //setup menu avatar with rounded corners from picture
-        //// TODO: 08.07.2016 setup real avatar and get avatars from social info
+        //// TODO: 08.07.2016 get avatars from social info
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
@@ -635,7 +635,7 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "logout: ");
         mNotSavingUserValues = true;
         mDataManager.getPreferencesManager().totalLogout();
-        finish();
+        startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion
 }
