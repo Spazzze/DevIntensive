@@ -34,7 +34,7 @@
         <item name="android:layout_marginRight">@dimen/spacing_normal_16</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">bottom</item>
-        <item name="android:orientation">vertical</item>
+        <item name="android:orientation">horizontal</item>
     </style>
 
     <style name="profileItem_textInputLayout_error" parent="TextAppearance.Design.Hint">

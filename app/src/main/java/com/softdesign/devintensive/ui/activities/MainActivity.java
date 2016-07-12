@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -37,6 +38,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -49,7 +51,9 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -64,10 +68,17 @@ public class MainActivity extends BaseActivity {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Main Activity";
 
-    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText, R.id.about_EditText})
+    @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
+
+    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText,
+                       R.id.gitHub_EditText1, R.id.gitHub_EditText2, R.id.about_EditText})
     List<EditText> mEditTexts_userInfoList;
-    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout, R.id.gitHub_TextInputLayout})
+
+    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout,
+                       R.id.gitHub_TextInputLayout, R.id.gitHub_TextInputLayout1, R.id.gitHub_TextInputLayout2})
     List<TextInputLayout> mTextInputLayouts_userInfoList;
+
+    @BindViews({R.id.gitHub_LL1, R.id.gitHub_LL2}) List<LinearLayout> mLinearLayouts_gitHubAdditional;
 
     @BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;
     @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
@@ -79,9 +90,11 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;
 
     private Boolean mCurrentEditMode = false;
+    private Boolean mNotSavingUserValues = false;
     private DataManager mDataManager;
     private File mPhotoFile = null;
     private Uri mUri_SelectedImage = null;
+
 
     //region OnCreate
     @Override
@@ -95,9 +108,10 @@ public class MainActivity extends BaseActivity {
         mDataManager = DataManager.getInstance();
 
         setupUserInfoLayout();
-        setupToolbar();
+        initUserProfileInfo();
         setupDrawer();
-        loadUserInfoValue();
+        setupToolbar();
+        refresh();
 
         if (savedInstanceState != null) {
             mCurrentEditMode = savedInstanceState.getBoolean(ConstantManager.EDIT_MODE_KEY);
@@ -118,7 +132,7 @@ public class MainActivity extends BaseActivity {
             case ConstantManager.LOAD_PROFILE_PHOTO:
                 String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.hint_profile_placeHolder_loadPhotoDialog_title));
+                builder.setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title));
                 builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int chosenItem) {
@@ -160,7 +174,7 @@ public class MainActivity extends BaseActivity {
 
     @SuppressWarnings("deprecation")
     @OnClick({R.id.floating_action_button, R.id.placeholder_profilePhoto, R.id.makeCall_img,
-                     R.id.sendEmail_img, R.id.openVK_img, R.id.openGitHub_img})
+                     R.id.sendEmail_img, R.id.openVK_img, R.id.openGitHub_img, R.id.openGitHub_img1, R.id.openGitHub_img2})
     void submitButton(View view) {
         switch (view.getId()) {
             case R.id.floating_action_button:
@@ -186,11 +200,18 @@ public class MainActivity extends BaseActivity {
             case R.id.openGitHub_img:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(3).getText().toString())));
                 break;
+            case R.id.openGitHub_img1:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(4).getText().toString())));
+                break;
+            case R.id.openGitHub_img2:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(5).getText().toString())));
+                break;
         }
     }
 
     @Override
     public void onBackPressed() {
+        //// TODO: 12.07.2016 изменить поведение кнопки, чтобы не возвращало в authactivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -220,11 +241,7 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         Log.d(TAG, "onResume");
         if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
-            if (mDataManager.getPreferencesManager().getAuthorizationSystem().equals(ConstantManager.AUTH_GOOGLE)) {
-                startActivity(new Intent(this, AuthActivity.class));
-            } else {
-                logout();
-            }
+            finish();
         }
     }
 
@@ -232,7 +249,7 @@ public class MainActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        saveUserInfoValue();
+        saveUserInfoData();
     }
 
     @Override
@@ -292,9 +309,33 @@ public class MainActivity extends BaseActivity {
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
+            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
             TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            mTextView_menuUserEmail.setText(mEditTexts_userInfoList.get(1).getEditableText().toString()); //drawer menu email change
+            mTextView_menuUserName.setText(MainActivity.this.getTitle());
+            mTextView_menuUserEmail.setText(mEditTexts_userInfoList.get(1).getText().toString()); //drawer menu email change
             setupMenuAvatar();
+        }
+    }
+
+    private void updateGitHubFields() {
+        //// TODO: 12.07.2016 переделать на ListView
+        for (int i = 0; i < mEditTexts_userInfoList.size(); i++) {
+            String s = mEditTexts_userInfoList.get(i).getText().toString();
+            switch (mEditTexts_userInfoList.get(i).getId()) {
+                case R.id.gitHub_EditText1:
+                    if (!s.isEmpty()) {
+                        mLinearLayouts_gitHubAdditional.get(0).setVisibility(View.VISIBLE);
+                    } else {
+                        mLinearLayouts_gitHubAdditional.get(0).setVisibility(View.GONE);
+                    }
+                    break;
+                case R.id.gitHub_EditText2:
+                    if (!s.isEmpty()) {
+                        mLinearLayouts_gitHubAdditional.get(1).setVisibility(View.VISIBLE);
+                    } else {
+                        mLinearLayouts_gitHubAdditional.get(1).setVisibility(View.GONE);
+                    }
+            }
         }
     }
 
@@ -303,10 +344,13 @@ public class MainActivity extends BaseActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-            Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-            mRoundedAvatar_img.setImageDrawable(dr);
+            Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
+            if (src != null) {
+                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
+                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
+                mRoundedAvatar_img.setImageDrawable(dr);
+            }
+            /*Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);*/
         }
     }
 
@@ -336,6 +380,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void placeProfilePicture(Uri selectedImage) {
+        Log.d(TAG, "placeProfilePicture: " + selectedImage);
         Picasso.with(this)
                 .load(selectedImage)
                 .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
@@ -348,6 +393,33 @@ public class MainActivity extends BaseActivity {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
+    private void refresh() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                placeProfilePicture(mUri_SelectedImage);
+                updateGitHubFields();
+                updateDrawerItems();
+            }
+        }, 500);
+    }
+
+    static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
+        @Override
+        public void set(@NonNull TextView view, String[] value, int index) {
+            view.setText(value[index]);
+        }
+    };
+
+    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
+        @Override
+        public void set(@NonNull View view, Boolean value, int index) {
+            view.setEnabled(value);
+            view.setFocusable(value);
+            view.setFocusableInTouchMode(value);
+        }
+    };
+
     //endregion
 
     //region Save and Load preferences and current state
@@ -359,26 +431,55 @@ public class MainActivity extends BaseActivity {
         outState.putBoolean(ConstantManager.EDIT_MODE_KEY, mCurrentEditMode);
     }
 
-    private void loadUserInfoValue() {
-        Log.d(TAG, "loadUserInfoValue");
-        List<String> userData = mDataManager.getPreferencesManager().loadUserProfileData();
+    private void initUserProfileInfo() {
+        Log.d(TAG, "initUserProfileInfo");
+        mUri_SelectedImage = mDataManager.getPreferencesManager().loadUserPhoto();
+        ArrayList<EditText> mainEditTexts = new ArrayList<>(mEditTexts_userInfoList.subList(0, 4));
+        mainEditTexts.add(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1));
 
-        for (int i = 0; i < userData.size(); i++) {
-            mEditTexts_userInfoList.get(i).setText(userData.get(i));
+        List<String> userProfileDataList = mDataManager.getPreferencesManager().loadUserProfileData();
+        ButterKnife.apply(mainEditTexts, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+
+        List<String> userProfileValuesList = mDataManager.getPreferencesManager().loadUserProfileValues();
+        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList.toArray(new String[userProfileValuesList.size()]));
+
+        List<String> additionalGitHubList = mDataManager.getPreferencesManager().loadUserAdditionalGitHubRepo();
+        for (int i = 0; i < additionalGitHubList.size(); i++) {
+            mEditTexts_userInfoList.get(4 + i).setText(additionalGitHubList.get(i));
+            if (i == 1) break;
         }
-        placeProfilePicture(mDataManager.getPreferencesManager().loadUserPhoto());
+
+        String userFullName = mDataManager.getPreferencesManager().loadUserName().get(ConstantManager.USER_FULL_NAME_KEY);
+        MainActivity.this.setTitle(userFullName);
     }
 
-    private void saveUserInfoValue() {
-        Log.d(TAG, "saveUserInfoValue");
+    private void saveUserInfoData() {
 
-        List<String> userData = new ArrayList<>();
-        for (int i = 0; i < mEditTexts_userInfoList.size(); i++) {
-            userData.add(mEditTexts_userInfoList.get(i).getText().toString());
+        if (mNotSavingUserValues) return;
+
+        Log.d(TAG, "saveUserInfoData");
+
+        Map<String, String> userInfo = new HashMap<>();
+
+        userInfo.put(ConstantManager.USER_PHONE_KEY, mEditTexts_userInfoList.get(0).getText().toString());
+        userInfo.put(ConstantManager.USER_EMAIL_KEY, mEditTexts_userInfoList.get(1).getText().toString());
+        userInfo.put(ConstantManager.USER_VK_KEY, mEditTexts_userInfoList.get(2).getText().toString());
+        userInfo.put(ConstantManager.USER_GITHUB_KEY, mEditTexts_userInfoList.get(3).getText().toString());
+        userInfo.put(ConstantManager.USER_ABOUT_KEY, mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+
+        int m = 1;
+        //indexes of additional gitHub repo;
+        for (int i = 4; i <= 5; i++) {
+            String s = mEditTexts_userInfoList.get(i).getText().toString();
+            String key = ConstantManager.USER_GITHUB_KEY + m;
+            userInfo.put(key, s);
+            m++;
         }
-        mDataManager.getPreferencesManager().saveUserProfileData(userData);
+        mDataManager.getPreferencesManager().saveUserProfileData(userInfo);
+
         mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
         updateDrawerItems();
+        updateGitHubFields();
     }
     //endregion
 
@@ -453,7 +554,7 @@ public class MainActivity extends BaseActivity {
             ButterKnife.apply(mEditTexts_userInfoList, setEnabledViews, true);
             mEditTexts_userInfoList.get(0).requestFocus();
         } else {    //stop edit mode
-            saveUserInfoValue();
+            saveUserInfoData();
             mFloatingActionButton.setImageResource(R.drawable.ic_edit_black_24dp);
             hideProfilePhotoPlaceholder();
             mCollapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.color_white));
@@ -469,20 +570,11 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
-        @Override
-        public void set(@NonNull View view, Boolean value, int index) {
-            view.setEnabled(value);
-            view.setFocusable(value);
-            view.setFocusableInTouchMode(value);
-        }
-    };
-
     private void loadPhotoFromGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.hint_choosePhotoFromGallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -502,9 +594,9 @@ public class MainActivity extends BaseActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             try {
-                mPhotoFile = createImageFile(this);
+                mPhotoFile = createImageFile();
             } catch (IOException e) {
-                showSnackBar(getString(R.string.error_cannot_create_file) + e.getMessage());
+                showSnackBar(getString(R.string.error_cannot_save_file) + e.getMessage());
             }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
@@ -540,8 +632,10 @@ public class MainActivity extends BaseActivity {
     }
 
     private void logout() {
-        mDataManager.getPreferencesManager().removeCurrentAuthorization();
-        startActivity(new Intent(this, AuthActivity.class));
+        Log.d(TAG, "logout: ");
+        mNotSavingUserValues = true;
+        mDataManager.getPreferencesManager().totalLogout();
+        finish();
     }
     //endregion
 }

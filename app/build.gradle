@@ -15,6 +15,11 @@ android {
         resConfigs "en", "ru"
     }
     buildTypes {
+        debug {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
             shrinkResources true
             minifyEnabled true
@@ -36,6 +41,13 @@ dependencies {
     compile 'com.vk:androidsdk:1.6.5'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.google.android.gms:play-services:8.4.0'
+    compile('com.squareup.retrofit2:retrofit:2.1.0') {
+        exclude module: 'okhhtp'
+    }
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.squareup.okhttp3:okhttp:3.3.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.3.1'
+
     apt 'com.jakewharton:butterknife-compiler:8.1.0'
 }
 

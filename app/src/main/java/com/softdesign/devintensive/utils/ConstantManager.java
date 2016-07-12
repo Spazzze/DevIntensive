@@ -14,12 +14,22 @@ public interface ConstantManager {
     String USER_VK_KEY = "USER_VK_KEY";
     String USER_ABOUT_KEY = "USER_ABOUT_KEY";
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
+    String USER_FIRST_NAME_KEY = "USER_FIRST_NAME_KEY";
+    String USER_LAST_NAME_KEY = "USER_LAST_NAME_KEY";
+    String USER_FULL_NAME_KEY = "USER_FULL_NAME_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
+    String USER_PROFILE_AVATAR_URI = "USER_PROFILE_AVATAR_URI";
+    String USER_PROFILE_PROJECTS_KEY = "USER_PROFILE_PROJECTS_KEY";
+    String USER_PROFILE_LINES_CODE_KEY = "USER_PROFILE_LINES_CODE_KEY";
+    String USER_PROFILE_RATING_KEY = "USER_PROFILE_RATING_KEY";
+
     String AUTHORIZATION_SYSTEM = "AUTHORIZATION_SYSTEM";
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
-    String GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";
     String GOOGLE_ACCESS_ACC_NAME = "GOOGLE_ACCESS_ACC_NAME";
     String GOOGLE_ACCESS_ACC_TYPE = "GOOGLE_ACCESS_ACC_TYPE";
+    String GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";
+    String BUILTIN_ACCESS_ID = "BUILTIN_ACCESS_ID";
+    String BUILTIN_ACCESS_TOKEN = "BUILTIN_ACCESS_TOKEN";
 
     //Authorization systems
     String AUTH_VK = "AUTH_VK";
@@ -36,6 +46,7 @@ public interface ConstantManager {
     int REQUEST_PERMISSIONS_READ_SDCARD = 102;
     int REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS = 103;
     int REQUEST_PERMISSIONS_GET_ACCOUNTS = 104;
+    int REQUEST_PERMISSIONS_WRITE_SDCARD = 105;
 
     //Other request constants
     int REQUEST_CAMERA_PICTURE = 99;
@@ -46,4 +57,8 @@ public interface ConstantManager {
     String G_PLUS_SCOPE = "oauth2:https://www.googleapis.com/auth/plus.me";
     String USER_INFO_SCOPE = "https://www.googleapis.com/auth/userinfo.profile";
     String EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
+
+    //Some of http response constants
+    int HTTP_RESPONSE_NOT_FOUND = 404;
+
 }

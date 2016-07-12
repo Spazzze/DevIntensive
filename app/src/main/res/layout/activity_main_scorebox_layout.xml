@@ -10,9 +10,8 @@
         android:layout_weight="0.25">
 
         <TextView
-            android:id="@+id/scoreBox_ratingCount"
-            style="@style/scoreBox_text.count"
-            android:text="@string/dummy.scoreBox_ratingCount"/>
+            android:id="@+id/scoreBox_rating"
+            style="@style/scoreBox_text.count"/>
 
         <TextView
             style="@style/scoreBox_text"
@@ -28,9 +27,8 @@
         android:layout_weight="0.5">
 
         <TextView
-            android:id="@+id/scoreBox_codeCount"
-            style="@style/scoreBox_text.count"
-            android:text="@string/dummy.scoreBox_codeCount"/>
+            android:id="@+id/scoreBox_codeLines"
+            style="@style/scoreBox_text.count"/>
 
         <TextView
             style="@style/scoreBox_text"
@@ -46,9 +44,8 @@
         android:layout_weight="0.25">
 
         <TextView
-            android:id="@+id/scoreBox_projectsCount"
-            style="@style/scoreBox_text.count"
-            android:text="@string/dummy.scoreBox_projectsCount"/>
+            android:id="@+id/scoreBox_projects"
+            style="@style/scoreBox_text.count"/>
 
         <TextView
             style="@style/scoreBox_text"
