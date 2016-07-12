@@ -2,19 +2,18 @@ package com.softdesign.devintensive.data.network.api.res;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.softdesign.devintensive.data.network.restmodels.Data;
+import com.softdesign.devintensive.data.network.restmodels.User;
 
-public class UserModelRes {
+public class UserUpdRes  {
 
     @SerializedName("success")
     @Expose
-    private boolean success;
+    private Boolean success;
     @SerializedName("data")
     @Expose
-    private Data data;
+    private User mUser;
 
-    public Data getData() {
-        return data;
+    public User getUser() {
+        return mUser;
     }
-
 }

@@ -43,8 +43,8 @@ import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.api.res.UserModelRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
@@ -100,7 +100,7 @@ public class MainActivity extends BaseActivity {
     private File mPhotoFile = null;
     private Uri mUri_SelectedProfileImage = null;
     private String mUri_SelectedAvatarImage = null;
-    private UserModelRes mUserData = null;
+    private User mUserData = null;
 
     //region OnCreate
     @Override
@@ -238,12 +238,7 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
-            mDataManager.getPreferencesManager().softLogout();
-            startActivity(new Intent(this, AuthActivity.class));
-        } else {
-            refresh();
-        }
+        refresh();
     }
 
     @Override
@@ -423,26 +418,24 @@ public class MainActivity extends BaseActivity {
         mUserData = mDataManager.getPreferencesManager().loadAllUserData();
         if (mUserData == null) return;
 
-        UserModelRes.Data.User user = mUserData.getData().getUser();
-
         List<String> userProfileDataList = new ArrayList<>();
 
-        userProfileDataList.add(user.getContacts().getPhone());
-        userProfileDataList.add(user.getContacts().getEmail());
-        userProfileDataList.add(user.getContacts().getVk());
-        userProfileDataList.add(user.getRepositories().getRepo().get(0).getGit());
-        userProfileDataList.add(user.getPublicInfo().getBio());
+        userProfileDataList.add(mUserData.getContacts().getPhone());
+        userProfileDataList.add(mUserData.getContacts().getEmail());
+        userProfileDataList.add(mUserData.getContacts().getVk());
+        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
+        userProfileDataList.add(mUserData.getPublicInfo().getBio());
 
         ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
 
         String[] userProfileValuesList = {
-                String.valueOf(user.getProfileValues().getRating()),
-                String.valueOf(user.getProfileValues().getLinesCode()),
-                String.valueOf(user.getProfileValues().getProjects())};
+                String.valueOf(mUserData.getProfileValues().getRating()),
+                String.valueOf(mUserData.getProfileValues().getLinesCode()),
+                String.valueOf(mUserData.getProfileValues().getProjects())};
 
         ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
 
-        String userFullName = String.format("%s %s", user.getSecondName(), user.getFirstName());
+        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
         MainActivity.this.setTitle(userFullName);
     }
 
@@ -463,13 +456,11 @@ public class MainActivity extends BaseActivity {
             mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
         }
 
-        UserModelRes.Data.User user = mUserData.getData().getUser();
-
-        user.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
-        user.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
-        user.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
-        user.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
-        user.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+        mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
+        mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
+        mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
+        mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
+        mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
 
         mDataManager.getPreferencesManager().saveAllUserData(mUserData);
         refresh();

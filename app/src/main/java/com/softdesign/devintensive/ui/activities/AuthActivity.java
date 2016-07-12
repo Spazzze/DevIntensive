@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +36,8 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserModelRes;
+import com.softdesign.devintensive.data.network.api.res.UserUpdRes;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
@@ -87,9 +90,14 @@ public class AuthActivity extends BaseActivity {
         mDataManager = DataManager.getInstance();
         mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
         if (!mUserDataEmpty && mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
+            Log.d(TAG, "onCreate: " + mUserDataEmpty);
             mCheckBox_saveLogin.setChecked(true);
             mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
             mEditText_login_email.setSelection(mEditText_login_email.length());
+            //try silent login
+            if (NetworkUtils.isNetworkAvailable(this)) {
+                silentLogin();
+            }
         }
 
         //fb
@@ -112,16 +120,6 @@ public class AuthActivity extends BaseActivity {
                         // App code
                     }
                 });
-        //try silent re-auth
-        if (NetworkUtils.isNetworkAvailable(this)) {
-            switch (mDataManager.getPreferencesManager().getAuthorizationSystem()) {
-                case ConstantManager.AUTH_GOOGLE:
-                    googleSilentSignIn();
-                    break;
-                case ConstantManager.AUTH_BUILTIN:
-                    break;
-            }
-        }
     }
     //endregion
 
@@ -208,10 +206,10 @@ public class AuthActivity extends BaseActivity {
 
     //region Login methods
     private void login() {
+        showProgressDialog();
         Call<UserModelRes> call = mDataManager.loginUser(new UserLoginReq(
                 mEditText_login_email.getText().toString(),
                 mEditText_login_password.getText().toString()));
-        showProgressDialog();
         call.enqueue(new Callback<UserModelRes>() {
             @Override
             public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
@@ -280,6 +278,34 @@ public class AuthActivity extends BaseActivity {
             }
         }
     }
+
+    private void silentLogin() {
+        Log.d(TAG, "silentLogin: ");
+
+        showProgressDialog();
+
+        Call<UserUpdRes> call = mDataManager.getUserData(mDataManager.getPreferencesManager().loadBuiltInAuthId());
+
+        call.enqueue(new Callback<UserUpdRes>() {
+            @Override
+            public void onResponse(Call<UserUpdRes> call,
+                                   Response<UserUpdRes> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "onResponse: " + response.body().getUser().getPublicInfo().getAvatar());
+                    onSilentLoginSuccess(response.body());
+                } else {
+                    hideProgressDialog();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserUpdRes> call, Throwable t) {
+                hideProgressDialog();
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                Log.d(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+            }
+        });
+    }
     //endregion
 
     //region Ui methods
@@ -310,6 +336,7 @@ public class AuthActivity extends BaseActivity {
 
     //region Other functional methods
     private void onLoginSuccess(UserModelRes userModelRes) {
+        Log.d(TAG, "onLoginSuccess: ");
         if (mCheckBox_saveLogin.isChecked()) {
             mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
         } else {
@@ -319,14 +346,25 @@ public class AuthActivity extends BaseActivity {
         saveUserInfoFromServer(userModelRes);
     }
 
-    private void saveUserInfoFromServer(UserModelRes userModelRes) {
-        saveUserAuthData(userModelRes);
-        UserModelRes.Data.User user = userModelRes.getData().getUser();
-        mDataManager.getPreferencesManager().saveAllUserData(userModelRes);
+    private void onSilentLoginSuccess(UserUpdRes res) {
+        Log.d(TAG, "onSilentLoginSuccess: ");
+        mEditText_login_password.setText("");
+        User user = res.getUser();
+        Log.d(TAG, "onSilentLoginSuccess: " + user.getFirstName());
+        Log.d(TAG, "onSilentLoginSuccess: " + (user.getPublicInfo() == null));
+        mDataManager.getPreferencesManager().saveAllUserData(user);
         saveUserPhotosFromServer(user);
     }
 
-    private void saveUserAuthData(UserModelRes userModelRes) {
+    private void saveUserInfoFromServer(@NonNull UserModelRes userModelRes) {
+
+        saveUserAuthData(userModelRes);
+        User user = userModelRes.getData().getUser();
+        mDataManager.getPreferencesManager().saveAllUserData(user);
+        saveUserPhotosFromServer(user);
+    }
+
+    private void saveUserAuthData(@NonNull UserModelRes userModelRes) {
         mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_BUILTIN);
         mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
                 userModelRes.getData().getUser().getId(),
@@ -334,7 +372,7 @@ public class AuthActivity extends BaseActivity {
         );
     }
 
-    private void saveUserPhotosFromServer(UserModelRes.Data.User user) {
+    private void saveUserPhotosFromServer(@NonNull User user) {
 
         String pathToAvatar = user.getPublicInfo().getAvatar();
         String pathToPhoto = user.getPublicInfo().getPhoto();

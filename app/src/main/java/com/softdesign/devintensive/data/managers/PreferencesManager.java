@@ -5,9 +5,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
-import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
-import com.softdesign.devintensive.data.network.api.res.UserModelRes;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.vk.sdk.VKAccessToken;
@@ -40,15 +39,15 @@ public class PreferencesManager {
 
     //region User Data save & load
 
-    public void saveAllUserData(UserModelRes res) {
+    public void saveAllUserData(User res) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putString(ConstantManager.USER_JSON_OBJ, getJsonFromObject(res, UserModelRes.class));
+        editor.putString(ConstantManager.USER_JSON_OBJ, getJsonFromObject(res, User.class));
         editor.apply();
     }
 
-    public UserModelRes loadAllUserData() {
+    public User loadAllUserData() {
         String json = mSharedPreferences.getString(ConstantManager.USER_JSON_OBJ, null);
-        if (json != null) return (UserModelRes) getObjectFromJson(json, UserModelRes.class);
+        if (json != null) return (User) getObjectFromJson(json, User.class);
         else return null;
     }
 
@@ -108,14 +107,14 @@ public class PreferencesManager {
     public void saveBuiltInAuthInfo(String id, String token) {
         if (id != null && token != null && !id.isEmpty() && !token.isEmpty()) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.BUILTIN_ACCESS_ID, id);
+            editor.putString(ConstantManager.BUILTIN_ACCESS_USER_ID, id);
             editor.putString(ConstantManager.BUILTIN_ACCESS_TOKEN, token);
             editor.apply();
         }
     }
 
     public String loadBuiltInAuthId() {
-        return mSharedPreferences.getString(ConstantManager.BUILTIN_ACCESS_ID, "");
+        return mSharedPreferences.getString(ConstantManager.BUILTIN_ACCESS_USER_ID, "");
     }
 
     public String loadBuiltInAuthToken() {
@@ -177,30 +176,14 @@ public class PreferencesManager {
         return mSharedPreferences.getString(ConstantManager.AUTHORIZATION_SYSTEM, "");
     }
 
-    public Boolean checkAuthorizationStatus() {   //// TODO: 08.07.2016 временно. Переделать на авторизацию сервером
-        switch (getAuthorizationSystem()) {
-            case ConstantManager.AUTH_VK:
-                VKAccessToken vkToken = VKAccessToken.tokenFromSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
-                return vkToken != null && !vkToken.isExpired();
-            case ConstantManager.AUTH_FACEBOOK:
-                AccessToken fbToken = AccessToken.getCurrentAccessToken();
-                return fbToken != null && !fbToken.isExpired();
-            case ConstantManager.AUTH_GOOGLE:
-                //а хрен вам а не проверка на expired, мы Гугл, мы шлем вас снова отправить запрос авторизации.
-                return !(loadGoogleAuthorizationInfo().get(2)).isEmpty();   //токен пуст, если после последней авторизации вызывался метод onDestroy()
-            case ConstantManager.AUTH_BUILTIN:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     public void softLogout() {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         List<String> exclusionKeys = new ArrayList<>();
         if (mSharedPreferences.getBoolean(ConstantManager.SAVE_LOGIN, false)) {
             exclusionKeys.add(ConstantManager.SAVE_LOGIN);
             exclusionKeys.add(ConstantManager.SAVED_LOGIN_NAME);
+            exclusionKeys.add(ConstantManager.BUILTIN_ACCESS_USER_ID);
+            exclusionKeys.add(ConstantManager.BUILTIN_ACCESS_TOKEN);
         }
 
         Map<String, ?> spMap = mSharedPreferences.getAll();
