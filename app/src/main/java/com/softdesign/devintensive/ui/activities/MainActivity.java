@@ -44,6 +44,7 @@ import android.widget.TextView;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
+import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
@@ -531,12 +532,12 @@ public class MainActivity extends BaseActivity {
         MultipartBody.Part body =
                 MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
 
-        Call<UserPhotoRes> call = mDataManager.uploadUserPhoto(
+        Call<BaseModel<UserPhotoRes>> call = mDataManager.uploadUserPhoto(
                 mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
-        call.enqueue(new Callback<UserPhotoRes>() {
+        call.enqueue(new Callback<BaseModel<UserPhotoRes>>() {
             @Override
-            public void onResponse(Call<UserPhotoRes> call,
-                                   Response<UserPhotoRes> response) {
+            public void onResponse(Call<BaseModel<UserPhotoRes>> call,
+                                   Response<BaseModel<UserPhotoRes>> response) {
                 if (response.isSuccessful()) {
                     mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
                 } else {
@@ -547,7 +548,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+            public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
                 logout(0);
             }
@@ -566,12 +567,12 @@ public class MainActivity extends BaseActivity {
         MultipartBody.Part body =
                 MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
 
-        Call<UserPhotoRes> call = mDataManager.uploadUserAvatar(
+        Call<BaseModel<UserPhotoRes>> call = mDataManager.uploadUserAvatar(
                 mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
-        call.enqueue(new Callback<UserPhotoRes>() {
+        call.enqueue(new Callback<BaseModel<UserPhotoRes>>() {
             @Override
-            public void onResponse(Call<UserPhotoRes> call,
-                                   Response<UserPhotoRes> response) {
+            public void onResponse(Call<BaseModel<UserPhotoRes>> call,
+                                   Response<BaseModel<UserPhotoRes>> response) {
                 if (response.isSuccessful()) {
                     mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
                 } else {
@@ -582,7 +583,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+            public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
                 logout(0);
             }

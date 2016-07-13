@@ -35,8 +35,8 @@ import com.google.android.gms.common.AccountPicker;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
-import com.softdesign.devintensive.data.network.api.res.UserModelRes;
-import com.softdesign.devintensive.data.network.api.res.UserUpdRes;
+import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
+import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
 import com.softdesign.devintensive.utils.AppConfig;
@@ -207,12 +207,12 @@ public class AuthActivity extends BaseActivity {
     //region Login methods
     private void login() {
         showProgressDialog();
-        Call<UserModelRes> call = mDataManager.loginUser(new UserLoginReq(
+        Call<BaseModel<UserAuthRes>> call = mDataManager.loginUser(new UserLoginReq(
                 mEditText_login_email.getText().toString(),
                 mEditText_login_password.getText().toString()));
-        call.enqueue(new Callback<UserModelRes>() {
+        call.enqueue(new Callback<BaseModel<UserAuthRes>>() {
             @Override
-            public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
+            public void onResponse(Call<BaseModel<UserAuthRes>> call, Response<BaseModel<UserAuthRes>> response) {
                 if (response.isSuccessful()) {
                     mWrongPasswordCount = 0;
                     onLoginSuccess(response.body());
@@ -235,7 +235,7 @@ public class AuthActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<UserModelRes> call, Throwable t) {
+            public void onFailure(Call<BaseModel<UserAuthRes>> call, Throwable t) {
                 // there is more than just a failing request (like: no internet connection)
                 hideProgressDialog();
                 if (!NetworkUtils.isNetworkAvailable(AuthActivity.this)) {
@@ -255,14 +255,14 @@ public class AuthActivity extends BaseActivity {
 
         showProgressDialog();
 
-        Call<UserUpdRes> call = mDataManager.getUserData(userId);
+        Call<BaseModel<User>> call = mDataManager.getUserData(userId);
 
-        call.enqueue(new Callback<UserUpdRes>() {
+        call.enqueue(new Callback<BaseModel<User>>() {
             @Override
-            public void onResponse(Call<UserUpdRes> call,
-                                   Response<UserUpdRes> response) {
+            public void onResponse(Call<BaseModel<User>> call,
+                                   Response<BaseModel<User>> response) {
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "onResponse: " + response.body().getUser().getPublicInfo().getAvatar());
+                    Log.d(TAG, "onResponse: " + response.body().getData().getPublicInfo().getAvatar());
                     onSilentLoginSuccess(response.body());
                 } else {
                     hideProgressDialog();
@@ -270,7 +270,7 @@ public class AuthActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<UserUpdRes> call, Throwable t) {
+            public void onFailure(Call<BaseModel<User>> call, Throwable t) {
                 hideProgressDialog();
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
                 Log.d(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
@@ -339,7 +339,7 @@ public class AuthActivity extends BaseActivity {
     //endregion
 
     //region Other functional methods
-    private void onLoginSuccess(UserModelRes userModelRes) {
+    private void onLoginSuccess(BaseModel<UserAuthRes> userModelRes) {
         Log.d(TAG, "onLoginSuccess: ");
         if (mCheckBox_saveLogin.isChecked()) {
             mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
@@ -350,17 +350,17 @@ public class AuthActivity extends BaseActivity {
         saveUserInfoFromServer(userModelRes);
     }
 
-    private void onSilentLoginSuccess(UserUpdRes res) {
+    private void onSilentLoginSuccess(BaseModel<User> res) {
         Log.d(TAG, "onSilentLoginSuccess: ");
         mEditText_login_password.setText("");
-        User user = res.getUser();
+        User user = res.getData();
         Log.d(TAG, "onSilentLoginSuccess: " + user.getFirstName());
         Log.d(TAG, "onSilentLoginSuccess: " + (user.getPublicInfo() == null));
         mDataManager.getPreferencesManager().saveAllUserData(user);
         saveUserPhotosFromServer(user);
     }
 
-    private void saveUserInfoFromServer(@NonNull UserModelRes userModelRes) {
+    private void saveUserInfoFromServer(@NonNull BaseModel<UserAuthRes> userModelRes) {
 
         saveUserAuthData(userModelRes);
         User user = userModelRes.getData().getUser();
@@ -368,7 +368,7 @@ public class AuthActivity extends BaseActivity {
         saveUserPhotosFromServer(user);
     }
 
-    private void saveUserAuthData(@NonNull UserModelRes userModelRes) {
+    private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
         mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_BUILTIN);
         mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
                 userModelRes.getData().getUser().getId(),

@@ -7,7 +7,7 @@ public interface AppConfig {
 
     int MAX_LOGIN_TRIES = 3;
     int ERROR_VIBRATE_TIME = 500;
-    int REFRESH_DELAY = 500;
+    int REFRESH_DELAY = 100;
 
     String PATTERN_EMAIL = "^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";
     String PATTERN_VK_LINK = "^vk.com\\/\\w{3,}$";
