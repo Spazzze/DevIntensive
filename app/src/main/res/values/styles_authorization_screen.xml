@@ -20,17 +20,6 @@
         <item name="android:textSize">@dimen/font_normal_14</item>
     </style>
 
-    <style name="authorization_buttonEnter" parent="Base.Widget.AppCompat.Button">
-        <item name="colorButtonNormal">@color/color_accent</item>
-        <item name="android:textColor">@color/color_white</item>
-        <item name="android:background">@drawable/accent_button_rounded_corners_bg</item>
-        <item name="android:layout_gravity">center_horizontal</item>
-        <item name="android:layout_marginBottom">@dimen/spacing_small_8</item>
-        <item name="android:layout_marginTop">@dimen/spacing_medial_28</item>
-        <item name="android:paddingLeft">@dimen/spacing_bigger_40</item>
-        <item name="android:paddingRight">@dimen/spacing_bigger_40</item>
-    </style>
-
     <style name="authorization_buttonForgotPass">
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="android:textColor">@color/color_grey_light</item>

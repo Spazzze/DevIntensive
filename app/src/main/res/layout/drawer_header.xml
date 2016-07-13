@@ -29,13 +29,11 @@
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/menu_userName_txt"
             style="@style/navView_Text.header_Name"
-            android:text="@string/app_name"
             app:typeface="roboto_medium"/>
 
         <TextView
             android:id="@+id/menu_userEmail_txt"
-            style="@style/navView_Text.header_Email"
-            android:text="@string/dummy.profile_email"/>
+            style="@style/navView_Text.header_Email"/>
     </LinearLayout>
 
 </RelativeLayout>

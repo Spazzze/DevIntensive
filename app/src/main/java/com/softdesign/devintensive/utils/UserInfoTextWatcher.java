@@ -19,7 +19,7 @@ public class UserInfoTextWatcher implements TextWatcher {
             .getSimpleName();
     private static final int ERROR_TIMER_LENGTH = 3000;
     private static final int MAX_DIGITS_COUNT = 11;
-    private static final int MAX_SYMBOLS_COUNT = 16;
+    private static final int MAX_SYMBOLS_COUNT = 18;
     private static final String RUSSIAN_PHONE_CODE = "7";
     private static final String RUSSIAN_PHONE_CODE_2 = "8";
     private static final Handler ERROR_STOP_HANDLER = new Handler();
@@ -45,7 +45,6 @@ public class UserInfoTextWatcher implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-        if (!mEditText.isEnabled() && !mEditText.isFocusable()) return;
         switch (mEditText.getId()) {
             case R.id.phone_EditText:
                 validateAndReformatPhone(s);
@@ -106,7 +105,7 @@ public class UserInfoTextWatcher implements TextWatcher {
             }
         }
 
-        //Переформатируем номер в +7(ххх)ххх-хх-хх
+        //Переформатируем номер в +7 (ххх) ххх-хх-хх
 
         phone = phone.replaceAll("\\D", "");
 
@@ -195,7 +194,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      */
     private String isValidPhone(String phone) {
 
-        String checkPhone = phone.replaceAll("[\\(\\)\\-\\+]", "");
+        String checkPhone = phone.replaceAll("[\\(\\)\\-\\+\\s]", "");
 
         //Ошибка: вводите только цифры
         if (checkPhone.matches("(\\d*\\D\\d*)*")) {
@@ -223,7 +222,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format ***@**.**
      */
     private boolean isValidEmail(String email) {
-        String pattern = mResources.getString(R.string.pattern_email);
+        String pattern = AppConfig.PATTERN_EMAIL;
         return !TextUtils.isEmpty(email) && email.matches(pattern);
     }
 
@@ -232,7 +231,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format vk.com/***
      */
     private boolean isValidVK(String vk) {
-        String pattern = mResources.getString(R.string.pattern_link_vk);
+        String pattern = AppConfig.PATTERN_VK_LINK;
         return !TextUtils.isEmpty(vk) && vk.matches(pattern);
     }
 
@@ -241,7 +240,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format gitHub.com/***
      */
     private boolean isValidGitHub(String s) {
-        String pattern = mResources.getString(R.string.pattern_link_gitHub);
+        String pattern = AppConfig.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
     //endregion
@@ -253,6 +252,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @param errorType - error message
      */
     private void errorHandler(Boolean isError, final String errorType) {
+        if (!mEditText.isFocusable() && !mEditText.isEnabled()) return;
         if (isError) {
             mTextInputLayout.setErrorEnabled(true);
             mTextInputLayout.setError(errorType);
@@ -316,11 +316,12 @@ public class UserInfoTextWatcher implements TextWatcher {
             stringBuilder.append(countryCode);
         }
         if (mobileOperatorCode.length() > 0) {
+            if (countryCode.length() > 0) stringBuilder.append(" ");
             stringBuilder.append("(");
             stringBuilder.append(mobileOperatorCode);
         }
         if (firstNumberPart.length() > 0) {
-            stringBuilder.append(")");
+            stringBuilder.append(") ");
             stringBuilder.append(firstNumberPart);
         }
         if (secondNumberPart.length() > 0) {

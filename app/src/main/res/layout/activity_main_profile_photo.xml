@@ -18,7 +18,6 @@
         android:id="@+id/placeholder_profilePhoto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:onClick="submitButton"
         android:visibility="gone">
 
         <com.devspark.robototextview.widget.RobotoTextView
@@ -29,7 +28,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="@dimen/spacing_small_8"
             android:gravity="center"
-            android:text="@string/hint.profile_placeHolder"
+            android:text="@string/header.profile_placeHolder"
             app:typeface="roboto_medium" />
 
         <ImageView

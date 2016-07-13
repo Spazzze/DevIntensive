@@ -7,15 +7,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +33,9 @@ import java.util.Locale;
  * Helper class to work with UI
  */
 public class UiHelper {
+
+    private static final Context CONTEXT = DevIntensiveApplication.getContext();
+
     //region UI calculations
 
     /**
@@ -62,19 +70,18 @@ public class UiHelper {
      * @return minimum view height which this view needs to wrap its content
      */
     public static int getHeight(View v) {
-        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(screenWidth(v.getContext()), View.MeasureSpec.AT_MOST);
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(getScreenWidth(), View.MeasureSpec.AT_MOST);
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         v.measure(widthMeasureSpec, heightMeasureSpec);
         return v.getMeasuredHeight();
     }
 
     /**
-     * @param context cur context
      * @return current screen width
      */
     @SuppressWarnings("deprecation")
-    public static int screenWidth(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    public static int getScreenWidth() {
+        WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         int deviceWidth;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
@@ -93,22 +100,48 @@ public class UiHelper {
     /**
      * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
      *
-     * @param context context
      * @return file
      */
-    public static File createImageFile(Context context) throws IOException {
+    public static File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "IMG_" + timeStamp;
+        String imageFileName = "IMG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File image = new File(storageDir, imageFileName + ".png");
+        File image = File.createTempFile(imageFileName, ".png", storageDir);
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
         values.put(MediaStore.MediaColumns.DATA, image.getAbsolutePath());
 
-        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        CONTEXT.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
         return image;
+    }
+
+    public static File createFile(String fileName) throws IOException {
+        File image = new File(CONTEXT.getFilesDir(), fileName + ".png");
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.DATA, image.getAbsolutePath());
+
+        CONTEXT.getContentResolver().insert(MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+
+        return image;
+    }
+
+    public static String filePathFromUri(@NonNull Uri uri) {
+        String filePath = null;
+        if ("content".equals(uri.getScheme())) {
+            Cursor cursor = CONTEXT.getContentResolver().query(uri, new String[]{android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            if (cursor != null) {
+                cursor.moveToFirst();
+                filePath = cursor.getString(0);
+                cursor.close();
+            }
+        } else {
+            filePath = uri.getPath();
+        }
+        return filePath;
     }
     //endregion
 
@@ -151,6 +184,21 @@ public class UiHelper {
     public static void openApplicationSetting(Activity activity, int flag) {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()));
         activity.startActivityForResult(appSettingsIntent, flag);
+    }
+
+    //endregion
+
+    //region Converters
+    public static String getJsonFromObject(Object object, Class<?> typeClass) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.toJson(object, typeClass);
+    }
+
+    public static Object getObjectFromJson(String json, Class<?> typeClass) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.fromJson(json, typeClass);
     }
     //endregion
 }

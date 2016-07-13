@@ -33,7 +33,6 @@
         <ImageView
             android:id="@+id/makeCall_img"
             style="@style/profileItem_icon.right"
-            android:onClick="submitButton"
             android:src="@drawable/ic_phone_in_talk_black_24dp" />
     </LinearLayout>
 
@@ -65,7 +64,6 @@
         <ImageView
             android:id="@+id/sendEmail_img"
             style="@style/profileItem_icon.right"
-            android:onClick="submitButton"
             android:src="@drawable/ic_send_black_24dp" />
     </LinearLayout>
 
@@ -97,7 +95,6 @@
         <ImageView
             android:id="@+id/openVK_img"
             style="@style/profileItem_icon.right"
-            android:onClick="submitButton"
             android:src="@drawable/ic_remove_red_eye_black_24dp" />
     </LinearLayout>
 
@@ -129,7 +126,6 @@
         <ImageView
             android:id="@+id/openGitHub_img"
             style="@style/profileItem_icon.right"
-            android:onClick="submitButton"
             android:src="@drawable/ic_remove_red_eye_black_24dp" />
 
     </LinearLayout>

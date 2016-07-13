@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -42,7 +43,12 @@ import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
+import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.ErrorUtils;
+import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 import com.squareup.picasso.Picasso;
 
@@ -55,8 +61,15 @@ import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
+import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
 import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
@@ -64,8 +77,11 @@ public class MainActivity extends BaseActivity {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Main Activity";
 
+    @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
+
     @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText, R.id.about_EditText})
     List<EditText> mEditTexts_userInfoList;
+
     @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout, R.id.gitHub_TextInputLayout})
     List<TextInputLayout> mTextInputLayouts_userInfoList;
 
@@ -79,9 +95,12 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;
 
     private Boolean mCurrentEditMode = false;
+    private Boolean mNotSavingUserValues = false;
     private DataManager mDataManager;
     private File mPhotoFile = null;
-    private Uri mUri_SelectedImage = null;
+    private Uri mUri_SelectedProfileImage = null;
+    private String mUri_SelectedAvatarImage = null;
+    private User mUserData = null;
 
     //region OnCreate
     @Override
@@ -95,9 +114,9 @@ public class MainActivity extends BaseActivity {
         mDataManager = DataManager.getInstance();
 
         setupUserInfoLayout();
-        setupToolbar();
+        initUserProfileInfo();
         setupDrawer();
-        loadUserInfoValue();
+        setupToolbar();
 
         if (savedInstanceState != null) {
             mCurrentEditMode = savedInstanceState.getBoolean(ConstantManager.EDIT_MODE_KEY);
@@ -118,7 +137,7 @@ public class MainActivity extends BaseActivity {
             case ConstantManager.LOAD_PROFILE_PHOTO:
                 String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.hint_profile_placeHolder_loadPhotoDialog_title));
+                builder.setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title));
                 builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int chosenItem) {
@@ -151,7 +170,7 @@ public class MainActivity extends BaseActivity {
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.toolbar_logout:
-                logout();
+                logout(1);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -219,20 +238,14 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        if (!mDataManager.getPreferencesManager().checkAuthorizationStatus()) {
-            if (mDataManager.getPreferencesManager().getAuthorizationSystem().equals(ConstantManager.AUTH_GOOGLE)) {
-                startActivity(new Intent(this, AuthorizationActivity.class));
-            } else {
-                logout();
-            }
-        }
+        refresh();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        saveUserInfoValue();
+        saveUserInfoData();
     }
 
     @Override
@@ -273,10 +286,10 @@ public class MainActivity extends BaseActivity {
                             startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
                             break;
                         case R.id.navMenu_logout:
-                            logout();
+                            logout(1);
                             break;
                         default:
-                            showSnackBar(item.getTitle().toString());
+                            showToast(item.getTitle().toString());
                             item.setChecked(true);
                             break;
                     }
@@ -292,21 +305,30 @@ public class MainActivity extends BaseActivity {
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
+            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
             TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            mTextView_menuUserEmail.setText(mEditTexts_userInfoList.get(1).getEditableText().toString()); //drawer menu email change
+            mTextView_menuUserName.setText(MainActivity.this.getTitle());
+            mTextView_menuUserEmail.setText(mEditTexts_userInfoList.get(1).getText().toString()); //drawer menu email change
             setupMenuAvatar();
         }
     }
 
+    private void updateGitHubFields() {
+        //// TODO: 12.07.2016 переделать на ListView
+    }
+
     private void setupMenuAvatar() {    //setup menu avatar with rounded corners from picture
-        //// TODO: 08.07.2016 setup real avatar and get avatars from social info
+        //// TODO: 08.07.2016 get avatars from social info
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-            Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-            mRoundedAvatar_img.setImageDrawable(dr);
+            Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
+            if (src != null) {
+                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
+                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
+                mRoundedAvatar_img.setImageDrawable(dr);
+            }
+            /*Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);*/
         }
     }
 
@@ -336,9 +358,10 @@ public class MainActivity extends BaseActivity {
     }
 
     private void placeProfilePicture(Uri selectedImage) {
+        Log.d(TAG, "placeProfilePicture: " + selectedImage);
         Picasso.with(this)
                 .load(selectedImage)
-                .resize(getResources().getDimensionPixelSize(R.dimen.profileImage_size_256), getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
+                .fit()
                 .centerInside()
                 .placeholder(R.drawable.user_bg)
                 .into(mImageView_profilePhoto);
@@ -347,6 +370,33 @@ public class MainActivity extends BaseActivity {
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
+
+    private void refresh() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                placeProfilePicture(mUri_SelectedProfileImage);
+                updateGitHubFields();
+                updateDrawerItems();
+            }
+        }, AppConfig.REFRESH_DELAY);
+    }
+
+    static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
+        @Override
+        public void set(@NonNull TextView view, String[] value, int index) {
+            view.setText(value[index]);
+        }
+    };
+
+    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
+        @Override
+        public void set(@NonNull View view, Boolean value, int index) {
+            view.setEnabled(value);
+            view.setFocusable(value);
+            view.setFocusableInTouchMode(value);
+        }
+    };
 
     //endregion
 
@@ -359,26 +409,61 @@ public class MainActivity extends BaseActivity {
         outState.putBoolean(ConstantManager.EDIT_MODE_KEY, mCurrentEditMode);
     }
 
-    private void loadUserInfoValue() {
-        Log.d(TAG, "loadUserInfoValue");
-        List<String> userData = mDataManager.getPreferencesManager().loadUserProfileData();
+    private void initUserProfileInfo() {
+        Log.d(TAG, "initUserProfileInfo");
 
-        for (int i = 0; i < userData.size(); i++) {
-            mEditTexts_userInfoList.get(i).setText(userData.get(i));
-        }
-        placeProfilePicture(mDataManager.getPreferencesManager().loadUserPhoto());
+        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
+        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
+
+        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
+        if (mUserData == null) return;
+
+        List<String> userProfileDataList = new ArrayList<>();
+
+        userProfileDataList.add(mUserData.getContacts().getPhone());
+        userProfileDataList.add(mUserData.getContacts().getEmail());
+        userProfileDataList.add(mUserData.getContacts().getVk());
+        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
+        userProfileDataList.add(mUserData.getPublicInfo().getBio());
+
+        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+
+        String[] userProfileValuesList = {
+                String.valueOf(mUserData.getProfileValues().getRating()),
+                String.valueOf(mUserData.getProfileValues().getLinesCode()),
+                String.valueOf(mUserData.getProfileValues().getProjects())};
+
+        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
+
+        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
+        MainActivity.this.setTitle(userFullName);
     }
 
-    private void saveUserInfoValue() {
-        Log.d(TAG, "saveUserInfoValue");
+    private void saveUserInfoData() {
 
-        List<String> userData = new ArrayList<>();
-        for (int i = 0; i < mEditTexts_userInfoList.size(); i++) {
-            userData.add(mEditTexts_userInfoList.get(i).getText().toString());
+        if (mNotSavingUserValues) return;
+
+        Log.d(TAG, "saveUserInfoData");
+
+        if (!mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
+            Log.d(TAG, "saveUserInfoData: uploading avatar to server");
+            uploadUserAvatar(mUri_SelectedAvatarImage);
+            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
         }
-        mDataManager.getPreferencesManager().saveUserProfileData(userData);
-        mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
-        updateDrawerItems();
+        if (!mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
+            Log.d(TAG, "saveUserInfoData: uploading photo to server");
+            uploadUserPhoto(mUri_SelectedProfileImage);
+            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
+        }
+
+        mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
+        mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
+        mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
+        mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
+        mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+
+        mDataManager.getPreferencesManager().saveAllUserData(mUserData);
+        refresh();
     }
     //endregion
 
@@ -389,16 +474,14 @@ public class MainActivity extends BaseActivity {
         switch (requestCode) {
             case ConstantManager.REQUEST_GALLERY_PICTURE:
                 if (resultCode == RESULT_OK && data != null) {
-                    mUri_SelectedImage = data.getData();
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                    mUri_SelectedProfileImage = data.getData();
+                    placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
             case ConstantManager.REQUEST_CAMERA_PICTURE:
                 if (resultCode == RESULT_OK && mPhotoFile != null) {
-                    mUri_SelectedImage = Uri.fromFile(mPhotoFile);
-                    placeProfilePicture(mUri_SelectedImage);
-                    mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedImage);
+                    mUri_SelectedProfileImage = Uri.fromFile(mPhotoFile);
+                    placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
             case ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
@@ -435,6 +518,72 @@ public class MainActivity extends BaseActivity {
 
     //region functional methods
 
+    private void uploadUserPhoto(Uri uri_SelectedImage) {
+
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
+
+        File file = new File(filePathFromUri(uri_SelectedImage));
+
+        final RequestBody requestFile =
+                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+
+        Call<UserPhotoRes> call = mDataManager.uploadUserPhoto(
+                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
+        call.enqueue(new Callback<UserPhotoRes>() {
+            @Override
+            public void onResponse(Call<UserPhotoRes> call,
+                                   Response<UserPhotoRes> response) {
+                //// TODO: 12.07.2016 обработать успешный респонс
+                if (!response.isSuccessful()) {
+                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
+                    showToast(error.getErrMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                logout(0);
+            }
+        });
+    }
+
+    private void uploadUserAvatar(String uri_SelectedImage) {
+
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
+
+        File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
+
+        final RequestBody requestFile =
+                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+
+        Call<UserPhotoRes> call = mDataManager.uploadUserAvatar(
+                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
+        call.enqueue(new Callback<UserPhotoRes>() {
+            @Override
+            public void onResponse(Call<UserPhotoRes> call,
+                                   Response<UserPhotoRes> response) {
+                //// TODO: 12.07.2016 обработать успешный респонс
+                if (!response.isSuccessful()) {
+                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
+                    showToast(error.getErrMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserPhotoRes> call, Throwable t) {
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                logout(0);
+            }
+        });
+    }
+
     /**
      * enables or disables editing profile info
      *
@@ -453,7 +602,7 @@ public class MainActivity extends BaseActivity {
             ButterKnife.apply(mEditTexts_userInfoList, setEnabledViews, true);
             mEditTexts_userInfoList.get(0).requestFocus();
         } else {    //stop edit mode
-            saveUserInfoValue();
+            saveUserInfoData();
             mFloatingActionButton.setImageResource(R.drawable.ic_edit_black_24dp);
             hideProfilePhotoPlaceholder();
             mCollapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.color_white));
@@ -469,20 +618,11 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
-        @Override
-        public void set(@NonNull View view, Boolean value, int index) {
-            view.setEnabled(value);
-            view.setFocusable(value);
-            view.setFocusableInTouchMode(value);
-        }
-    };
-
     private void loadPhotoFromGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.hint_choosePhotoFromGallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -502,9 +642,9 @@ public class MainActivity extends BaseActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             try {
-                mPhotoFile = createImageFile(this);
+                mPhotoFile = createImageFile();
             } catch (IOException e) {
-                showSnackBar(getString(R.string.error_cannot_create_file) + e.getMessage());
+                showSnackBar(getString(R.string.error_cannot_save_file) + e.getMessage());
             }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
@@ -539,9 +679,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void logout() {
-        mDataManager.getPreferencesManager().removeCurrentAuthorization();
-        startActivity(new Intent(this, AuthorizationActivity.class));
+    private void logout(int mode) {
+        Log.d(TAG, "logout: ");
+        mNotSavingUserValues = true;
+        if (mode == 1)
+            mDataManager.getPreferencesManager().totalLogout();
+        else mDataManager.getPreferencesManager().softLogout();
+        startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion
 }

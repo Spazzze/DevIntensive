@@ -38,7 +38,8 @@ class NestedScrollViewBehavior extends AppBarLayout.ScrollingViewBehavior {
         } else {
             return false;
         }
-        child.setY(dependency.getTranslationY() + dependency.getHeight());
+        lp.topMargin = dependency.getBottom();
+        child.setLayoutParams(lp);
         return super.onDependentViewChanged(parent, child, dependency);
     }
 }

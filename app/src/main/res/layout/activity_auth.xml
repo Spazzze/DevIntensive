@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_CoordinatorL"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_grey_background"
+    android:fitsSystemWindows="true"
+    tools:ignore="contentDescription">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!-- Fullscreen background img -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/login_bg" />
+
+        <!-- Authorization Box -->
+        <android.support.v7.widget.CardView
+            android:id="@+id/authorization_box"
+            android:layout_width="@dimen/auth_cardView_size_240"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="@color/color_white"
+            app:cardCornerRadius="@dimen/corner_radius_2"
+            app:cardElevation="@dimen/spacing_small_8"
+            app:cardPreventCornerOverlap="false">
+
+            <!-- All LL-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/spacing_medial_24">
+
+                <!-- Header 'ENTER' box -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_small_8"
+                    android:layout_marginRight="@dimen/spacing_medial_24"
+                    android:orientation="horizontal">
+
+                    <!--Small orange box-->
+                    <View
+                        android:id="@+id/login_indicator"
+                        android:layout_width="@dimen/spacing_tiny_4"
+                        android:layout_height="match_parent"
+                        android:background="@color/color_accent" />
+
+                    <!--Text ENTER-->
+                    <com.devspark.robototextview.widget.RobotoTextView
+                        android:id="@+id/auth_enter_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/spacing_medial_24"
+                        android:text="@string/header.login"
+                        android:textAllCaps="true"
+                        android:textColor="@color/color_accent"
+                        android:textSize="@dimen/font_medium_20"
+                        app:typeface="roboto_medium" />
+
+                    <!--Social sign-in buttons-->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right">
+
+                        <!--VK-->
+                        <ImageView
+                            android:id="@+id/signIn_vk_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_vk_colored_24" />
+
+                        <!--Google-->
+                        <ImageView
+                            android:id="@+id/signIn_google_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_google_plus_box_colored_24" />
+
+                        <!--Facebook-->
+                        <ImageView
+                            android:id="@+id/singIn_fb_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_facebook_box_colored_24" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- All others -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/spacing_medial_24"
+                    android:paddingLeft="@dimen/spacing_medial_24"
+                    android:paddingRight="@dimen/spacing_medial_24">
+
+                    <!-- Login -->
+                    <LinearLayout
+                        style="@style/authorization_LL_infoBox"
+                        android:layout_marginBottom="@dimen/spacing_small_8">
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <EditText
+                                android:id="@+id/auth_email_editText"
+                                style="@style/authorization_editText"
+                                android:hint="@string/hint.profile_email"
+                                android:inputType="textEmailAddress" />
+
+                        </android.support.design.widget.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Password -->
+                    <LinearLayout style="@style/authorization_LL_infoBox">
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <EditText
+                                android:id="@+id/auth_password_editText"
+                                style="@style/authorization_editText"
+                                android:hint="@string/hint.authorization_password"
+                                android:inputType="textPassword" />
+
+                        </android.support.design.widget.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <CheckBox
+                        android:id="@+id/save_login_checkbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_small_8"
+                        android:layout_marginRight="@dimen/spacing_small_8"
+                        android:checked="false"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="@string/header.auth_save_email"
+                        android:textColor="@color/color_grey_light" />
+
+                    <!-- Button 'ENTER' -->
+                    <com.devspark.robototextview.widget.RobotoButton
+                        android:id="@+id/login_button"
+                        style="@style/AppTheme.Button.Red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_normal_16"
+                        android:gravity="center"
+                        android:minWidth="@dimen/button_width_126"
+                        android:text="@string/header.login"
+                        android:textAllCaps="true"
+                        android:theme="@style/AppTheme.Button.Red"
+                        app:typeface="roboto_medium" />
+
+                    <!-- Forgotten password -->
+                    <TextView
+                        android:id="@+id/forgot_pass_button"
+                        style="@style/authorization_buttonForgotPass"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/header.auth_forgot_password" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+    </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -8,18 +8,21 @@ public interface ConstantManager {
     String TAG_PREFIX = "DEV ";
 
     //Shared preferences constants
-    String USER_PHONE_KEY = "USER_PHONE_KEY";
-    String USER_EMAIL_KEY = "USER_EMAIL_KEY";
-    String USER_GITHUB_KEY = "USER_GITHUB_KEY";
-    String USER_VK_KEY = "USER_VK_KEY";
-    String USER_ABOUT_KEY = "USER_ABOUT_KEY";
+    String USER_JSON_OBJ = "USER_JSON_OBJ";
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
+    String USER_PROFILE_AVATAR_URI = "USER_PROFILE_AVATAR_URI";
+
     String AUTHORIZATION_SYSTEM = "AUTHORIZATION_SYSTEM";
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
-    String GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";
     String GOOGLE_ACCESS_ACC_NAME = "GOOGLE_ACCESS_ACC_NAME";
     String GOOGLE_ACCESS_ACC_TYPE = "GOOGLE_ACCESS_ACC_TYPE";
+    String GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";
+    String BUILTIN_ACCESS_USER_ID = "BUILTIN_ACCESS_USER_ID";
+    String BUILTIN_ACCESS_TOKEN = "BUILTIN_ACCESS_TOKEN";
+    String SAVE_LOGIN = "SAVE_LOGIN";
+    String SAVED_LOGIN_NAME = "SAVED_LOGIN_NAME";
+
 
     //Authorization systems
     String AUTH_VK = "AUTH_VK";
@@ -46,4 +49,8 @@ public interface ConstantManager {
     String G_PLUS_SCOPE = "oauth2:https://www.googleapis.com/auth/plus.me";
     String USER_INFO_SCOPE = "https://www.googleapis.com/auth/userinfo.profile";
     String EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
+
+    //Some of http response constants
+    int HTTP_RESPONSE_NOT_FOUND = 404;
+
 }
