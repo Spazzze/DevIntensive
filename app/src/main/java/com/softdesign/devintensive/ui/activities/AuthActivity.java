@@ -246,6 +246,38 @@ public class AuthActivity extends BaseActivity {
         });
     }
 
+    private void silentLogin() {
+        Log.d(TAG, "silentLogin: ");
+
+        String userId = mDataManager.getPreferencesManager().loadBuiltInAuthId();
+
+        if (userId == null || userId.isEmpty()) return;
+
+        showProgressDialog();
+
+        Call<UserUpdRes> call = mDataManager.getUserData(userId);
+
+        call.enqueue(new Callback<UserUpdRes>() {
+            @Override
+            public void onResponse(Call<UserUpdRes> call,
+                                   Response<UserUpdRes> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "onResponse: " + response.body().getUser().getPublicInfo().getAvatar());
+                    onSilentLoginSuccess(response.body());
+                } else {
+                    hideProgressDialog();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserUpdRes> call, Throwable t) {
+                hideProgressDialog();
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                Log.d(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+            }
+        });
+    }
+
     private void forgotPassword() {  //// TODO: 10.07.2016 переделать в отдельную форму
         Intent forgotPassIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AppConfig.FORGOT_PASS_URL));
         startActivity(forgotPassIntent);
@@ -277,34 +309,6 @@ public class AuthActivity extends BaseActivity {
                 startActivityForResult(intent, ConstantManager.REQUEST_GOOGLE_SIGN_IN);
             }
         }
-    }
-
-    private void silentLogin() {
-        Log.d(TAG, "silentLogin: ");
-
-        showProgressDialog();
-
-        Call<UserUpdRes> call = mDataManager.getUserData(mDataManager.getPreferencesManager().loadBuiltInAuthId());
-
-        call.enqueue(new Callback<UserUpdRes>() {
-            @Override
-            public void onResponse(Call<UserUpdRes> call,
-                                   Response<UserUpdRes> response) {
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "onResponse: " + response.body().getUser().getPublicInfo().getAvatar());
-                    onSilentLoginSuccess(response.body());
-                } else {
-                    hideProgressDialog();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserUpdRes> call, Throwable t) {
-                hideProgressDialog();
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                Log.d(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-            }
-        });
     }
     //endregion
 

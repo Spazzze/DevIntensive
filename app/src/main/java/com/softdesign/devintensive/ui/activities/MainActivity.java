@@ -518,6 +518,7 @@ public class MainActivity extends BaseActivity {
 
     //region functional methods
 
+    //region Network
     private void uploadUserPhoto(Uri uri_SelectedImage) {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
@@ -536,10 +537,12 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResponse(Call<UserPhotoRes> call,
                                    Response<UserPhotoRes> response) {
-                //// TODO: 12.07.2016 обработать успешный респонс
-                if (!response.isSuccessful()) {
+                if (response.isSuccessful()) {
+                    mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
+                } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
                     showToast(error.getErrMessage());
+                    logout(0);
                 }
             }
 
@@ -569,10 +572,12 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResponse(Call<UserPhotoRes> call,
                                    Response<UserPhotoRes> response) {
-                //// TODO: 12.07.2016 обработать успешный респонс
-                if (!response.isSuccessful()) {
+                if (response.isSuccessful()) {
+                    mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
+                } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
                     showToast(error.getErrMessage());
+                    logout(0);
                 }
             }
 
@@ -583,6 +588,7 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+    //endregion
 
     /**
      * enables or disables editing profile info

@@ -7,18 +7,30 @@ public class UserPhotoRes {
 
     @SerializedName("success")
     @Expose
-    public Boolean success;
+    private Boolean success;
     @SerializedName("data")
     @Expose
-    public Data data;
+    private Data data;
+
+    public Data getData() {
+        return data;
+    }
 
     public class Data {
 
         @SerializedName("photo")
         @Expose
-        public String photo;
+        private String photo;
         @SerializedName("updated")
         @Expose
-        public String updated;
+        private String updated;
+
+        public String getPhoto() {
+            return photo;
+        }
+
+        public String getUpdated() {
+            return updated;
+        }
     }
 }

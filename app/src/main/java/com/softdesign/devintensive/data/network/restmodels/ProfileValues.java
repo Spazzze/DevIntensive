@@ -33,4 +33,12 @@ public class ProfileValues {
     public int getProjects() {
         return projects;
     }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
 }

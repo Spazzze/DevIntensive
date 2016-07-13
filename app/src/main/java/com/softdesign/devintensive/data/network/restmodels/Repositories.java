@@ -19,4 +19,12 @@ public class Repositories {
     public List<Repo> getRepo() {
         return repo;
     }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
 }
