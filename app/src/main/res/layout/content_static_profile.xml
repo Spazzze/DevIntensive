@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nested_scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior"
+    tools:ignore="contentDescription">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <!-- GitHub -->
+    <LinearLayout style="@style/profileItem">
+
+        <ImageView
+            style="@style/profileItem_icon.left"
+            android:src="@drawable/ic_github_circle" />
+
+        <ListView
+            android:id="@+id/repo_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_medium_32"
+            android:layout_marginStart="@dimen/spacing_medium_32">
+
+        </ListView>
+
+
+    </LinearLayout>
+
+    <View style="@style/profileItem_lineSeparator" />
+
+    <!-- About -->
+    <LinearLayout style="@style/profileItem">
+
+        <ImageView
+            style="@style/profileItem_icon.left"
+            android:src="@drawable/ic_account_circle" />
+
+        <LinearLayout style="@style/profileItem_LL_infoBox">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/about_EditText"
+                    style="@style/profileItem_editText"
+                    android:hint="@string/hint.profile_about" />
+            </android.support.design.widget.TextInputLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

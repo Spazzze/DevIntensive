@@ -116,6 +116,7 @@
             android:paddingLeft="@dimen/spacing_normal_16"
             android:paddingRight="@dimen/spacing_normal_16"
             android:paddingTop="@dimen/spacing_small_8"
+            android:paddingBottom="@dimen/spacing_normal_16"
             android:text="@string/dummy.profile_about"
             android:textColor="@color/color_grey_light"
             android:textSize="@dimen/font_normal_14" />
@@ -125,7 +126,6 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="@dimen/spacing_small_8"
-            android:layout_marginTop="@dimen/spacing_normal_16"
             android:background="@color/color_grey_light" />
 
         <!--Button view-->
@@ -138,6 +138,7 @@
             android:paddingRight="@dimen/spacing_normal_16"
             android:text="@string/header.view"
             android:textColor="@color/color_accent" />
+
     </LinearLayout>
 
 </android.support.v7.widget.CardView>

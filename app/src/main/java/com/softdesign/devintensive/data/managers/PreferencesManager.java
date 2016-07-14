@@ -127,7 +127,6 @@ public class PreferencesManager {
     //region Vk Auth
     public void saveVKAuthorizationInfo(VKAccessToken res) {
         if (res != null) {
-            saveAuthorizationSystem(ConstantManager.AUTH_VK);
             res.saveTokenToSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
         }
     }
@@ -140,7 +139,6 @@ public class PreferencesManager {
     //region Google Auth
     public void saveGoogleAuthorizationInfo(String accountName, String accountType, String token) {
         if (token != null && accountName != null && accountType != null) {
-            saveAuthorizationSystem(ConstantManager.AUTH_GOOGLE);
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_NAME, accountName);
             editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_TYPE, accountType);
@@ -157,26 +155,9 @@ public class PreferencesManager {
         return authDataList;
     }
 
-    public void removeGoogleAuthorizationOnDestroy() {
-        //removing google token on exit
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.remove(ConstantManager.GOOGLE_ACCESS_TOKEN);
-        editor.apply();
-    }
     //endregion
 
     //region General auth methods
-    public void saveAuthorizationSystem(String system) {
-        if (system != null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.AUTHORIZATION_SYSTEM, system);
-            editor.apply();
-        }
-    }
-
-    public String getAuthorizationSystem() {
-        return mSharedPreferences.getString(ConstantManager.AUTHORIZATION_SYSTEM, "");
-    }
 
     public void softLogout() {
         SharedPreferences.Editor editor = mSharedPreferences.edit();

@@ -12,8 +12,8 @@ public interface ConstantManager {
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
     String USER_PROFILE_AVATAR_URI = "USER_PROFILE_AVATAR_URI";
+    String PARCELABLE_KEY = "PARCELABLE_KEY";
 
-    String AUTHORIZATION_SYSTEM = "AUTHORIZATION_SYSTEM";
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
     String GOOGLE_ACCESS_ACC_NAME = "GOOGLE_ACCESS_ACC_NAME";
     String GOOGLE_ACCESS_ACC_TYPE = "GOOGLE_ACCESS_ACC_TYPE";
@@ -23,11 +23,6 @@ public interface ConstantManager {
     String SAVE_LOGIN = "SAVE_LOGIN";
     String SAVED_LOGIN_NAME = "SAVED_LOGIN_NAME";
 
-    //Authorization systems
-    String AUTH_VK = "AUTH_VK";
-    String AUTH_FACEBOOK = "AUTH_FACEBOOK";
-    String AUTH_GOOGLE = "AUTH_GOOGLE";
-    String AUTH_BUILTIN = "AUTH_BUILTIN";
 
     //Dialog constants
     int LOAD_PROFILE_PHOTO = 1;

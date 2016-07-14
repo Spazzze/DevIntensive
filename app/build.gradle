@@ -15,7 +15,7 @@ android {
         resConfigs "en", "ru"
     }
     buildTypes {
-        debug {
+/*        debug {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -24,7 +24,7 @@ android {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        }*/
     }
 }
 

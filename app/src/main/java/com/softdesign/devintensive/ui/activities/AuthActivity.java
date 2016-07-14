@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
@@ -53,7 +52,6 @@ import com.vk.sdk.api.VKError;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -107,7 +105,6 @@ public class AuthActivity extends BaseActivity {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
                         showToast(getString(R.string.notify_auth_by_Facebook));
-                        mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_FACEBOOK);
                     }
 
                     @Override
@@ -180,7 +177,6 @@ public class AuthActivity extends BaseActivity {
                 protected void onPostExecute(String token) {
                     mDataManager.getPreferencesManager().saveGoogleAuthorizationInfo(accountName, accountType, token);
                     showToast(getString(R.string.notify_auth_by_Google));
-                    startActivity(new Intent(AuthActivity.this, MainActivity.class));
                 }
             };
             getToken.execute(null, null, null);
@@ -296,20 +292,6 @@ public class AuthActivity extends BaseActivity {
         startActivityForResult(intent, ConstantManager.REQUEST_GOOGLE_SIGN_IN);
     }
 
-    /**
-     * implemented silent login but "android.permission.GET_ACCOUNTS" is required
-     */
-    private void googleSilentSignIn() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED) {
-            List<String> currentGoogleAuthData = mDataManager.getPreferencesManager().loadGoogleAuthorizationInfo();
-            if (!(currentGoogleAuthData.get(0)).isEmpty() && !(currentGoogleAuthData.get(1)).isEmpty()) {
-                Account selectedAccount = new Account(currentGoogleAuthData.get(0), currentGoogleAuthData.get(1));
-                Intent intent = AccountPicker.newChooseAccountIntent(selectedAccount, null, new String[]{"com.google"},
-                        false, null, null, null, null);
-                startActivityForResult(intent, ConstantManager.REQUEST_GOOGLE_SIGN_IN);
-            }
-        }
-    }
     //endregion
 
     //region Ui methods
@@ -369,7 +351,6 @@ public class AuthActivity extends BaseActivity {
     }
 
     private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
-        mDataManager.getPreferencesManager().saveAuthorizationSystem(ConstantManager.AUTH_BUILTIN);
         mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
                 userModelRes.getData().getUser().getId(),
                 userModelRes.getData().getToken()
@@ -399,10 +380,13 @@ public class AuthActivity extends BaseActivity {
         };
         mImageView_vk.setTag(photoTarget);
 
+        int photoWidth = getScreenWidth();
+        int photoHeight = (int) (photoWidth / ConstantManager.ASPECT_RATIO_3_2);
+
         Picasso.with(this)
                 .load(Uri.parse(pathToPhoto))
-                .resize(getScreenWidth(),
-                        getResources().getDimensionPixelSize(R.dimen.profileImage_size_256))
+                .resize(photoWidth,
+                        photoHeight)
                 .centerCrop()
                 .into(photoTarget);
 

@@ -34,7 +34,9 @@
     <dimen name="spacing_medium_32">32dp</dimen>
     <dimen name="spacing_bigger_40">40dp</dimen>
     <dimen name="spacing_large_56">56dp</dimen>
+    <dimen name="spacing_large_64">64dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
+    <dimen name="spacing_larger_80">80dp</dimen>
 
     <!-- Corner Radius -->
     <dimen name="corner_radius_2">2dp</dimen>
@@ -44,7 +46,7 @@
 
     <!-- Profile -->
     <dimen name="profileImage_size_256">256dp</dimen>
-    <dimen name="change_profile_photo_ic_size_90">40dp</dimen>
+    <dimen name="change_profile_photo_ic_size_90">90dp</dimen>
     <dimen name="fab_right_space">8dp</dimen>
 
     <!-- Auth Screen -->

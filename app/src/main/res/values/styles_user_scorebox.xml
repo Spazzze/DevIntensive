@@ -33,7 +33,7 @@
 
     <style name="scoreBox_lineSeparator">
         <item name="android:layout_width">@dimen/line_size_1</item>
-        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_height">@dimen/size_medium_56</item>
         <item name="android:background">@color/color_grey_light</item>
     </style>
 

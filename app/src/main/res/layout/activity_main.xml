@@ -29,7 +29,7 @@
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <!-- Photo -->
-                <include layout="@layout/activity_main_profile_photo" />
+                <include layout="@layout/content_profile_photo" />
 
                 <!-- Toolbar -->
                 <android.support.v7.widget.Toolbar
@@ -45,29 +45,10 @@
         </android.support.design.widget.AppBarLayout>
 
         <!-- ScoreBox -->
-        <LinearLayout
-            android:id="@+id/scoreBox_layout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/size_huge_112"
-            android:background="@color/color_grey"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior">
-
-            <include layout="@layout/activity_main_scorebox_layout" />
-
-        </LinearLayout>
+        <include layout="@layout/content_score_box_layout" />
 
         <!-- NestedScrollView with User Info inside -->
-        <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/nested_scroll_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior">
-
-            <include layout="@layout/activity_main_userinfo_layout" />
-
-        </android.support.v4.widget.NestedScrollView>
+        <include layout="@layout/content_main_profile_layout" />
 
         <!-- FloatingActionButton -->
         <android.support.design.widget.FloatingActionButton
@@ -75,6 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/fab_right_space"
+            android:layout_marginEnd="@dimen/fab_right_space"
             android:src="@drawable/ic_edit_black_24dp"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right" />

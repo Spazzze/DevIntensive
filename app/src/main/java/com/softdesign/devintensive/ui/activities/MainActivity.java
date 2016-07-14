@@ -259,7 +259,6 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
-        mDataManager.getPreferencesManager().removeGoogleAuthorizationOnDestroy();
     }
     //endregion
 
@@ -283,6 +282,9 @@ public class MainActivity extends BaseActivity {
                 @Override
                 public boolean onNavigationItemSelected(MenuItem item) {
                     switch (item.getItemId()) {
+                        case R.id.navMenu_team:
+                            startActivity(new Intent(MainActivity.this, UserListActivity.class));
+                            break;
                         case R.id.navMenu_options:
                             startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
                             break;
@@ -320,10 +322,6 @@ public class MainActivity extends BaseActivity {
                 mRoundedAvatar_img.setImageDrawable(dr);
             }
         }
-    }
-
-    private void updateGitHubFields() {
-        //// TODO: 12.07.2016 переделать на ListView
     }
 
     private void setupUserInfoLayout() {
@@ -370,7 +368,6 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 placeProfilePicture(mUri_SelectedProfileImage);
-                updateGitHubFields();
                 updateDrawerItems();
             }
         }, AppConfig.REFRESH_DELAY);

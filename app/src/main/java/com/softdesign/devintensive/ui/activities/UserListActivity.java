@@ -15,6 +15,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,8 +29,10 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
 import java.util.List;
@@ -53,7 +56,6 @@ public class UserListActivity extends BaseActivity {
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
     private List<UserListRes> mUsers;
-    private Boolean mNotSavingUserValues = false;
     private User mUserData;
 
     //region OnCreate
@@ -66,9 +68,13 @@ public class UserListActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
 
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(llm);
+
         initUserProfileInfo();
         setupDrawer();
         setupToolbar();
+        loadUsers();
     }
 
     @Override
@@ -99,7 +105,8 @@ public class UserListActivity extends BaseActivity {
                 public boolean onNavigationItemSelected(MenuItem item) {
                     switch (item.getItemId()) {
                         case R.id.navMenu_userProfile:
-                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            startActivity(new Intent(UserListActivity.this, MainActivity.class));
+                            break;
                         case R.id.navMenu_options:
                             startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
                             break;
@@ -180,38 +187,49 @@ public class UserListActivity extends BaseActivity {
 
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
-        mNotSavingUserValues = true;
         if (mode == 1)
             mDataManager.getPreferencesManager().totalLogout();
         else mDataManager.getPreferencesManager().softLogout();
         startActivity(new Intent(this, AuthActivity.class));
     }
 
-    private void loadUsers(){
+    private void loadUsers() {
 
         Call<BaseListModel<UserListRes>> call = mDataManager.getUserList();
-
+        showProgressDialog();
         call.enqueue(new Callback<BaseListModel<UserListRes>>() {
-            @Override
-            public void onResponse(Call<BaseListModel<UserListRes>> call, Response<BaseListModel<UserListRes>> response) {
-                try {
-                    mUsers = response.body().getData();
-                    mUsersAdapter = new UsersAdapter(mUsers);
-                    mRecyclerView.setAdapter(mUsersAdapter);
-                } catch (Exception e) {
-                    Log.e(TAG, "onResponse: " + e.getMessage() );
-                    e.printStackTrace();
-                }
-            }
+                         @Override
+                         public void onResponse(Call<BaseListModel<UserListRes>> call, Response<BaseListModel<UserListRes>> response) {
+                             hideProgressDialog();
+                             if (response.isSuccessful()) {
+                                 mUsers = response.body().getData();
+                                 mUsersAdapter = new UsersAdapter(mUsers, new UsersAdapter.UserViewHolder.CustomClickListener() {
+                                     @Override
+                                     public void onUserItemClickListener(int position) {
+                                         UserDTO userDTO = new UserDTO(mUsers.get(position));
+                                         Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
+                                         profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                                         startActivity(profileUserIntent);
+                                     }
+                                 });
+                                 mRecyclerView.setAdapter(mUsersAdapter);
+                             } else {
+                                 hideProgressDialog();
+                                 ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
+                                 showToast(error.getErrMessage());
+                             }
+                         }
 
-            @Override
-            public void onFailure(Call<BaseListModel<UserListRes>> call, Throwable t) {
-                if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
-                    showSnackBar(getString(R.string.error_no_network_connection));
-                } else
-                    showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-            }
-        });
+                         @Override
+                         public void onFailure(Call<BaseListModel<UserListRes>> call, Throwable t) {
+                             hideProgressDialog();
+                             if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
+                                 showSnackBar(getString(R.string.error_no_network_connection));
+                             } else
+                                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                         }
+                     }
 
+        );
     }
 }

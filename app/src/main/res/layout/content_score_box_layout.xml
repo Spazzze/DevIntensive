@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scoreBox_layout"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/size_medium_56"
-    android:orientation="horizontal">
+    android:layout_height="@dimen/size_huge_112"
+    android:background="@color/color_grey"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior">
 
     <!-- Rating -->
     <LinearLayout
@@ -11,15 +16,15 @@
 
         <TextView
             android:id="@+id/scoreBox_rating"
-            style="@style/scoreBox_text.count"/>
+            style="@style/scoreBox_text.count" />
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/header.scoreBox_ratingText"/>
+            android:text="@string/header.scoreBox_ratingText" />
 
     </LinearLayout>
 
-    <View style="@style/scoreBox_lineSeparator"/>
+    <View style="@style/scoreBox_lineSeparator" />
 
     <!-- Lines of code -->
     <LinearLayout
@@ -28,15 +33,15 @@
 
         <TextView
             android:id="@+id/scoreBox_codeLines"
-            style="@style/scoreBox_text.count"/>
+            style="@style/scoreBox_text.count" />
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/header.scoreBox_codeText"/>
+            android:text="@string/header.scoreBox_codeText" />
 
     </LinearLayout>
 
-    <View style="@style/scoreBox_lineSeparator"/>
+    <View style="@style/scoreBox_lineSeparator" />
 
     <!-- Projects -->
     <LinearLayout
@@ -45,11 +50,11 @@
 
         <TextView
             android:id="@+id/scoreBox_projects"
-            style="@style/scoreBox_text.count"/>
+            style="@style/scoreBox_text.count" />
 
         <TextView
             style="@style/scoreBox_text"
-            android:text="@string/header.scoreBox_projectsText"/>
+            android:text="@string/header.scoreBox_projectsText" />
 
     </LinearLayout>
 
