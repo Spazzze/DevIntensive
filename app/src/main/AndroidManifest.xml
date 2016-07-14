@@ -59,16 +59,6 @@
             android:label="ServiceActivity"
             android:theme="@style/VK.Transparent" />
 
-        <!--FacebookActivity-->
-        <activity
-            android:name="com.facebook.FacebookActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:label="@string/dummy.app_name"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <!--facebook meta-data-->
-        <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id" />
 
     </application>
 

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
-import com.facebook.login.LoginManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -69,8 +68,6 @@ public class PreferencesManager {
         else return "";
     }
     //endregion
-
-
 
     //region User Photo
     public void saveUserPhoto(Uri uri) {
@@ -136,27 +133,6 @@ public class PreferencesManager {
     }
     //endregion
 
-    //region Google Auth
-    public void saveGoogleAuthorizationInfo(String accountName, String accountType, String token) {
-        if (token != null && accountName != null && accountType != null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_NAME, accountName);
-            editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_TYPE, accountType);
-            editor.putString(ConstantManager.GOOGLE_ACCESS_TOKEN, token);
-            editor.apply();
-        }
-    }
-
-    public List<String> loadGoogleAuthorizationInfo() {
-        List<String> authDataList = new ArrayList<>();
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_ACC_NAME, ""));
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_ACC_TYPE, ""));
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_TOKEN, ""));
-        return authDataList;
-    }
-
-    //endregion
-
     //region General auth methods
 
     public void softLogout() {
@@ -184,7 +160,6 @@ public class PreferencesManager {
     public void totalLogout() {
         //removing all received tokens and auth status
         VKSdk.logout();                         //vk logout
-        LoginManager.getInstance().logOut();    //fb logout
         VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.clear().apply();
