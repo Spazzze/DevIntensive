@@ -106,8 +106,7 @@ public class AuthActivity extends BaseActivity {
     @Override
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if //vk sign in
-                (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
+        if (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
                 showToast(getString(R.string.notify_auth_by_VK));
@@ -282,6 +281,7 @@ public class AuthActivity extends BaseActivity {
                 hideProgressDialog();
                 showToast(getString(R.string.notify_auth_successful));
                 startActivity(new Intent(AuthActivity.this, MainActivity.class));
+                AuthActivity.this.finish();
             }
 
             @Override
