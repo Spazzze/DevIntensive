@@ -29,6 +29,7 @@
             <!--FullName-->
             <com.devspark.robototextview.widget.RobotoTextView
                 android:id="@+id/list_user_full_name_text"
+                style="@style/Shadowed_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -113,10 +114,10 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
             android:maxLines="3"
+            android:paddingBottom="@dimen/spacing_normal_16"
             android:paddingLeft="@dimen/spacing_normal_16"
             android:paddingRight="@dimen/spacing_normal_16"
             android:paddingTop="@dimen/spacing_small_8"
-            android:paddingBottom="@dimen/spacing_normal_16"
             android:text="@string/dummy.profile_about"
             android:textColor="@color/color_grey_light"
             android:textSize="@dimen/font_normal_14" />

@@ -33,6 +33,15 @@
         <item name="android:fullDark">@android:color/transparent</item>
     </style>
 
+    <!--Shadowed text-->
+    <style name="Shadowed_text">
+        <item name="android:textColor">@color/color_white</item>
+        <item name="android:shadowColor">@color/color_black</item>
+        <item name="android:shadowDx">8</item>
+        <item name="android:shadowDy">8</item>
+        <item name="android:shadowRadius">20</item>
+    </style>
+
     <!--ProfilePhoto placeholder shadowed text-->
     <style name="Placeholder_profilePhoto_OverlayText">
         <item name="android:textColor">@color/color_white</item>
