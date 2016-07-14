@@ -15,11 +15,20 @@
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="android:gravity">center</item>
         <item name="android:textColor">@color/color_white</item>
-        <item name="android:textSize">@dimen/font_normal_16</item>
+        <item name="android:textSize">@dimen/font_normal_14</item>
     </style>
 
     <style name="scoreBox_text.count" parent="scoreBox_text">
+        <item name="android:text">@string/dummy.scoreBox_zero_text</item>
         <item name="android:textSize">@dimen/font_medium_24</item>
+    </style>
+
+    <style name="scoreBox_text.black" parent="scoreBox_text">
+        <item name="android:textColor">@color/color_black</item>
+    </style>
+
+    <style name="scoreBox_text.count.black" parent="scoreBox_text.count">
+        <item name="android:textColor">@color/color_black</item>
     </style>
 
     <style name="scoreBox_lineSeparator">

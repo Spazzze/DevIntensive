@@ -12,11 +12,11 @@ import com.softdesign.devintensive.utils.ConstantManager;
 /**
  * Behavior to link Nested scroll to bottom edge of LinearLayout
  */
-class NestedScrollViewBehavior extends AppBarLayout.ScrollingViewBehavior {
+class CustomNestedScrollViewBehavior extends AppBarLayout.ScrollingViewBehavior {
 
     private final static String TAG = ConstantManager.TAG_PREFIX + "NSVBehavior";
 
-    public NestedScrollViewBehavior(Context context, AttributeSet attrs) {
+    public CustomNestedScrollViewBehavior(Context context, AttributeSet attrs) {
     }
 
     @Override

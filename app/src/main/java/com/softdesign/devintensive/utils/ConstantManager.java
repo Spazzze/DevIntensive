@@ -23,7 +23,6 @@ public interface ConstantManager {
     String SAVE_LOGIN = "SAVE_LOGIN";
     String SAVED_LOGIN_NAME = "SAVED_LOGIN_NAME";
 
-
     //Authorization systems
     String AUTH_VK = "AUTH_VK";
     String AUTH_FACEBOOK = "AUTH_FACEBOOK";
@@ -53,4 +52,10 @@ public interface ConstantManager {
     //Some of http response constants
     int HTTP_RESPONSE_NOT_FOUND = 404;
 
+    //Aspect Ratios
+    float ASPECT_RATIO_16_9 = 1.78f;
+    float ASPECT_RATIO_4_3 = 1.33f;
+    float ASPECT_RATIO_3_2 = 1.5f;
+    float ASPECT_RATIO_3_4 = 0.75f;
+    float ASPECT_RATIO_2_3 = 0.67f;
 }

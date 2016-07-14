@@ -308,29 +308,22 @@ public class MainActivity extends BaseActivity {
         if (navigationView != null) {
             TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
             TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            mTextView_menuUserName.setText(MainActivity.this.getTitle());
-            mTextView_menuUserEmail.setText(mEditTexts_userInfoList.get(1).getText().toString()); //drawer menu email change
-            setupMenuAvatar();
-        }
-    }
-
-    private void updateGitHubFields() {
-        //// TODO: 12.07.2016 переделать на ListView
-    }
-
-    private void setupMenuAvatar() {    //setup menu avatar with rounded corners from picture
-        //// TODO: 08.07.2016 get avatars from social info
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
+
+            mTextView_menuUserName.setText(this.getTitle());
+            mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
+
             Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
             if (src != null) {
                 RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
                 dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
                 mRoundedAvatar_img.setImageDrawable(dr);
             }
-            /*Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);*/
         }
+    }
+
+    private void updateGitHubFields() {
+        //// TODO: 12.07.2016 переделать на ListView
     }
 
     private void setupUserInfoLayout() {
@@ -430,9 +423,9 @@ public class MainActivity extends BaseActivity {
         ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
 
         String[] userProfileValuesList = {
-                String.valueOf(mUserData.getProfileValues().getRating()),
-                String.valueOf(mUserData.getProfileValues().getLinesCode()),
-                String.valueOf(mUserData.getProfileValues().getProjects())};
+                mUserData.getProfileValues().getRating(),
+                mUserData.getProfileValues().getLinesCode(),
+                mUserData.getProfileValues().getProjects()};
 
         ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
 

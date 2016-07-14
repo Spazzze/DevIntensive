@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="LinearLayout_AppBarBehavior">
+        <attr name="linear_layout_min_height" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="AspectRatioImageView">
+        <attr name="aspect_ratio" format="float"/>
+    </declare-styleable>
+
+</resources>

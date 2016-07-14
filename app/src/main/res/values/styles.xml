@@ -21,6 +21,13 @@
         <item name="android:textColor">@color/color_white</item>
     </style>
 
+    <!-- Toolbar -->
+    <style name="ToolbarStyle" parent="Theme.AppCompat">
+        <item name="android:textColorPrimary">@color/color_white</item>
+        <item name="android:textColorSecondary">@color/color_white</item>
+        <item name="android:actionMenuTextColor">@color/color_white</item>
+    </style>
+
     <!-- ProgressBar -->
     <style name="custom_dialog">
         <item name="android:fullDark">@android:color/transparent</item>

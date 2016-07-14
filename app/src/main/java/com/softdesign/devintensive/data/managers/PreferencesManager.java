@@ -70,6 +70,8 @@ public class PreferencesManager {
     }
     //endregion
 
+
+
     //region User Photo
     public void saveUserPhoto(Uri uri) {
         Log.d(TAG, "saveUserPhoto: " + uri);

@@ -34,6 +34,7 @@
     <string name="header.logout">Выйти</string>
     <string name="header.auth_forgot_password">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
+    <string name="header.auth_save_email">Сохранять e-mail</string>
 
     <!--Errors-->
     <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать требуемые разрешения</string>
@@ -50,6 +51,8 @@
     <string name="error.wrong_credentials">Неверный логин или пароль.</string>
     <string name="error.tries_before_erase">"Осталось неудачных попыток до обнуления данных"</string>
     <string name="error.unknown_auth_error">Возникла ошибка при попытке авторизации.</string>
+    <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
+    <string name="error.max_login_fails_reached">Вы достигли максимального количества неудачных попыток.</string>
 
     <!--Notify-->
     <string name="notify.auth_successful">Авторизация прошла успешно</string>
@@ -82,8 +85,8 @@
         inimicus mediocrem at per. No ius essent corpora. Et harum fierent vis, choro possim te sea,
         ius ullum qualisque no. Purto liber an usu.
     </string>
-    <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
-    <string name="error.max_login_fails_reached">Вы достигли максимального количества неудачных попыток.</string>
-    <string name="header.auth_save_email">Сохранять e-mail</string>
+    <string name="dummy.scoreBox_zero_text">0</string>
+    <string name="dummy.fullName_text">Фамилия Имя</string>
+    <string name="header.view">Просмотр</string>
 
 </resources>

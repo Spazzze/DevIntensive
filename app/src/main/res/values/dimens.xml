@@ -1,4 +1,5 @@
 <resources>
+
     <!-- Fonts // English and English-like scripts -->
     <dimen name="font_small_12">12sp</dimen>
     <dimen name="font_normal_14">14sp</dimen>
@@ -38,13 +39,24 @@
     <!-- Corner Radius -->
     <dimen name="corner_radius_2">2dp</dimen>
 
-    <!-- Etc -->
+    <!-- Lines -->
     <dimen name="line_size_1">1dp</dimen>
+
+    <!-- Profile -->
     <dimen name="profileImage_size_256">256dp</dimen>
+    <dimen name="change_profile_photo_ic_size_90">40dp</dimen>
     <dimen name="fab_right_space">8dp</dimen>
-    <dimen name="toolbar_top_offset">0dp</dimen>
-    <dimen name="placeholder_photo_size_90">90dp</dimen>
+
+    <!-- Auth Screen -->
     <dimen name="auth_cardView_size_240">240dp</dimen>
     <dimen name="button_width_126">126dp</dimen>
+
+    <!-- Etc -->
+    <dimen name="toolbar_top_offset">0dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="spacing_tiny_6">6dp</dimen>
 
 </resources>

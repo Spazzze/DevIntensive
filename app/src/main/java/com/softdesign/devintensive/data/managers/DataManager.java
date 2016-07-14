@@ -4,7 +4,9 @@ import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
+import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
+import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 
@@ -52,6 +54,10 @@ public class DataManager {
     public Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@Path("userId") String userId,
                                                           @Part MultipartBody.Part file) {
         return mRestService.uploadUserAvatar(userId, file);
+    }
+
+    public Call<BaseListModel<UserListRes>> getUserList() {
+        return mRestService.getUserList();
     }
     //endregion
 }

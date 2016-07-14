@@ -238,7 +238,7 @@ public class AuthActivity extends BaseActivity {
             public void onFailure(Call<BaseModel<UserAuthRes>> call, Throwable t) {
                 // there is more than just a failing request (like: no internet connection)
                 hideProgressDialog();
-                if (!NetworkUtils.isNetworkAvailable(AuthActivity.this)) {
+                if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
                     showSnackBar(getString(R.string.error_no_network_connection));
                 } else
                     showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));

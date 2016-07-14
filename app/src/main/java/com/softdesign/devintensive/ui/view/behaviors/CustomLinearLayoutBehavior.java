@@ -19,13 +19,13 @@ import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
  *
  * @param <LinearLayout> to link to.
  */
-class LinearLayout_AppBarBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
+class CustomLinearLayoutBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
 
     private final static String TAG = ConstantManager.TAG_PREFIX + "LLBehavior";
     private final Context mContext;
     private float minLLSize, maxScrollDistance, minDependencyScrollY, maxLLSize, mExpandedPercentageFactor;
 
-    public LinearLayout_AppBarBehavior(Context context, AttributeSet attrs) {
+    public CustomLinearLayoutBehavior(Context context, AttributeSet attrs) {
         this.mContext = context;
     }
 
