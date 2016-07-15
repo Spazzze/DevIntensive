@@ -8,9 +8,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -46,7 +46,7 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
@@ -239,7 +239,6 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        refresh();
     }
 
     @Override
@@ -274,10 +273,28 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupDrawer() {
-        Log.d(TAG, "setupDrawer");
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                updateDrawerItems();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
-            updateDrawerItems();
+            setupDrawerItems(navigationView);
             navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(MenuItem item) {
@@ -304,7 +321,6 @@ public class MainActivity extends BaseActivity {
     }
 
     private void updateDrawerItems() {  //redraw navigation view items
-        Log.d(TAG, "updateDrawerItems");
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
@@ -313,14 +329,37 @@ public class MainActivity extends BaseActivity {
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
 
             mTextView_menuUserName.setText(this.getTitle());
+
             mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
 
             Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-            if (src != null) {
+            if (src == null) {
+                loadUserAvatarFromServer();
+            } else {
                 RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
                 dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
                 mRoundedAvatar_img.setImageDrawable(dr);
             }
+        }
+    }
+
+    private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
+
+        TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
+        TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
+        ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
+
+        mTextView_menuUserName.setText(this.getTitle());
+
+        mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
+
+        Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
+        if (src == null) {
+            loadUserAvatarFromServer();
+        } else {
+            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
+            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
+            mRoundedAvatar_img.setImageDrawable(dr);
         }
     }
 
@@ -351,26 +390,18 @@ public class MainActivity extends BaseActivity {
 
     private void placeProfilePicture(Uri selectedImage) {
         Log.d(TAG, "placeProfilePicture: " + selectedImage);
+        if (selectedImage == null || selectedImage.toString().isEmpty()) return;
         Picasso.with(this)
                 .load(selectedImage)
+                .placeholder(R.drawable.user_bg)
+                .error(R.drawable.user_bg)
                 .fit()
                 .centerInside()
-                .placeholder(R.drawable.user_bg)
                 .into(mImageView_profilePhoto);
     }
 
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
-
-    private void refresh() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                placeProfilePicture(mUri_SelectedProfileImage);
-                updateDrawerItems();
-            }
-        }, AppConfig.REFRESH_DELAY);
     }
 
     static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
@@ -403,11 +434,12 @@ public class MainActivity extends BaseActivity {
     private void initUserProfileInfo() {
         Log.d(TAG, "initUserProfileInfo");
 
+        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
+        if (mUserData == null) logout(0);
+
         mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
         mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
-
-        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
-        if (mUserData == null) return;
+        placeProfilePicture(mUri_SelectedProfileImage);
 
         List<String> userProfileDataList = new ArrayList<>();
 
@@ -437,12 +469,12 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "saveUserInfoData");
 
         if (!mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
-            Log.d(TAG, "saveUserInfoData: uploading avatar to server");
             uploadUserAvatar(mUri_SelectedAvatarImage);
             mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
         }
+
         if (!mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
-            Log.d(TAG, "saveUserInfoData: uploading photo to server");
+            placeProfilePicture(mUri_SelectedProfileImage);
             uploadUserPhoto(mUri_SelectedProfileImage);
             mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
         }
@@ -454,7 +486,6 @@ public class MainActivity extends BaseActivity {
         mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
 
         mDataManager.getPreferencesManager().saveAllUserData(mUserData);
-        refresh();
     }
     //endregion
 
@@ -533,7 +564,7 @@ public class MainActivity extends BaseActivity {
                 } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
                     showToast(error.getErrMessage());
-                    logout(0);
+                    Log.d(TAG, "onResponse: " + error.getErrMessage());
                 }
             }
 
@@ -568,7 +599,7 @@ public class MainActivity extends BaseActivity {
                 } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
                     showToast(error.getErrMessage());
-                    logout(0);
+                    Log.d(TAG, "onResponse: " + error.getErrMessage());
                 }
             }
 
@@ -578,6 +609,46 @@ public class MainActivity extends BaseActivity {
                 logout(0);
             }
         });
+    }
+
+    private void loadUserAvatarFromServer() {
+
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
+
+        String pathToAvatar = mUserData.getPublicInfo().getAvatar();
+
+        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar") {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+
+                super.onBitmapLoaded(bitmap, from);
+
+                NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+                if (navigationView != null) {
+                    RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+                    dr.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
+                    ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
+                    mRoundedAvatar_img.setImageDrawable(dr);
+                }
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                hideProgressDialog();
+                showToast(getString(R.string.error_connection_failed));
+            }
+        };
+        mToolbar.setTag(avatarTarget);
+
+        Picasso.with(this)
+                .load(Uri.parse(pathToAvatar))
+                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
+                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
+                .centerCrop()
+                .into(avatarTarget);
+
+        mUri_SelectedAvatarImage = avatarTarget.getFile().getAbsolutePath();
+        mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
     }
     //endregion
 
@@ -681,7 +752,6 @@ public class MainActivity extends BaseActivity {
         mNotSavingUserValues = true;
         if (mode == 1)
             mDataManager.getPreferencesManager().totalLogout();
-        else mDataManager.getPreferencesManager().softLogout();
         startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion

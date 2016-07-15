@@ -58,6 +58,7 @@ public class AuthActivity extends BaseActivity {
     private DataManager mDataManager;
     private int mWrongPasswordCount;
     private Boolean mUserDataEmpty;
+    private User mUser;
 
     //region onCreate
     @Override
@@ -68,14 +69,15 @@ public class AuthActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
         mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
-        if (!mUserDataEmpty && mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
-            Log.d(TAG, "onCreate: " + mUserDataEmpty);
-            mCheckBox_saveLogin.setChecked(true);
-            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
-            mEditText_login_email.setSelection(mEditText_login_email.length());
-            //try silent login
-            if (NetworkUtils.isNetworkAvailable(this)) {
-                silentLogin();
+        if (!mUserDataEmpty) {
+            if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
+                mCheckBox_saveLogin.setChecked(true);
+                mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
+                mEditText_login_email.setSelection(mEditText_login_email.length());
+            }
+            mUser = mDataManager.getPreferencesManager().loadAllUserData();
+            if (NetworkUtils.isNetworkAvailable(this) && !mDataManager.getPreferencesManager().loadBuiltInAuthId().isEmpty()) {
+                silentLogin(mDataManager.getPreferencesManager().loadBuiltInAuthId());
             }
         }
     }
@@ -125,6 +127,7 @@ public class AuthActivity extends BaseActivity {
     //endregion
 
     //region Login methods
+
     private void login() {
         showProgressDialog();
         Call<BaseModel<UserAuthRes>> call = mDataManager.loginUser(new UserLoginReq(
@@ -166,12 +169,7 @@ public class AuthActivity extends BaseActivity {
         });
     }
 
-    private void silentLogin() {
-        Log.d(TAG, "silentLogin: ");
-
-        String userId = mDataManager.getPreferencesManager().loadBuiltInAuthId();
-
-        if (userId == null || userId.isEmpty()) return;
+    private void silentLogin(@NonNull String userId) {
 
         showProgressDialog();
 
@@ -182,8 +180,7 @@ public class AuthActivity extends BaseActivity {
             public void onResponse(Call<BaseModel<User>> call,
                                    Response<BaseModel<User>> response) {
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "onResponse: " + response.body().getData().getPublicInfo().getAvatar());
-                    onSilentLoginSuccess(response.body());
+                    updateUserInfo(response.body().getData());
                 } else {
                     hideProgressDialog();
                 }
@@ -193,7 +190,7 @@ public class AuthActivity extends BaseActivity {
             public void onFailure(Call<BaseModel<User>> call, Throwable t) {
                 hideProgressDialog();
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                Log.d(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                Log.e(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
             }
         });
     }
@@ -201,6 +198,13 @@ public class AuthActivity extends BaseActivity {
     private void forgotPassword() {  //// TODO: 10.07.2016 переделать в отдельную форму
         Intent forgotPassIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AppConfig.FORGOT_PASS_URL));
         startActivity(forgotPassIntent);
+    }
+
+    private void finishSignIn() {
+        hideProgressDialog();
+        showToast(getString(R.string.notify_auth_successful));
+        startActivity(new Intent(AuthActivity.this, MainActivity.class));
+        AuthActivity.this.finish();
     }
 
     //endregion
@@ -231,34 +235,16 @@ public class AuthActivity extends BaseActivity {
     }
     //endregion
 
-    //region Other functional methods
+    //region After Success Login
     private void onLoginSuccess(BaseModel<UserAuthRes> userModelRes) {
-        Log.d(TAG, "onLoginSuccess: ");
         if (mCheckBox_saveLogin.isChecked()) {
             mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
         } else {
             mEditText_login_email.setText("");
         }
         mEditText_login_password.setText("");
-        saveUserInfoFromServer(userModelRes);
-    }
-
-    private void onSilentLoginSuccess(BaseModel<User> res) {
-        Log.d(TAG, "onSilentLoginSuccess: ");
-        mEditText_login_password.setText("");
-        User user = res.getData();
-        Log.d(TAG, "onSilentLoginSuccess: " + user.getFirstName());
-        Log.d(TAG, "onSilentLoginSuccess: " + (user.getPublicInfo() == null));
-        mDataManager.getPreferencesManager().saveAllUserData(user);
-        saveUserPhotosFromServer(user);
-    }
-
-    private void saveUserInfoFromServer(@NonNull BaseModel<UserAuthRes> userModelRes) {
-
         saveUserAuthData(userModelRes);
-        User user = userModelRes.getData().getUser();
-        mDataManager.getPreferencesManager().saveAllUserData(user);
-        saveUserPhotosFromServer(user);
+        updateUserInfo(userModelRes.getData().getUser());
     }
 
     private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
@@ -268,20 +254,28 @@ public class AuthActivity extends BaseActivity {
         );
     }
 
-    private void saveUserPhotosFromServer(@NonNull User user) {
+    private void updateUserInfo(User user) {
+        if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
+            finishSignIn();
+        } else {
+            mDataManager.getPreferencesManager().saveAllUserData(user);
+            if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
+                updateUserPhoto(user);
+            } else {
+                finishSignIn();
+            }
+        }
+    }
 
-        String pathToAvatar = user.getPublicInfo().getAvatar();
+    private void updateUserPhoto(@NonNull User user) {
+
         String pathToPhoto = user.getPublicInfo().getPhoto();
 
-        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar");
         PicassoTargetByName photoTarget = new PicassoTargetByName("photo") {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                 super.onBitmapLoaded(bitmap, from);
-                hideProgressDialog();
-                showToast(getString(R.string.notify_auth_successful));
-                startActivity(new Intent(AuthActivity.this, MainActivity.class));
-                AuthActivity.this.finish();
+                finishSignIn();
             }
 
             @Override
@@ -302,15 +296,8 @@ public class AuthActivity extends BaseActivity {
                 .centerCrop()
                 .into(photoTarget);
 
-        Picasso.with(this)
-                .load(Uri.parse(pathToAvatar))
-                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
-                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
-                .centerCrop()
-                .into(avatarTarget);
-
         mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(photoTarget.getFile()));
-        mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
     }
+
     //endregion
 }

@@ -31,7 +31,8 @@
 
         <!--AuthActivity-->
         <activity
-            android:name=".ui.activities.AuthActivity">
+            android:name=".ui.activities.AuthActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,22 +43,33 @@
         <!--MainActivity-->
         <activity
             android:name=".ui.activities.MainActivity"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!--UserListActivity-->
-        <activity android:name=".ui.activities.UserListActivity" />
+        <activity
+            android:name=".ui.activities.UserListActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
 
         <!--UserProfileActivity-->
         <activity
             android:name=".ui.activities.UserProfileActivity"
+            android:launchMode="singleTask"
             android:parentActivityName=".ui.activities.UserListActivity" />
 
         <!--VKServiceActivity-->
         <activity
             android:name="com.vk.sdk.VKServiceActivity"
             android:label="ServiceActivity"
+            android:launchMode="singleTask"
             android:theme="@style/VK.Transparent" />
-
 
     </application>
 

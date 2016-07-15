@@ -18,7 +18,7 @@
             android:layout_height="wrap_content">
 
             <!--Photo-->
-            <com.softdesign.devintensive.ui.view.AspectRatioImageView
+            <com.softdesign.devintensive.ui.view.elements.AspectRatioImageView
                 android:id="@+id/list_userPhoto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -129,16 +129,57 @@
             android:layout_marginBottom="@dimen/spacing_small_8"
             android:background="@color/color_grey_light" />
 
-        <!--Button view-->
-        <Button
-            android:id="@+id/list_more_info_btn"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/spacing_normal_16"
-            android:paddingRight="@dimen/spacing_normal_16"
-            android:text="@string/header.view"
-            android:textColor="@color/color_accent" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_marginLeft="@dimen/spacing_small_8"
+            android:layout_marginRight="@dimen/spacing_small_8"
+            android:layout_height="wrap_content">
+
+            <!--Button view-->
+            <Button
+                android:id="@+id/list_more_info_btn"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:paddingLeft="@dimen/spacing_normal_16"
+                android:paddingRight="@dimen/spacing_normal_16"
+                android:text="@string/header.view"
+                android:textColor="@color/color_accent" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerInParent="true"
+                android:layout_marginEnd="@dimen/spacing_normal_16"
+                android:layout_marginRight="@dimen/spacing_normal_16"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/scoreBox_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/spacing_tiny_4"
+                    android:layout_marginEnd="@dimen/spacing_tiny_4"
+                    android:text="@string/header.current_homeTask"
+                    android:textColor="@color/color_grey_light" />
+
+                <TextView
+                    android:id="@+id/cur_homeTask_txt"
+                    style="@style/scoreBox_text.count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/color_grey_light"
+                    android:textSize="@dimen/font_normal_14" />
+
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </LinearLayout>
 

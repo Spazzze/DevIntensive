@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
-import com.softdesign.devintensive.data.network.restmodels.Repo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +16,7 @@ public class UserDTO implements Parcelable {
     private String mCodeLines;
     private String mProjects;
     private String mBio;
-    private List<String> mRepositories = new ArrayList<>();
-
+    private List<String> mRepositories;
 
     public UserDTO(UserListRes user) {
         mUserPhoto = user.getPublicInfo().getPhoto();
@@ -27,10 +25,7 @@ public class UserDTO implements Parcelable {
         mCodeLines = user.getProfileValues().getLinesCode();
         mProjects = user.getProfileValues().getProjects();
         mBio = user.getPublicInfo().getBio();
-
-        for (Repo r: user.getRepositories().getRepo()) {
-            mRepositories.add(r.getGit());
-        }
+        mRepositories = user.getRepositories().getRepoList();
     }
 
     protected UserDTO(Parcel in) {

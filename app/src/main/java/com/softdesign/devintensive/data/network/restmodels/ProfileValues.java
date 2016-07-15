@@ -38,6 +38,10 @@ public class ProfileValues {
         return updated;
     }
 
+    public String getHomeTask() {
+        return String.valueOf(homeTask);
+    }
+
     public void setUpdated(String updated) {
         this.updated = updated;
     }

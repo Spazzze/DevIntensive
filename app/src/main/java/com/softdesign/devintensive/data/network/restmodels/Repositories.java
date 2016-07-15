@@ -20,6 +20,14 @@ public class Repositories {
         return repo;
     }
 
+    public List<String> getRepoList() {
+        List<String> gitLinks = new ArrayList<>();
+        for (Repo r: repo){
+            gitLinks.add(r.getGit());
+        }
+        return gitLinks;
+    }
+
     public String getUpdated() {
         return updated;
     }

@@ -31,6 +31,8 @@ import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 
+import static com.softdesign.devintensive.utils.UiHelper.setListViewHeightBasedOnChildren;
+
 public class UserProfileActivity extends BaseActivity {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserProfActivity";
@@ -104,12 +106,14 @@ public class UserProfileActivity extends BaseActivity {
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
         mListView_repo.setAdapter(repositoriesAdapter);
-        mListView_repo.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        mListView_repo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + repositories.get(position))));
             }
         });
+
+        setListViewHeightBasedOnChildren(mListView_repo);
 
         mTextViews_userProfileValues.get(0).setText(userDTO.getRating());
         mTextViews_userProfileValues.get(1).setText(userDTO.getCodeLines());

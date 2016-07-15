@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+//retrolambda
+apply plugin: 'me.tatarka.retrolambda'
 //butterKnife
 apply plugin: 'android-apt'
 
@@ -12,7 +14,6 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
         resConfigs "en", "ru"
     }
     buildTypes {
@@ -34,9 +35,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:design:23.4.0'
-
-    //multiDex
-    compile 'com.android.support:multidex:1.0.0'
 
     //graph libs
     compile 'com.squareup.picasso:picasso:2.5.2'

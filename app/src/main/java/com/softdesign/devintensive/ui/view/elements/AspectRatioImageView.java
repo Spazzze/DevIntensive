@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.view;
+package com.softdesign.devintensive.ui.view.elements;
 
 import android.content.Context;
 import android.content.res.TypedArray;

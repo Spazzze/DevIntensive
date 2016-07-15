@@ -3,7 +3,6 @@ package com.softdesign.devintensive.data.managers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.util.Log;
 
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.ConstantManager;
@@ -71,7 +70,6 @@ public class PreferencesManager {
 
     //region User Photo
     public void saveUserPhoto(Uri uri) {
-        Log.d(TAG, "saveUserPhoto: " + uri);
         if (uri != null) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(ConstantManager.USER_PROFILE_PHOTO_URI, uri.toString());
@@ -87,7 +85,6 @@ public class PreferencesManager {
 
     //region User Avatar
     public void saveUserAvatar(String uri) {
-        Log.d(TAG, "saveUserAvatar: " + uri);
         if (uri != null) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(ConstantManager.USER_PROFILE_AVATAR_URI, uri);

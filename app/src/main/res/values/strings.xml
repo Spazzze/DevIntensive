@@ -88,5 +88,9 @@
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
     <string name="header.view">Просмотр</string>
+    <string name="hint.search">Поиск</string>
+    <string name="hint.searchByName">Поиск по имени…</string>
+    <string name="header.current_homeTask">Hometask</string>
+    <string name="hint.loading">Загрузка…</string>
 
 </resources>
