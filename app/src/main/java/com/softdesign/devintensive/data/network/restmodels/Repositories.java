@@ -1,17 +1,18 @@
 package com.softdesign.devintensive.data.network.restmodels;
 
 import com.google.gson.annotations.Expose;
-        import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 
-        import java.util.ArrayList;
-        import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class Repositories {
 
     @SerializedName("repo")
     @Expose
-    private List<Repo> repo = new ArrayList<>();
+    private final List<Repo> repo = new ArrayList<>();
     @SerializedName("updated")
     @Expose
     private String updated;
@@ -20,12 +21,12 @@ public class Repositories {
         return repo;
     }
 
-    public List<String> getRepoList() {
-        List<String> gitLinks = new ArrayList<>();
-        for (Repo r: repo){
-            gitLinks.add(r.getGit());
-        }
-        return gitLinks;
+    public List<RepositoryEntity> getRepoEntitiesList(final String userId) {
+        return new ArrayList<RepositoryEntity>() {{
+            for (Repo r : repo) {
+                add(new RepositoryEntity(r, userId));
+            }
+        }};
     }
 
     public String getUpdated() {

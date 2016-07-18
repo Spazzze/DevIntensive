@@ -22,7 +22,6 @@ import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
  */
 public class PreferencesManager {
 
-    public static final String TAG = ConstantManager.TAG_PREFIX + "PreferencesManager";
     private final SharedPreferences mSharedPreferences;
     private final Context mContext;
 
@@ -125,6 +124,7 @@ public class PreferencesManager {
         }
     }
 
+    @SuppressWarnings("unused")
     public VKAccessToken loadVKToken() {
         return VKAccessToken.tokenFromSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
     }

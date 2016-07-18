@@ -15,8 +15,6 @@ import com.softdesign.devintensive.R;
  */
 public class UserInfoTextWatcher implements TextWatcher {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + UserInfoTextWatcher.class
-            .getSimpleName();
     private static final int ERROR_TIMER_LENGTH = 3000;
     private static final int MAX_DIGITS_COUNT = 11;
     private static final int MAX_SYMBOLS_COUNT = 18;
@@ -222,7 +220,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format ***@**.**
      */
     private boolean isValidEmail(String email) {
-        String pattern = AppConfig.PATTERN_EMAIL;
+        String pattern = ConstantManager.PATTERN_EMAIL;
         return !TextUtils.isEmpty(email) && email.matches(pattern);
     }
 
@@ -231,7 +229,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format vk.com/***
      */
     private boolean isValidVK(String vk) {
-        String pattern = AppConfig.PATTERN_VK_LINK;
+        String pattern = ConstantManager.PATTERN_VK_LINK;
         return !TextUtils.isEmpty(vk) && vk.matches(pattern);
     }
 
@@ -240,7 +238,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format gitHub.com/***
      */
     private boolean isValidGitHub(String s) {
-        String pattern = AppConfig.PATTERN_GITHUB_LINK;
+        String pattern = ConstantManager.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
     //endregion

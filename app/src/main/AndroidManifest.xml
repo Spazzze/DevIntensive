@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.softdesign.devintensive">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -24,7 +25,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/dummy.app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
 
         <!--BaseActivity-->
         <activity android:name=".ui.activities.BaseActivity" />
@@ -49,14 +51,7 @@
         <!--UserListActivity-->
         <activity
             android:name=".ui.activities.UserListActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
+            android:launchMode="singleTask" />
 
         <!--UserProfileActivity-->
         <activity
@@ -70,6 +65,11 @@
             android:label="ServiceActivity"
             android:launchMode="singleTask"
             android:theme="@style/VK.Transparent" />
+
+        <!-- Glide -->
+        <meta-data
+            android:name="com.softdesign.devintensive.data.network.CustomGlideModule"
+            android:value="GlideModule" />
 
     </application>
 

@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.ui.activities;
 
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,24 +29,24 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
-import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
+import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
-import com.softdesign.devintensive.ui.fragments.GetUsersNetworkTaskFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.NetworkUtils;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity implements GetUsersNetworkTaskFragment.TaskCallbacks {
+public class UserListActivity extends BaseActivity {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
 
@@ -59,7 +58,6 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
-    private List<UserListRes> mUsers;
     private User mUserData;
 
     //region OnCreate
@@ -79,15 +77,7 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(llm);
 
-        FragmentManager fm = getFragmentManager();
-        GetUsersNetworkTaskFragment fragmentByTag =
-                (GetUsersNetworkTaskFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
-
-        if (fragmentByTag == null) {
-            fragmentByTag = new GetUsersNetworkTaskFragment();
-            fm.beginTransaction().add(fragmentByTag, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
-        }
-
+        initUserListAdapter(mDataManager.getUserListFromDb());
     }
 
     @Override
@@ -112,33 +102,6 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
             }
         });
         return true;
-    }
-    //endregion
-
-    //region GetUsersNetworkTaskFragment.TaskCallbacks
-    @Override
-    public void onRequestStarted() {
-    }
-
-    @Override
-    public void onRequestFinished(List<UserListRes> result) {
-        mUsers = result;
-        mUsersAdapter = new UsersAdapter(mUsers, new UsersAdapter.UserViewHolder.CustomClickListener() {
-            @Override
-            public void onUserItemClickListener(int position) {
-                UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
-                Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-                profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                startActivity(profileUserIntent);
-            }
-        });
-        mRecyclerView.setAdapter(mUsersAdapter);
-    }
-
-    @Override
-    public void onRequestCancelled(String error) {
-        Log.d(TAG, "onRequestCancelled: " + error);
-        showSnackBar(error);
     }
     //endregion
 
@@ -167,7 +130,6 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
 
             @Override
             public void onDrawerClosed(View drawerView) {
-
             }
 
             @Override
@@ -276,17 +238,37 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
     }
     //endregion
 
+    private void initUserListAdapter(List<UserEntity> userEntities) {
+        if (userEntities == null || userEntities.size() == 0) {
+            showSnackBar(getString(R.string.error_cannot_load_user_list));
+            return;
+        }
+        mUsersAdapter = new UsersAdapter(userEntities, new UsersAdapter.UserViewHolder.CustomClickListener() {
+            @Override
+            public void onUserItemClickListener(int position) {
+                UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
+                Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
+                profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                startActivity(profileUserIntent);
+            }
+        });
+        mRecyclerView.setAdapter(mUsersAdapter);
+    }
+
+    @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
 
-        String pathToAvatar = mUserData.getPublicInfo().getAvatar();
+        final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 
-        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar") {
+        int photoWidth = getResources().getDimensionPixelSize(R.dimen.size_medium_64);
+
+        final GlideTargetIntoBitmap avatarTarget = new GlideTargetIntoBitmap(photoWidth, photoWidth, "avatar") {
             @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                super.onBitmapLoaded(bitmap, from);
+            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                super.onResourceReady(bitmap, anim);
+                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
 
                 NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
                 if (navigationView != null) {
@@ -298,21 +280,17 @@ public class UserListActivity extends BaseActivity implements GetUsersNetworkTas
             }
 
             @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                hideProgressDialog();
-                showToast(getString(R.string.error_connection_failed));
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
             }
         };
+
         mToolbar.setTag(avatarTarget);
 
-        Picasso.with(this)
-                .load(Uri.parse(pathToAvatar))
-                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
-                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
-                .centerCrop()
+        Glide.with(this)
+                .load(pathToAvatar)
+                .asBitmap()
                 .into(avatarTarget);
-
-        mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
     }
 
     private void initUserProfileInfo() {

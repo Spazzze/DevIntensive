@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,18 +17,20 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
+import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.ui.fragments.DownloadUsersIntoDBFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
-import com.squareup.picasso.Picasso;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
@@ -44,8 +47,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.softdesign.devintensive.utils.UiHelper.getScreenWidth;
+import static com.softdesign.devintensive.utils.UiHelper.isEmptyOrNull;
 
-public class AuthActivity extends BaseActivity {
+public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
 
@@ -59,6 +63,7 @@ public class AuthActivity extends BaseActivity {
     private int mWrongPasswordCount;
     private Boolean mUserDataEmpty;
     private User mUser;
+    private DownloadUsersIntoDBFragment networkFragment;
 
     //region onCreate
     @Override
@@ -69,6 +74,16 @@ public class AuthActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
         mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
+
+        FragmentManager fm = getFragmentManager();
+        networkFragment =
+                (DownloadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
+
+        if (networkFragment == null) {
+            networkFragment = new DownloadUsersIntoDBFragment();
+            fm.beginTransaction().add(networkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
+        }
+
         if (!mUserDataEmpty) {
             if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
                 mCheckBox_saveLogin.setChecked(true);
@@ -76,10 +91,28 @@ public class AuthActivity extends BaseActivity {
                 mEditText_login_email.setSelection(mEditText_login_email.length());
             }
             mUser = mDataManager.getPreferencesManager().loadAllUserData();
-            if (NetworkUtils.isNetworkAvailable(this) && !mDataManager.getPreferencesManager().loadBuiltInAuthId().isEmpty()) {
-                silentLogin(mDataManager.getPreferencesManager().loadBuiltInAuthId());
+            String userId = mDataManager.getPreferencesManager().loadBuiltInAuthId();
+            if (NetworkUtils.isNetworkAvailable(this) && !userId.isEmpty() &&
+                    !mDataManager.getPreferencesManager().loadBuiltInAuthToken().isEmpty()) {
+                silentLogin(userId);
             }
         }
+    }
+    //endregion
+
+    //region DownloadUsersIntoDBFragment.TaskCallbacks
+    @Override
+    public void onRequestStarted() {
+    }
+
+    @Override
+    public void onRequestFinished() {
+        Log.d(TAG, "onRequestFinished: Запрос по сети и запись в БД выполнены успешно");
+    }
+
+    @Override
+    public void onRequestCancelled(String error) {
+        Log.d(TAG, "onRequestCancelled: " + error);
     }
     //endregion
 
@@ -151,7 +184,7 @@ public class AuthActivity extends BaseActivity {
                             break;
                         default:
                             ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
-                            showToast(error.getErrMessage());
+                            showToast(error.getErrorMessage());
                             break;
                     }
                 }
@@ -209,9 +242,78 @@ public class AuthActivity extends BaseActivity {
 
     //endregion
 
+    //region After Success Login
+    private void onLoginSuccess(BaseModel<UserAuthRes> userModelRes) {
+        if (mCheckBox_saveLogin.isChecked()) {
+            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
+        } else {
+            mEditText_login_email.setText("");
+        }
+        mEditText_login_password.setText("");
+        networkFragment.downloadUserListIntoDB();
+        saveUserAuthData(userModelRes);
+        updateUserInfo(userModelRes.getData().getUser());
+    }
+
+    private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
+        mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
+                userModelRes.getData().getUser().getId(),
+                userModelRes.getData().getToken()
+        );
+    }
+
+    private void updateUserInfo(User user) {
+        if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
+            finishSignIn();
+        } else {
+            mDataManager.getPreferencesManager().saveAllUserData(user);
+            if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
+                String pathToPhoto = user.getPublicInfo().getPhoto();
+                if (!isEmptyOrNull(pathToPhoto)) updateUserPhoto(pathToPhoto);
+            } else {
+                finishSignIn();
+            }
+        }
+    }
+
+    private void updateUserPhoto(@NonNull final String pathToPhoto) {
+
+        int photoWidth = getScreenWidth();
+        int photoHeight = (int) (photoWidth / ConstantManager.ASPECT_RATIO_3_2);
+
+        final GlideTargetIntoBitmap photoTarget = new GlideTargetIntoBitmap(photoWidth, photoHeight, "photo") {
+            @Override
+            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                super.onResourceReady(bitmap, anim);
+                Log.d(TAG, "onResourceReady: Success");
+                mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
+                finishSignIn();
+            }
+
+            @Override
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
+                mDataManager.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
+                finishSignIn();
+            }
+        };
+        mImageView_vk.setTag(photoTarget);
+
+        Glide.with(this)
+                .load(pathToPhoto)
+                .asBitmap()
+                .into(photoTarget);
+    }
+
+    //endregion
+
     //region Ui methods
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void showSnackBar(int id) {
+        Snackbar.make(mCoordinatorLayout, getString(id), Snackbar.LENGTH_LONG).show();
     }
 
     private void actionDependsOnFailTriesCount(int failsCount) {
@@ -233,71 +335,5 @@ public class AuthActivity extends BaseActivity {
         v.vibrate(AppConfig.ERROR_VIBRATE_TIME);
         showToast(getString(R.string.error_wrong_credentials));
     }
-    //endregion
-
-    //region After Success Login
-    private void onLoginSuccess(BaseModel<UserAuthRes> userModelRes) {
-        if (mCheckBox_saveLogin.isChecked()) {
-            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
-        } else {
-            mEditText_login_email.setText("");
-        }
-        mEditText_login_password.setText("");
-        saveUserAuthData(userModelRes);
-        updateUserInfo(userModelRes.getData().getUser());
-    }
-
-    private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
-        mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
-                userModelRes.getData().getUser().getId(),
-                userModelRes.getData().getToken()
-        );
-    }
-
-    private void updateUserInfo(User user) {
-        if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
-            finishSignIn();
-        } else {
-            mDataManager.getPreferencesManager().saveAllUserData(user);
-            if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
-                updateUserPhoto(user);
-            } else {
-                finishSignIn();
-            }
-        }
-    }
-
-    private void updateUserPhoto(@NonNull User user) {
-
-        String pathToPhoto = user.getPublicInfo().getPhoto();
-
-        PicassoTargetByName photoTarget = new PicassoTargetByName("photo") {
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                super.onBitmapLoaded(bitmap, from);
-                finishSignIn();
-            }
-
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                hideProgressDialog();
-                showToast(getString(R.string.error_connection_failed));
-            }
-        };
-        mImageView_vk.setTag(photoTarget);
-
-        int photoWidth = getScreenWidth();
-        int photoHeight = (int) (photoWidth / ConstantManager.ASPECT_RATIO_3_2);
-
-        Picasso.with(this)
-                .load(Uri.parse(pathToPhoto))
-                .resize(photoWidth,
-                        photoHeight)
-                .centerCrop()
-                .into(photoTarget);
-
-        mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(photoTarget.getFile()));
-    }
-
     //endregion
 }

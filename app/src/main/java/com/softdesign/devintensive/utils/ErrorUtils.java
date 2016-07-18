@@ -10,16 +10,24 @@ import retrofit2.Converter;
 import retrofit2.Response;
 
 public class ErrorUtils {
-
+    /**
+     * Converts received from server http error into human-readable error
+     */
+    @SuppressWarnings("unused")
     public static class BackendHttpError {
 
+        private int statusCode;
         private String err;
 
         public BackendHttpError() {
         }
 
-        public String getErrMessage() {
-            return err;
+        public String getErrorMessage() {
+            return this.err;
+        }
+
+        public int getStatusCode() {
+            return this.statusCode;
         }
     }
 

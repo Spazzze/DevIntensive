@@ -5,27 +5,27 @@
             android:id="@+id/navMenu_userProfile"
             android:checkable="true"
             android:icon="@drawable/ic_account_circle_black_24dp"
-            android:title="@string/header.menu_myProfile"/>
+            android:title="@string/header.menu_myProfile" />
         <item
             android:id="@+id/navMenu_contacts"
             android:icon="@drawable/ic_people_black_24dp"
-            android:title="@string/header.menu_myContacts"/>
+            android:title="@string/header.menu_myContacts" />
         <item
             android:id="@+id/navMenu_team"
             android:icon="@drawable/ic_team_black_24dp"
-            android:title="@string/header.menu_myTeam"/>
+            android:title="@string/header.menu_myTeam" />
         <item
             android:id="@+id/navMenu_tasks"
             android:icon="@drawable/ic_tasks_black_24dp"
-            android:title="@string/header.menu_myTasks"/>
+            android:title="@string/header.menu_myTasks" />
         <item
             android:id="@+id/navMenu_notifications"
             android:icon="@drawable/ic_notifications"
-            android:title="@string/header.menu_myNotifications"/>
+            android:title="@string/header.menu_myNotifications" />
         <item
             android:id="@+id/navMenu_bookmarks"
             android:icon="@drawable/ic_bookmarks"
-            android:title="@string/header.menu_myBookmarks"/>
+            android:title="@string/header.menu_myBookmarks" />
     </group>
     <item android:title="@string/header.options">
         <menu>

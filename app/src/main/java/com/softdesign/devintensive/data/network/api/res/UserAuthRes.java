@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.softdesign.devintensive.data.network.restmodels.User;
 
+@SuppressWarnings("unused")
 public class UserAuthRes {
 
     @SerializedName("user")

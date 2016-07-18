@@ -27,11 +27,12 @@ public interface RestService {
     @Multipart
     @POST("user/{userId}/publicValues/profilePhoto")
     Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@Path("userId") String userId,
-                                       @Part MultipartBody.Part file);
+                                                  @Part MultipartBody.Part file);
+
     @Multipart
     @POST("user/{userId}/publicValues/profileAvatar")
     Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@Path("userId") String userId,
-                                       @Part MultipartBody.Part file);
+                                                   @Part MultipartBody.Part file);
 
     @GET("user/list?orderBy=rating")
     Call<BaseListModel<UserListRes>> getUserList();

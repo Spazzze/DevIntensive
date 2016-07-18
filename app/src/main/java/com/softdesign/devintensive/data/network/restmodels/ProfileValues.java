@@ -22,7 +22,7 @@ public class ProfileValues {
     @Expose
     private String updated;
 
-    public String getLinesCode() {
+    public String getCodeLines() {
         return String.valueOf(linesCode);
     }
 

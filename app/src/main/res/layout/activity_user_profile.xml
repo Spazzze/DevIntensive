@@ -27,8 +27,8 @@
                 android:id="@+id/user_photo_img"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/profileImage_size_256"
-                android:fitsSystemWindows="true"
                 android:background="@color/color_grey_background"
+                android:fitsSystemWindows="true"
                 android:scaleType="centerCrop" />
 
             <!-- Toolbar -->

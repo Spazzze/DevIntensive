@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.utils.ConstantManager;
 
+@SuppressWarnings("unused")
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = ConstantManager.TAG_PREFIX + "BaseActivity";
     private ProgressDialog mProgressDialog;
@@ -26,7 +27,7 @@ public class BaseActivity extends AppCompatActivity {
 
     public void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.hide();
+            mProgressDialog.dismiss();
         }
     }
 

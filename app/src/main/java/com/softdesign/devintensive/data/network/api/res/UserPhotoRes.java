@@ -3,6 +3,7 @@ package com.softdesign.devintensive.data.network.api.res;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings("unused")
 public class UserPhotoRes {
 
     @SerializedName("photo")

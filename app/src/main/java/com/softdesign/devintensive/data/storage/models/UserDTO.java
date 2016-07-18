@@ -3,32 +3,30 @@ package com.softdesign.devintensive.data.storage.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.softdesign.devintensive.data.network.api.res.UserListRes;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDTO implements Parcelable {
 
-    private String mUserPhoto;
-    private String mFullName;
-    private String mRating;
-    private String mCodeLines;
-    private String mProjects;
-    private String mBio;
-    private List<String> mRepositories;
+    private final String mUserPhoto;
+    private final String mFullName;
+    private final String mRating;
+    private final String mCodeLines;
+    private final String mProjects;
+    private final String mBio;
+    private final List<String> mRepositories;
 
-    public UserDTO(UserListRes user) {
-        mUserPhoto = user.getPublicInfo().getPhoto();
+    public UserDTO(UserEntity user) {
+        mUserPhoto = user.getPhoto();
         mFullName = user.getFullName();
-        mRating = user.getProfileValues().getRating();
-        mCodeLines = user.getProfileValues().getLinesCode();
-        mProjects = user.getProfileValues().getProjects();
-        mBio = user.getPublicInfo().getBio();
-        mRepositories = user.getRepositories().getRepoList();
+        mRating = String.valueOf(user.getRating());
+        mCodeLines = String.valueOf(user.getCodeLines());
+        mProjects = String.valueOf(user.getProjects());
+        mBio = user.getBio();
+        mRepositories = user.getRepoList();
     }
 
-    protected UserDTO(Parcel in) {
+    private UserDTO(Parcel in) {
         mUserPhoto = in.readString();
         mFullName = in.readString();
         mRating = in.readString();

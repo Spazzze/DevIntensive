@@ -3,6 +3,7 @@ package com.softdesign.devintensive.data.network.restmodels;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings("unused")
 public class BaseModel<T> {
     @SerializedName("success")
     @Expose

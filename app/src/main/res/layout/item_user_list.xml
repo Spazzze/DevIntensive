@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/spacing_small_8"
@@ -129,11 +130,14 @@
             android:layout_marginBottom="@dimen/spacing_small_8"
             android:background="@color/color_grey_light" />
 
-        <RelativeLayout
+        <!--Button View & HomeTask-->
+        <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/spacing_small_8"
             android:layout_marginRight="@dimen/spacing_small_8"
-            android:layout_height="wrap_content">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <!--Button view-->
             <Button
@@ -141,29 +145,27 @@
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
                 android:paddingLeft="@dimen/spacing_normal_16"
                 android:paddingRight="@dimen/spacing_normal_16"
                 android:text="@string/header.view"
                 android:textColor="@color/color_accent" />
 
+            <!--HomeTask-->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerInParent="true"
                 android:layout_marginEnd="@dimen/spacing_normal_16"
                 android:layout_marginRight="@dimen/spacing_normal_16"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:gravity="right"
+                android:orientation="horizontal"
+                tools:ignore="RtlHardcoded">
 
                 <TextView
                     style="@style/scoreBox_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/spacing_tiny_4"
                     android:layout_marginEnd="@dimen/spacing_tiny_4"
+                    android:layout_marginRight="@dimen/spacing_tiny_4"
                     android:text="@string/header.current_homeTask"
                     android:textColor="@color/color_grey_light" />
 
@@ -175,11 +177,9 @@
                     android:textColor="@color/color_grey_light"
                     android:textSize="@dimen/font_normal_14" />
 
-
-
             </LinearLayout>
 
-        </RelativeLayout>
+        </LinearLayout>
 
     </LinearLayout>
 

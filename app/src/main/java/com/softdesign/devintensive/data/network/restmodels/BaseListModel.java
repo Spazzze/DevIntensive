@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class BaseListModel<T> {
 
     @SerializedName("success")
@@ -13,7 +14,7 @@ public class BaseListModel<T> {
     public Boolean success;
     @SerializedName("data")
     @Expose
-    public List<T> data = new ArrayList<>();
+    public final List<T> data = new ArrayList<>();
 
     public Boolean getSuccess() {
         return success;

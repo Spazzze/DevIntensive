@@ -41,17 +41,18 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
+import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
@@ -391,12 +392,11 @@ public class MainActivity extends BaseActivity {
     private void placeProfilePicture(Uri selectedImage) {
         Log.d(TAG, "placeProfilePicture: " + selectedImage);
         if (selectedImage == null || selectedImage.toString().isEmpty()) return;
-        Picasso.with(this)
+        Glide.with(this)
                 .load(selectedImage)
                 .placeholder(R.drawable.user_bg)
                 .error(R.drawable.user_bg)
-                .fit()
-                .centerInside()
+                .fitCenter()
                 .into(mImageView_profilePhoto);
     }
 
@@ -453,7 +453,7 @@ public class MainActivity extends BaseActivity {
 
         String[] userProfileValuesList = {
                 mUserData.getProfileValues().getRating(),
-                mUserData.getProfileValues().getLinesCode(),
+                mUserData.getProfileValues().getCodeLines(),
                 mUserData.getProfileValues().getProjects()};
 
         ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
@@ -563,15 +563,14 @@ public class MainActivity extends BaseActivity {
                     mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
                 } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
-                    showToast(error.getErrMessage());
-                    Log.d(TAG, "onResponse: " + error.getErrMessage());
+                    showToast(error.getErrorMessage());
+                    Log.d(TAG, "onResponse: " + error.getErrorMessage());
                 }
             }
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                logout(0);
             }
         });
     }
@@ -598,30 +597,33 @@ public class MainActivity extends BaseActivity {
                     mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
                 } else {
                     ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
-                    showToast(error.getErrMessage());
-                    Log.d(TAG, "onResponse: " + error.getErrMessage());
+                    showToast(error.getErrorMessage());
+                    Log.d(TAG, "onResponse: " + error.getErrorMessage());
                 }
             }
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
                 showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                logout(0);
             }
         });
     }
 
+    @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
 
-        String pathToAvatar = mUserData.getPublicInfo().getAvatar();
+        final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 
-        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar") {
+        int photoWidth = getResources().getDimensionPixelSize(R.dimen.size_medium_64);
+
+        final GlideTargetIntoBitmap avatarTarget = new GlideTargetIntoBitmap(photoWidth, photoWidth, "avatar") {
             @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                super.onBitmapLoaded(bitmap, from);
+            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                super.onResourceReady(bitmap, anim);
+                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
+                mUri_SelectedAvatarImage = getFile().getAbsolutePath();
 
                 NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
                 if (navigationView != null) {
@@ -633,22 +635,17 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                hideProgressDialog();
-                showToast(getString(R.string.error_connection_failed));
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
             }
         };
+
         mToolbar.setTag(avatarTarget);
 
-        Picasso.with(this)
-                .load(Uri.parse(pathToAvatar))
-                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
-                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
-                .centerCrop()
+        Glide.with(this)
+                .load(pathToAvatar)
+                .asBitmap()
                 .into(avatarTarget);
-
-        mUri_SelectedAvatarImage = avatarTarget.getFile().getAbsolutePath();
-        mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
     }
     //endregion
 

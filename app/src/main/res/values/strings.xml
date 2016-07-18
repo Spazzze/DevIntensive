@@ -1,6 +1,6 @@
-<resources>
-    <integer name="com_vk_sdk_AppId">5535661</integer>
-    <string name="facebook_app_id">1741889442760936</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <integer name="com_vk_sdk_AppId" tools:ignore="UnusedResources">5535661</integer>
+    <string name="facebook_app_id" tools:ignore="UnusedResources">1741889442760936</string>
 
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
@@ -15,6 +15,8 @@
     <string name="hint.profile_gitHubRepo">Репозиторий</string>
     <string name="hint.profile_about">О себе</string>
     <string name="hint.authorization_password">Пароль</string>
+    <string name="hint.search">Поиск</string>
+    <string name="hint.loading" tools:ignore="UnusedResources">Загрузка…</string>
 
     <!--Headers-->
     <string name="header.scoreBox_ratingText">Рейтинг</string>
@@ -35,6 +37,8 @@
     <string name="header.auth_forgot_password">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
     <string name="header.auth_save_email">Сохранять e-mail</string>
+    <string name="header.view">Просмотр</string>
+    <string name="header.current_homeTask">Hometask</string>
 
     <!--Errors-->
     <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать требуемые разрешения</string>
@@ -46,27 +50,28 @@
     <string name="error.editText_phone_wrong_length">Номер должен состоять из 11 цифр</string>
     <string name="error.editText_phone_wrong_code">Номер должен начинаться с 7 или 8</string>
     <string name="error.email_client_not_configured">Невозможно отправить сообщение, не настроено ни одного почтового клиента.</string>
-    <string name="error.connection_failed">Невозможно соединиться с сервером.</string>
+    <string name="error.connection_failed" tools:ignore="UnusedResources">Невозможно соединиться с сервером.</string>
     <string name="error.no_network_connection">Нет подключения к интернету, попробуйте позже.</string>
     <string name="error.wrong_credentials">Неверный логин или пароль.</string>
     <string name="error.tries_before_erase">"Осталось неудачных попыток до обнуления данных"</string>
     <string name="error.unknown_auth_error">Возникла ошибка при попытке авторизации.</string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
-    <string name="error.max_login_fails_reached">Вы достигли максимального количества неудачных попыток.</string>
+    <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
+    <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
 
     <!--Notify-->
     <string name="notify.auth_successful">Авторизация прошла успешно</string>
-    <string name="notify.google_silent_auth_request_permission">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
-    <string name="notify.auth_by_Facebook">Теперь приложение авторизовано для доступа к данным Facebook</string>
-    <string name="notify.auth_by_Google">Теперь приложение авторизовано для доступа к данным Google</string>
+    <string name="notify.google_silent_auth_request_permission" tools:ignore="UnusedResources">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
+    <string name="notify.auth_by_Facebook" tools:ignore="UnusedResources">Теперь приложение авторизовано для доступа к данным Facebook</string>
+    <string name="notify.auth_by_Google" tools:ignore="UnusedResources">Теперь приложение авторизовано для доступа к данным Google</string>
     <string name="notify.auth_by_VK">Теперь приложение авторизовано для доступа к данным VK</string>
 
     <!--Dummies-->
     <string name="dummy.app_name">Elena Space DevIntensive</string>
-    <string name="dummy.profile_phone">71234567890</string>
-    <string name="dummy.profile_email">example@mail.com</string>
-    <string name="dummy.profile_vk">vk.com/id00000000</string>
-    <string name="dummy.profile_gitHubRepo">github.com/Example/ExampleRepo</string>
+    <string name="dummy.profile_phone" tools:ignore="UnusedResources">71234567890</string>
+    <string name="dummy.profile_email" tools:ignore="UnusedResources">example@mail.com</string>
+    <string name="dummy.profile_vk" tools:ignore="UnusedResources">vk.com/id00000000</string>
+    <string name="dummy.profile_gitHubRepo" tools:ignore="UnusedResources">github.com/Example/ExampleRepo</string>
     <string name="dummy.profile_about">Lorem ipsum dolor sit amet, ius libris definiebas no, cum
         natum denique philosophia ut, corpora adipisci qui id. Ad vix suas enim sententiae, cu eos
         nusquam commune, an autem reprimique deterruisset nec. Purto aliquip in vim, te usu sale
@@ -87,10 +92,5 @@
     </string>
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
-    <string name="header.view">Просмотр</string>
-    <string name="hint.search">Поиск</string>
-    <string name="hint.searchByName">Поиск по имени…</string>
-    <string name="header.current_homeTask">Hometask</string>
-    <string name="hint.loading">Загрузка…</string>
 
 </resources>

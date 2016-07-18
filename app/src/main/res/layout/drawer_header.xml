@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/nav_header_bg"
     android:orientation="vertical"
     android:paddingBottom="@dimen/size_small_8"
     android:paddingLeft="@dimen/spacing_normal_16"
     android:paddingRight="@dimen/spacing_normal_16"
     android:paddingTop="@dimen/spacing_medial_24"
-    tools:ignore="contentDescription">
+    tools:ignore="Overdraw,contentDescription">
 
     <ImageView
         android:id="@+id/rounded_avatar"
         android:layout_width="@dimen/size_medium_64"
         android:layout_height="@dimen/size_medium_64"
-        android:layout_marginTop="@dimen/spacing_normal_16"
-        />
+        android:layout_marginTop="@dimen/spacing_normal_16" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,11 +28,11 @@
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/menu_userName_txt"
             style="@style/navView_Text.header_Name"
-            app:typeface="roboto_medium"/>
+            app:typeface="roboto_medium" />
 
         <TextView
             android:id="@+id/menu_userEmail_txt"
-            style="@style/navView_Text.header_Email"/>
+            style="@style/navView_Text.header_Email" />
     </LinearLayout>
 
 </RelativeLayout>

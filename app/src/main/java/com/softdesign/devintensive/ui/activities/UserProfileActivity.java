@@ -20,10 +20,10 @@ import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -91,6 +91,7 @@ public class UserProfileActivity extends BaseActivity {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
         if (mode == 1)
@@ -113,7 +114,7 @@ public class UserProfileActivity extends BaseActivity {
             }
         });
 
-        setListViewHeightBasedOnChildren(mListView_repo);
+        if (repositories.size() > 0) setListViewHeightBasedOnChildren(mListView_repo);
 
         mTextViews_userProfileValues.get(0).setText(userDTO.getRating());
         mTextViews_userProfileValues.get(1).setText(userDTO.getCodeLines());
@@ -122,12 +123,6 @@ public class UserProfileActivity extends BaseActivity {
 
         mCollapsingToolbarLayout.setTitle(userDTO.getFullName());
 
-        Picasso.with(this)
-                .load(userDTO.getUserPhoto())
-                .placeholder(R.drawable.user_bg)
-                .error(R.drawable.user_bg)
-                .fit()
-                .centerInside()
-                .into(mImageView_profilePhoto);
+        CustomGlideModule.loadImage(userDTO.getUserPhoto(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
     }
 }

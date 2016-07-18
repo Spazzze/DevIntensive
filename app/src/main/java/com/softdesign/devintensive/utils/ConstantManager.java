@@ -3,6 +3,7 @@ package com.softdesign.devintensive.utils;
 /**
  * Used to store all constants
  */
+@SuppressWarnings("unused")
 public interface ConstantManager {
     //String constants
     String TAG_PREFIX = "DEV ";
@@ -20,7 +21,6 @@ public interface ConstantManager {
     String SAVE_LOGIN = "SAVE_LOGIN";
     String SAVED_LOGIN_NAME = "SAVED_LOGIN_NAME";
 
-
     //Dialog constants
     int LOAD_PROFILE_PHOTO = 1;
 
@@ -34,7 +34,6 @@ public interface ConstantManager {
     int REQUEST_CAMERA_PICTURE = 99;
     int REQUEST_GALLERY_PICTURE = 98;
 
-
     //Some of http response constants
     int HTTP_RESPONSE_NOT_FOUND = 404;
 
@@ -47,4 +46,9 @@ public interface ConstantManager {
 
     //Fragments
     String TAG_USER_LIST_TASK_FRAGMENT = "TAG_USER_LIST_TASK_FRAGMENT";
+
+    //Patterns
+    String PATTERN_EMAIL = "^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";
+    String PATTERN_VK_LINK = "^vk.com\\/\\w{3,}$";
+    String PATTERN_GITHUB_LINK = "^github.com\\/\\w{3,}([\\/]\\w*)*$";
 }

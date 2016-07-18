@@ -24,10 +24,17 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.api.res.UserListRes;
+import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
+import com.softdesign.devintensive.data.storage.models.RepositoryEntityDao;
+import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,11 +42,30 @@ import java.util.Locale;
 /**
  * Helper class to work with UI
  */
+@SuppressWarnings("unused")
 public class UiHelper {
 
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     //region UI calculations
+
+    /**
+     * checks all args if they equals null or empty
+     *
+     * @param args array of args
+     * @return true if null or empty
+     */
+    public static boolean isEmptyOrNull(Object... args) {
+        for (Object s : args) {
+            if (s == null || s.toString().trim().isEmpty())
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isEmptyOrNull(List<?> list) {
+        return list == null || list.isEmpty();
+    }
 
     /**
      * @param context cur context
@@ -97,6 +123,11 @@ public class UiHelper {
         return deviceWidth;
     }
 
+    /**
+     * sets ListView Height Based On its Children
+     *
+     * @param listView to resize
+     */
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter == null) {
@@ -118,8 +149,27 @@ public class UiHelper {
 
     //region IO system methods
 
+    public static void fillDataBase(List<UserListRes> response) {
+
+        RepositoryEntityDao repoDao = DataManager.getInstance().getDaoSession().getRepositoryEntityDao();
+        UserEntityDao userDao = DataManager.getInstance().getDaoSession().getUserEntityDao();
+
+        List<RepositoryEntity> allRepositories = new ArrayList<>();
+        List<UserEntity> allUsers = new ArrayList<>();
+
+        for (UserListRes user : response) {
+            List<RepositoryEntity> l = user.getRepositories()
+                    .getRepoEntitiesList(String.valueOf(user.getId()));
+            allRepositories.addAll(l);
+            allUsers.add(new UserEntity(user));
+        }
+
+        repoDao.insertOrReplaceInTx(allRepositories);
+        userDao.insertOrReplaceInTx(allUsers);
+    }
+
     /**
-     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
+     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss_1238162378618.png
      *
      * @return file
      */
@@ -138,7 +188,13 @@ public class UiHelper {
         return image;
     }
 
-    public static File createFile(String fileName) throws IOException {
+    /**
+     * creates image file with given name -> name.png  at internal storage
+     *
+     * @param fileName name
+     * @return file
+     */
+    public static File createImageFromName(String fileName) {
         File image = new File(CONTEXT.getFilesDir(), fileName + ".png");
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
@@ -150,6 +206,12 @@ public class UiHelper {
         return image;
     }
 
+    /**
+     * converts internal path like content:// into correct file path
+     *
+     * @param uri uri
+     * @return correct filepath
+     */
     public static String filePathFromUri(@NonNull Uri uri) {
         String filePath = null;
         if ("content".equals(uri.getScheme())) {

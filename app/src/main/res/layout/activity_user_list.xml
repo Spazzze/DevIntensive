@@ -45,6 +45,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="left"
         app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_menu" />
+        app:menu="@menu/drawer_menu"
+        tools:ignore="RtlHardcoded" />
 
 </android.support.v4.widget.DrawerLayout>

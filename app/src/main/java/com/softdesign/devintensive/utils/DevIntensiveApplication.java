@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.facebook.stetho.Stetho;
+import com.softdesign.devintensive.data.storage.models.DaoMaster;
+import com.softdesign.devintensive.data.storage.models.DaoSession;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKSdk;
@@ -15,12 +18,16 @@ import com.vk.sdk.VKSdk;
 public class DevIntensiveApplication extends Application {
     private static SharedPreferences sSharedPreferences;
     private static Context sContext;
+    private static DaoSession sDaoSession;
 
     public static Context getContext() {
         return sContext;
     }
 
-    VKAccessTokenTracker vkAccessTokenTracker = new VKAccessTokenTracker() {
+    /**
+     * Tracks if vk token is valid
+     */
+    private final VKAccessTokenTracker vkAccessTokenTracker = new VKAccessTokenTracker() {
         @Override
         public void onVKAccessTokenChanged(VKAccessToken oldToken, VKAccessToken newToken) {
             if (newToken == null) {
@@ -35,11 +42,21 @@ public class DevIntensiveApplication extends Application {
         super.onCreate();
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sContext = this;
+
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
+
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, AppConfig.DB_NAME);
+        sDaoSession = new DaoMaster(helper.getWritableDb()).newSession();
+
+        Stetho.initializeWithDefaults(this);
     }
 
     public static SharedPreferences getSharedPreferences() {
         return sSharedPreferences;
+    }
+
+    public static DaoSession getDaoSession() {
+        return sDaoSession;
     }
 }
