@@ -35,11 +35,15 @@ public class CustomGlideModule implements GlideModule {
 
     public static void loadImage(final String path, final Drawable placeholder,
                                  final Drawable error, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(path, placeholder, error, target)) {
+        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
             throw new IllegalArgumentException("Some of arguments is null or empty");
         }
+
+        String pathToPhoto = "null";
+        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+
         Glide.with(DevIntensiveApplication.getContext())
-                .load(path)
+                .load(pathToPhoto)
                 .error(error)
                 .placeholder(placeholder)
                 .centerCrop()
@@ -51,11 +55,15 @@ public class CustomGlideModule implements GlideModule {
     @SuppressWarnings("SameParameterValue")
     public static void loadImage(final String path, final int placeholder,
                                  final int error, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(path, placeholder, error, target)) {
+        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
             throw new IllegalArgumentException("Some of arguments is null or empty");
         }
+
+        String pathToPhoto = "null";
+        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+
         Glide.with(DevIntensiveApplication.getContext())
-                .load(path)
+                .load(pathToPhoto)
                 .error(error)
                 .placeholder(placeholder)
                 .centerCrop()

@@ -115,8 +115,8 @@ public class MainActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
 
-        setupUserInfoLayout();
         initUserProfileInfo();
+        setupUserInfoLayout();
         setupDrawer();
         setupToolbar();
 
@@ -396,7 +396,7 @@ public class MainActivity extends BaseActivity {
                 .load(selectedImage)
                 .placeholder(R.drawable.user_bg)
                 .error(R.drawable.user_bg)
-                .fitCenter()
+                .centerCrop()
                 .into(mImageView_profilePhoto);
     }
 
@@ -570,7 +570,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage()));
             }
         });
     }
@@ -604,7 +604,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage()));
             }
         });
     }

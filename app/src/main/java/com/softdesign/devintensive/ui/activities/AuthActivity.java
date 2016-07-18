@@ -3,8 +3,6 @@ package com.softdesign.devintensive.ui.activities;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -17,20 +15,18 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
-import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
-import com.softdesign.devintensive.ui.fragments.DownloadUsersIntoDBFragment;
+import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
+import com.softdesign.devintensive.ui.fragments.UpdateUserInfoFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
+import com.softdesign.devintensive.utils.UiHelper;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
@@ -46,10 +42,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.softdesign.devintensive.utils.UiHelper.getScreenWidth;
-import static com.softdesign.devintensive.utils.UiHelper.isEmptyOrNull;
-
-public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFragment.TaskCallbacks {
+public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks, UpdateUserInfoFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
 
@@ -62,8 +55,8 @@ public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFra
     private DataManager mDataManager;
     private int mWrongPasswordCount;
     private Boolean mUserDataEmpty;
-    private User mUser;
-    private DownloadUsersIntoDBFragment networkFragment;
+    private LoadUsersIntoDBFragment dbNetworkFragment;
+    private UpdateUserInfoFragment updateUserNetwFragment;
 
     //region onCreate
     @Override
@@ -75,32 +68,49 @@ public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFra
         mDataManager = DataManager.getInstance();
         mUserDataEmpty = mDataManager.getPreferencesManager().isEmpty();
 
+        //region Fragment
         FragmentManager fm = getFragmentManager();
-        networkFragment =
-                (DownloadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
+        dbNetworkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
+        updateUserNetwFragment = (UpdateUserInfoFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_UPDATE_TASK_FRAGMENT);
 
-        if (networkFragment == null) {
-            networkFragment = new DownloadUsersIntoDBFragment();
-            fm.beginTransaction().add(networkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
+        if (dbNetworkFragment == null) {
+            dbNetworkFragment = new LoadUsersIntoDBFragment();
+            fm.beginTransaction().add(dbNetworkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
         }
+        if (updateUserNetwFragment == null) {
+            updateUserNetwFragment = new UpdateUserInfoFragment();
+            fm.beginTransaction().add(updateUserNetwFragment, ConstantManager.TAG_USER_UPDATE_TASK_FRAGMENT).commit();
+        }
+        //endregion
 
         if (!mUserDataEmpty) {
-            if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
-                mCheckBox_saveLogin.setChecked(true);
-                mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
-                mEditText_login_email.setSelection(mEditText_login_email.length());
-            }
-            mUser = mDataManager.getPreferencesManager().loadAllUserData();
-            String userId = mDataManager.getPreferencesManager().loadBuiltInAuthId();
-            if (NetworkUtils.isNetworkAvailable(this) && !userId.isEmpty() &&
-                    !mDataManager.getPreferencesManager().loadBuiltInAuthToken().isEmpty()) {
-                silentLogin(userId);
-            }
+            loadLoginName();
+        }
+    }
+
+    private void loadLoginName() {
+        if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
+            mCheckBox_saveLogin.setChecked(true);
+            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
+            mEditText_login_email.setSelection(mEditText_login_email.length());
         }
     }
     //endregion
 
-    //region DownloadUsersIntoDBFragment.TaskCallbacks
+    //region LoadUsersIntoDBFragment.TaskCallbacks
+    @Override
+    public void onAuthRequestCancelled(String error) {
+        if (!UiHelper.isEmptyOrNull(error)) {
+            Log.e(TAG, "onRequestCancelled: " + error);
+            showSnackBar(error);
+        }
+    }
+
+    @Override
+    public void onAuthRequestFinished() {
+        finishSignIn();
+    }
+
     @Override
     public void onRequestStarted() {
     }
@@ -197,33 +207,7 @@ public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFra
                 if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
                     showSnackBar(getString(R.string.error_no_network_connection));
                 } else
-                    showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-            }
-        });
-    }
-
-    private void silentLogin(@NonNull String userId) {
-
-        showProgressDialog();
-
-        Call<BaseModel<User>> call = mDataManager.getUserData(userId);
-
-        call.enqueue(new Callback<BaseModel<User>>() {
-            @Override
-            public void onResponse(Call<BaseModel<User>> call,
-                                   Response<BaseModel<User>> response) {
-                if (response.isSuccessful()) {
-                    updateUserInfo(response.body().getData());
-                } else {
-                    hideProgressDialog();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseModel<User>> call, Throwable t) {
-                hideProgressDialog();
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                Log.e(TAG, "onFailure: " + String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
+                    showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage()));
             }
         });
     }
@@ -250,9 +234,9 @@ public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFra
             mEditText_login_email.setText("");
         }
         mEditText_login_password.setText("");
-        networkFragment.downloadUserListIntoDB();
+        dbNetworkFragment.downloadUserListIntoDB();
         saveUserAuthData(userModelRes);
-        updateUserInfo(userModelRes.getData().getUser());
+        updateUserNetwFragment.updateUserInfo(userModelRes.getData().getUser());
     }
 
     private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
@@ -260,49 +244,6 @@ public class AuthActivity extends BaseActivity implements DownloadUsersIntoDBFra
                 userModelRes.getData().getUser().getId(),
                 userModelRes.getData().getToken()
         );
-    }
-
-    private void updateUserInfo(User user) {
-        if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
-            finishSignIn();
-        } else {
-            mDataManager.getPreferencesManager().saveAllUserData(user);
-            if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
-                String pathToPhoto = user.getPublicInfo().getPhoto();
-                if (!isEmptyOrNull(pathToPhoto)) updateUserPhoto(pathToPhoto);
-            } else {
-                finishSignIn();
-            }
-        }
-    }
-
-    private void updateUserPhoto(@NonNull final String pathToPhoto) {
-
-        int photoWidth = getScreenWidth();
-        int photoHeight = (int) (photoWidth / ConstantManager.ASPECT_RATIO_3_2);
-
-        final GlideTargetIntoBitmap photoTarget = new GlideTargetIntoBitmap(photoWidth, photoHeight, "photo") {
-            @Override
-            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                super.onResourceReady(bitmap, anim);
-                Log.d(TAG, "onResourceReady: Success");
-                mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
-                finishSignIn();
-            }
-
-            @Override
-            public void onLoadFailed(Exception e, Drawable errorDrawable) {
-                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
-                mDataManager.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
-                finishSignIn();
-            }
-        };
-        mImageView_vk.setTag(photoTarget);
-
-        Glide.with(this)
-                .load(pathToPhoto)
-                .asBitmap()
-                .into(photoTarget);
     }
 
     //endregion

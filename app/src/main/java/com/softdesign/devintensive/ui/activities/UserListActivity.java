@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,6 +39,7 @@ import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
+import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
@@ -46,7 +48,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity {
+public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
 
@@ -70,14 +72,29 @@ public class UserListActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
 
+        //region Fragment
+        FragmentManager fm = getFragmentManager();
+        LoadUsersIntoDBFragment networkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
+
+        if (networkFragment == null) {
+            networkFragment = new LoadUsersIntoDBFragment();
+            fm.beginTransaction().add(networkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
+        }
+        //endregion
+
         initUserProfileInfo();
         setupDrawer();
         setupToolbar();
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(llm);
-
-        initUserListAdapter(mDataManager.getUserListFromDb());
+        //// TODO: 18.07.2016 переделать
+        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0) &&
+                !networkFragment.isRequestStarted()) {
+            showProgressDialog();
+            networkFragment.downloadUserListIntoDB();
+        } else
+            initUserListAdapter(mDataManager.getUserListFromDb());
     }
 
     @Override
@@ -102,6 +119,26 @@ public class UserListActivity extends BaseActivity {
             }
         });
         return true;
+    }
+    //endregion
+
+    //region LoadUsersIntoDBFragment.TaskCallbacks
+    @Override
+    public void onRequestStarted() {
+    }
+
+    @Override
+    public void onRequestFinished() {
+        Log.d(TAG, "onRequestFinished: Запрос по сети и запись в БД выполнены успешно");
+        hideProgressDialog();
+        initUserListAdapter(mDataManager.getUserListFromDb());
+    }
+
+    @Override
+    public void onRequestCancelled(String error) {
+        Log.e(TAG, "onRequestCancelled: " + error);
+        hideProgressDialog();
+        showSnackBar(getString(R.string.error_cannot_load_user_list));
     }
     //endregion
 

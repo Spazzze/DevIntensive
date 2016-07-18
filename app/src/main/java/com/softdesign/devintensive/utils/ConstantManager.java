@@ -21,6 +21,8 @@ public interface ConstantManager {
     String SAVE_LOGIN = "SAVE_LOGIN";
     String SAVED_LOGIN_NAME = "SAVED_LOGIN_NAME";
 
+    String DB_UPDATED_TIME_KEY = "DB_UPDATED_TIME";
+
     //Dialog constants
     int LOAD_PROFILE_PHOTO = 1;
 
@@ -46,6 +48,7 @@ public interface ConstantManager {
 
     //Fragments
     String TAG_USER_LIST_TASK_FRAGMENT = "TAG_USER_LIST_TASK_FRAGMENT";
+    String TAG_USER_UPDATE_TASK_FRAGMENT = "TAG_USER_UPDATE_TASK_FRAGMENT";
 
     //Patterns
     String PATTERN_EMAIL = "^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";

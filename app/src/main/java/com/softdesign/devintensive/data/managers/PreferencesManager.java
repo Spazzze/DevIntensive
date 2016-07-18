@@ -5,12 +5,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKSdk;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -160,6 +162,20 @@ public class PreferencesManager {
         VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.clear().apply();
+        DataManager.getInstance().clearDatabases();
+    }
+    //endregion
+
+    //region DB
+    public void saveDBUpdateTime() {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putLong(ConstantManager.DB_UPDATED_TIME_KEY, new Date().getTime());
+        editor.apply();
+    }
+
+    public boolean isDBNeedsUpdate() {
+        long updatedTime = mSharedPreferences.getLong(ConstantManager.DB_UPDATED_TIME_KEY, 0);
+        return (new Date().getTime() - updatedTime) > AppConfig.DB_REFRESH_RATE;
     }
     //endregion
 }

@@ -2,7 +2,6 @@ package com.softdesign.devintensive.ui.adapters;
 
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,16 +45,8 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
 
         final UserEntity user = mUsers.get(position);
-        final String userPhoto;
 
-        if (UiHelper.isEmptyOrNull(user.getPhoto())) {
-            userPhoto = "null";
-            Log.d(TAG, String.format("onBindViewHolder: user with name %s has empty photo.", user.getFullName()));
-        } else {
-            userPhoto = user.getPhoto();
-        }
-
-        CustomGlideModule.loadImage(userPhoto, holder.mPlaceHolder, holder.mPlaceHolder, holder.mUserPhoto);
+        CustomGlideModule.loadImage(user.getPhoto(), holder.mPlaceHolder, holder.mPlaceHolder, holder.mUserPhoto);
 
         holder.mFullName.setText(user.getFullName());
         holder.mRating.setText(String.valueOf(user.getRating()));

@@ -24,17 +24,10 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.api.res.UserListRes;
-import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
-import com.softdesign.devintensive.data.storage.models.RepositoryEntityDao;
-import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -148,25 +141,6 @@ public class UiHelper {
     //endregion
 
     //region IO system methods
-
-    public static void fillDataBase(List<UserListRes> response) {
-
-        RepositoryEntityDao repoDao = DataManager.getInstance().getDaoSession().getRepositoryEntityDao();
-        UserEntityDao userDao = DataManager.getInstance().getDaoSession().getUserEntityDao();
-
-        List<RepositoryEntity> allRepositories = new ArrayList<>();
-        List<UserEntity> allUsers = new ArrayList<>();
-
-        for (UserListRes user : response) {
-            List<RepositoryEntity> l = user.getRepositories()
-                    .getRepoEntitiesList(String.valueOf(user.getId()));
-            allRepositories.addAll(l);
-            allUsers.add(new UserEntity(user));
-        }
-
-        repoDao.insertOrReplaceInTx(allRepositories);
-        userDao.insertOrReplaceInTx(allUsers);
-    }
 
     /**
      * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss_1238162378618.png

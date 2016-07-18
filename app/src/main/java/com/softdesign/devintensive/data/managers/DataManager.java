@@ -10,12 +10,15 @@ import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
+import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -50,6 +53,13 @@ public class DataManager {
         return mPreferencesManager;
     }
 
+    //endregion
+    //region ========== Auth ===========
+    public boolean isUserAuthenticated() {
+        return !mPreferencesManager.loadBuiltInAuthId().isEmpty() && !mPreferencesManager.loadBuiltInAuthToken().isEmpty();
+    }
+    //endregion
+
     //region ========== Network ===========
     public Call<BaseModel<UserAuthRes>> loginUser(@Body UserLoginReq req) {
         return mRestService.loginUser(req);
@@ -80,7 +90,7 @@ public class DataManager {
 
         try {
             userList = mDaoSession.queryBuilder(UserEntity.class)
-                    .where(UserEntityDao.Properties.Rating.gt(0))
+/*                    .where(UserEntityDao.Properties.Rating.gt(0))*/
                     .orderDesc(UserEntityDao.Properties.Rating)
                     .build()
                     .list();
@@ -89,6 +99,51 @@ public class DataManager {
         }
 
         return userList;
+    }
+
+    public void fillDataBase(@Nonnull List<UserListRes> response) {
+
+        List<RepositoryEntity> allRepositories = new ArrayList<>();
+        List<UserEntity> allUsers = new ArrayList<>();
+
+        for (UserListRes user : response) {
+            List<RepositoryEntity> l = user.getRepositories()
+                    .getRepoEntitiesList(String.valueOf(user.getId()));
+            allRepositories.addAll(l);
+            allUsers.add(new UserEntity(user));
+        }
+
+        mDaoSession.getRepositoryEntityDao().insertOrReplaceInTx(allRepositories);
+        mDaoSession.getUserEntityDao().insertOrReplaceInTx(allUsers);
+        mPreferencesManager.saveDBUpdateTime();
+    }
+
+    public long getUsersDBSize() {
+        try {
+            return mDaoSession.queryBuilder(UserEntity.class)
+                    .build()
+                    .list().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public long getRepoDBSize() {
+        try {
+            return mDaoSession.queryBuilder(RepositoryEntity.class)
+                    .build()
+                    .list().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public void clearDatabases() {
+        mDaoSession.getRepositoryEntityDao().deleteAll();
+        mDaoSession.getUserEntityDao().deleteAll();
+        mDaoSession.clear();
     }
 
     //endregion

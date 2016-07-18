@@ -25,13 +25,10 @@ public class UserEntity {
     @Unique
     private String remoteId;
 
-    private String photo;
-
     @NotNull
     private String fullName;
 
     @NotNull
-    @Unique
     private String searchName;
 
     private int rating;
@@ -39,6 +36,7 @@ public class UserEntity {
     private int projects;
     private String homeTask;
     private String bio;
+    private String photo;
 
     @ToMany(joinProperties = {
             @JoinProperty(name = "remoteId", referencedName = "userRemoteId")
@@ -134,13 +132,11 @@ public class UserEntity {
         myDao = daoSession != null ? daoSession.getUserEntityDao() : null;
     }
 
-    @Generated(hash = 780275786)
-    public UserEntity(Long id, @NotNull String remoteId, String photo,
-                      @NotNull String fullName, @NotNull String searchName, int rating,
-                      int codeLines, int projects, String homeTask, String bio) {
+    @Generated(hash = 234164541)
+    public UserEntity(Long id, @NotNull String remoteId, @NotNull String fullName, @NotNull String searchName, int rating,
+            int codeLines, int projects, String homeTask, String bio, String photo) {
         this.id = id;
         this.remoteId = remoteId;
-        this.photo = photo;
         this.fullName = fullName;
         this.searchName = searchName;
         this.rating = rating;
@@ -148,6 +144,7 @@ public class UserEntity {
         this.projects = projects;
         this.homeTask = homeTask;
         this.bio = bio;
+        this.photo = photo;
     }
 
     @Generated(hash = 1433178141)

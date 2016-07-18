@@ -28,38 +28,32 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
 
-        <!--BaseActivity-->
+        <!-- BaseActivity -->
         <activity android:name=".ui.activities.BaseActivity" />
 
-        <!--AuthActivity-->
+        <!-- AuthActivity -->
         <activity
             android:name=".ui.activities.AuthActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:launchMode="singleTask" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!--MainActivity-->
+        <!-- MainActivity -->
         <activity
             android:name=".ui.activities.MainActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
-        <!--UserListActivity-->
+        <!-- UserListActivity -->
         <activity
             android:name=".ui.activities.UserListActivity"
             android:launchMode="singleTask" />
 
-        <!--UserProfileActivity-->
+        <!-- UserProfileActivity -->
         <activity
             android:name=".ui.activities.UserProfileActivity"
             android:launchMode="singleTask"
             android:parentActivityName=".ui.activities.UserListActivity" />
 
-        <!--VKServiceActivity-->
+        <!-- VKServiceActivity -->
         <activity
             android:name="com.vk.sdk.VKServiceActivity"
             android:label="ServiceActivity"
@@ -71,6 +65,17 @@
             android:name="com.softdesign.devintensive.data.network.CustomGlideModule"
             android:value="GlideModule" />
 
+        <activity
+            android:name=".ui.activities.SplashActivity"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:theme="@style/SplashTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

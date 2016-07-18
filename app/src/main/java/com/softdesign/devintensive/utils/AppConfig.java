@@ -2,6 +2,8 @@ package com.softdesign.devintensive.utils;
 
 public interface AppConfig {
     String DB_NAME = "devintensive-db";
+    int DB_REFRESH_RATE = 5 * 60 * 1000;
+
     String BASE_URL = "http://devintensive.softdesign-apps.ru/api/";
     String FORGOT_PASS_URL = "http://devintensive.softdesign-apps.ru/forgotpass/";
 
