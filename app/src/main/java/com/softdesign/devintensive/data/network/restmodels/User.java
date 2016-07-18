@@ -50,6 +50,22 @@ public class User {
         return secondName;
     }
 
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
     public Repositories getRepositories() {
         return repositories;
     }
@@ -64,5 +80,21 @@ public class User {
 
     public PublicInfo getPublicInfo() {
         return PublicInfo;
+    }
+
+    public void setRepositories(Repositories repositories) {
+        this.repositories = repositories;
+    }
+
+    public void setContacts(Contacts contacts) {
+        this.contacts = contacts;
+    }
+
+    public void setProfileValues(ProfileValues profileValues) {
+        this.profileValues = profileValues;
+    }
+
+    public void setPublicInfo(com.softdesign.devintensive.data.network.restmodels.PublicInfo publicInfo) {
+        PublicInfo = publicInfo;
     }
 }

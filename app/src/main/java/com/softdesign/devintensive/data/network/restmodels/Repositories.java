@@ -19,4 +19,20 @@ public class Repositories {
     public List<Repo> getRepo() {
         return repo;
     }
+
+    public List<String> getRepoList() {
+        List<String> gitLinks = new ArrayList<>();
+        for (Repo r: repo){
+            gitLinks.add(r.getGit());
+        }
+        return gitLinks;
+    }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
 }

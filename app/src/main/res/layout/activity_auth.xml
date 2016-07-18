@@ -78,20 +78,6 @@
                             android:layout_height="wrap_content"
                             android:src="@drawable/ic_vk_colored_24" />
 
-                        <!--Google-->
-                        <ImageView
-                            android:id="@+id/signIn_google_icon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_google_plus_box_colored_24" />
-
-                        <!--Facebook-->
-                        <ImageView
-                            android:id="@+id/singIn_fb_icon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_facebook_box_colored_24" />
-
                     </LinearLayout>
 
                 </LinearLayout>

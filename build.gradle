@@ -17,9 +17,14 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'com.google.gms:google-services:2.0.0-alpha6'
     }
+}
+
+// Required because retrolambda is on maven central
+repositories {
+    mavenCentral()
 }
 
 allprojects {

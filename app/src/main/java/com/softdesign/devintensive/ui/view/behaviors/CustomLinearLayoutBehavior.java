@@ -11,7 +11,7 @@ import android.view.View;
 import com.softdesign.devintensive.utils.ConstantManager;
 
 import static com.softdesign.devintensive.utils.UiHelper.getAppBarSize;
-import static com.softdesign.devintensive.utils.UiHelper.getHeight;
+import static com.softdesign.devintensive.utils.UiHelper.getMinHeight;
 import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
 
 /**
@@ -19,13 +19,13 @@ import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
  *
  * @param <LinearLayout> to link to.
  */
-class LinearLayout_AppBarBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
+class CustomLinearLayoutBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
 
     private final static String TAG = ConstantManager.TAG_PREFIX + "LLBehavior";
     private final Context mContext;
     private float minLLSize, maxScrollDistance, minDependencyScrollY, maxLLSize, mExpandedPercentageFactor;
 
-    public LinearLayout_AppBarBehavior(Context context, AttributeSet attrs) {
+    public CustomLinearLayoutBehavior(Context context, AttributeSet attrs) {
         this.mContext = context;
     }
 
@@ -92,7 +92,7 @@ class LinearLayout_AppBarBehavior<LinearLayout extends View> extends Coordinator
 
     private void initProperties(CoordinatorLayout parent, LinearLayout child, AppBarLayout dependency) {  //расчет начальных параметров
         maxLLSize = child.getHeight();
-        minLLSize = getHeight(child);  //найдет минимальную высоту child, которая полностью вместит его контент, т.е. высоту если будет wrap_content
+        minLLSize = getMinHeight(child);  //найдет минимальную высоту child, которая полностью вместит его контент, т.е. высоту если будет wrap_content
         minDependencyScrollY = getStatusBarHeight(mContext) + getAppBarSize(mContext);
         maxScrollDistance = dependency.getHeight() - minDependencyScrollY;
     }

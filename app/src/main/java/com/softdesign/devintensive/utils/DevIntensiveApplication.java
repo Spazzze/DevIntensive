@@ -1,10 +1,10 @@
 package com.softdesign.devintensive.utils;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.facebook.FacebookSdk;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKSdk;
@@ -12,7 +12,7 @@ import com.vk.sdk.VKSdk;
 /**
  * Used to get SharedPreferences
  */
-public class DevIntensiveApplication extends android.support.multidex.MultiDexApplication {
+public class DevIntensiveApplication extends Application {
     private static SharedPreferences sSharedPreferences;
     private static Context sContext;
 
@@ -37,7 +37,6 @@ public class DevIntensiveApplication extends android.support.multidex.MultiDexAp
         sContext = this;
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
-        FacebookSdk.sdkInitialize(this);
     }
 
     public static SharedPreferences getSharedPreferences() {

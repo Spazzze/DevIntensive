@@ -1,4 +1,7 @@
 apply plugin: 'com.android.application'
+//retrolambda
+apply plugin: 'me.tatarka.retrolambda'
+//butterKnife
 apply plugin: 'android-apt'
 
 android {
@@ -11,11 +14,10 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
         resConfigs "en", "ru"
     }
     buildTypes {
-        debug {
+/*        debug {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -24,7 +26,7 @@ android {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        }*/
     }
 }
 
@@ -33,22 +35,26 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:design:23.4.0'
-    compile 'com.android.support:multidex:1.0.0'
+
+    //graph libs
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.jakewharton:butterknife:8.1.0'
     compile 'com.android.support:cardview-v7:23.2.0'
     compile 'com.github.johnkil.android-robototextview:robototextview:2.5.0'
+
+    //vk
     compile 'com.vk:androidsdk:1.6.5'
-    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile 'com.google.android.gms:play-services:8.4.0'
+
+    //retrofit
     compile('com.squareup.retrofit2:retrofit:2.1.0') {
         exclude module: 'okhhtp'
     }
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+
+    //okHttp3
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
     compile 'com.squareup.okhttp3:logging-interceptor:3.3.1'
 
+    //butterKnife
+    compile 'com.jakewharton:butterknife:8.1.0'
     apt 'com.jakewharton:butterknife-compiler:8.1.0'
 }
-
-apply plugin: 'com.google.gms.google-services'

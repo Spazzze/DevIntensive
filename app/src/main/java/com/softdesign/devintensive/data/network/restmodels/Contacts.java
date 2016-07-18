@@ -42,4 +42,12 @@ public class Contacts {
     public String getEmail() {
         return email;
     }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
 }

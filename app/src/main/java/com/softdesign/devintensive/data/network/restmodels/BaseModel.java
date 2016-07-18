@@ -1,20 +1,17 @@
-package com.softdesign.devintensive.data.network.api.res;
+package com.softdesign.devintensive.data.network.restmodels;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.softdesign.devintensive.data.network.restmodels.Data;
 
-public class UserModelRes {
-
+public class BaseModel<T> {
     @SerializedName("success")
     @Expose
     private boolean success;
     @SerializedName("data")
     @Expose
-    private Data data;
+    private T data;
 
-    public Data getData() {
+    public T getData() {
         return data;
     }
-
 }

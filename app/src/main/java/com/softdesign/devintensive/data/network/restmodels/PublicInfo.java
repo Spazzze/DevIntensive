@@ -34,4 +34,12 @@ public class PublicInfo {
     public String getPhoto() {
         return photo;
     }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
 }

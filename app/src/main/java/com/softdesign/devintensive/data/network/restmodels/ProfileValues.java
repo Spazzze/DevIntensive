@@ -22,15 +22,27 @@ public class ProfileValues {
     @Expose
     private String updated;
 
-    public int getLinesCode() {
-        return linesCode;
+    public String getLinesCode() {
+        return String.valueOf(linesCode);
     }
 
-    public int getRating() {
-        return rating;
+    public String getRating() {
+        return String.valueOf(rating);
     }
 
-    public int getProjects() {
-        return projects;
+    public String getProjects() {
+        return String.valueOf(projects);
+    }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public String getHomeTask() {
+        return String.valueOf(homeTask);
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
     }
 }

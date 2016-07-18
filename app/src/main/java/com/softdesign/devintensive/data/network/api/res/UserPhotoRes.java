@@ -5,20 +5,18 @@ import com.google.gson.annotations.SerializedName;
 
 public class UserPhotoRes {
 
-    @SerializedName("success")
+    @SerializedName("photo")
     @Expose
-    public Boolean success;
-    @SerializedName("data")
+    private String photo;
+    @SerializedName("updated")
     @Expose
-    public Data data;
+    private String updated;
 
-    public class Data {
+    public String getPhoto() {
+        return photo;
+    }
 
-        @SerializedName("photo")
-        @Expose
-        public String photo;
-        @SerializedName("updated")
-        @Expose
-        public String updated;
+    public String getUpdated() {
+        return updated;
     }
 }

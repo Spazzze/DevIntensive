@@ -1,9 +1,10 @@
-package com.softdesign.devintensive.data.network.restmodels;
+package com.softdesign.devintensive.data.network.api.res;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.network.restmodels.User;
 
-public class Data {
+public class UserAuthRes {
 
     @SerializedName("user")
     @Expose
@@ -19,5 +20,4 @@ public class Data {
     public User getUser() {
         return user;
     }
-
 }

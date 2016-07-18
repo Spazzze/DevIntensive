@@ -3,9 +3,7 @@ package com.softdesign.devintensive.data.managers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.util.Log;
 
-import com.facebook.login.LoginManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -72,7 +70,6 @@ public class PreferencesManager {
 
     //region User Photo
     public void saveUserPhoto(Uri uri) {
-        Log.d(TAG, "saveUserPhoto: " + uri);
         if (uri != null) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(ConstantManager.USER_PROFILE_PHOTO_URI, uri.toString());
@@ -88,7 +85,6 @@ public class PreferencesManager {
 
     //region User Avatar
     public void saveUserAvatar(String uri) {
-        Log.d(TAG, "saveUserAvatar: " + uri);
         if (uri != null) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(ConstantManager.USER_PROFILE_AVATAR_URI, uri);
@@ -125,7 +121,6 @@ public class PreferencesManager {
     //region Vk Auth
     public void saveVKAuthorizationInfo(VKAccessToken res) {
         if (res != null) {
-            saveAuthorizationSystem(ConstantManager.AUTH_VK);
             res.saveTokenToSharedPreferences(mContext, ConstantManager.VK_ACCESS_TOKEN);
         }
     }
@@ -135,46 +130,7 @@ public class PreferencesManager {
     }
     //endregion
 
-    //region Google Auth
-    public void saveGoogleAuthorizationInfo(String accountName, String accountType, String token) {
-        if (token != null && accountName != null && accountType != null) {
-            saveAuthorizationSystem(ConstantManager.AUTH_GOOGLE);
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_NAME, accountName);
-            editor.putString(ConstantManager.GOOGLE_ACCESS_ACC_TYPE, accountType);
-            editor.putString(ConstantManager.GOOGLE_ACCESS_TOKEN, token);
-            editor.apply();
-        }
-    }
-
-    public List<String> loadGoogleAuthorizationInfo() {
-        List<String> authDataList = new ArrayList<>();
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_ACC_NAME, ""));
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_ACC_TYPE, ""));
-        authDataList.add(mSharedPreferences.getString(ConstantManager.GOOGLE_ACCESS_TOKEN, ""));
-        return authDataList;
-    }
-
-    public void removeGoogleAuthorizationOnDestroy() {
-        //removing google token on exit
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.remove(ConstantManager.GOOGLE_ACCESS_TOKEN);
-        editor.apply();
-    }
-    //endregion
-
     //region General auth methods
-    public void saveAuthorizationSystem(String system) {
-        if (system != null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(ConstantManager.AUTHORIZATION_SYSTEM, system);
-            editor.apply();
-        }
-    }
-
-    public String getAuthorizationSystem() {
-        return mSharedPreferences.getString(ConstantManager.AUTHORIZATION_SYSTEM, "");
-    }
 
     public void softLogout() {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
@@ -201,7 +157,6 @@ public class PreferencesManager {
     public void totalLogout() {
         //removing all received tokens and auth status
         VKSdk.logout();                         //vk logout
-        LoginManager.getInstance().logOut();    //fb logout
         VKAccessToken.removeTokenAtKey(mContext, ConstantManager.VK_ACCESS_TOKEN);
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.clear().apply();

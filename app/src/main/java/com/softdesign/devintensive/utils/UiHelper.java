@@ -17,7 +17,10 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -69,7 +72,7 @@ public class UiHelper {
      * @param v examined view
      * @return minimum view height which this view needs to wrap its content
      */
-    public static int getHeight(View v) {
+    public static int getMinHeight(View v) {
         int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(getScreenWidth(), View.MeasureSpec.AT_MOST);
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         v.measure(widthMeasureSpec, heightMeasureSpec);
@@ -92,6 +95,24 @@ public class UiHelper {
             deviceWidth = display.getWidth();
         }
         return deviceWidth;
+    }
+
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+
+        int totalHeight;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
+        View listItem = listAdapter.getView(0, null, listView);
+        listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+        totalHeight = listItem.getMeasuredHeight() + (listItem.getMeasuredHeight() * (listAdapter.getCount() - 1));
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
     }
     //endregion
 
