@@ -10,13 +10,12 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.ErrorUtils;
-import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.List;
 
+import lombok.Getter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,30 +28,32 @@ public class LoadUsersIntoDBFragment extends Fragment {
     private static final String TAG = ConstantManager.TAG_PREFIX + "getUsersIntoDBFrag";
 
     private TaskCallbacks mCallbacks;
-    private boolean isRequestSuccessful = false;
-    private String mError = null;
+
+    @Getter private boolean isRequestSuccessful = false;
+    @Getter private boolean isRequestStarted = false;
+    @Getter private String mError = null;
     private DataManager mDataManager;
-    private boolean isRequestStarted = false;
 
     @SuppressWarnings("EmptyMethod")
     public interface TaskCallbacks {
 
-        void onRequestStarted();
+        void onLoadIntoDBStarted();
 
-        void onRequestFinished();
+        void onLoadIntoDBCompleted();
 
-        void onRequestCancelled(String error);
+        void onLoadIntoDBFailed(String error);
     }
 
+    //region Fragment Life Cycle
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (mCallbacks != null) {
             if (isRequestSuccessful)
-                mCallbacks.onRequestFinished();
+                mCallbacks.onLoadIntoDBCompleted();
             else {
                 if (!UiHelper.isEmptyOrNull(mError)) {
-                    mCallbacks.onRequestCancelled(mError);
+                    mCallbacks.onLoadIntoDBFailed(mError);
                 }
             }
         }
@@ -85,9 +86,6 @@ public class LoadUsersIntoDBFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         mDataManager = DataManager.getInstance();
-        if (mDataManager.isUserAuthenticated()
-                && mDataManager.getPreferencesManager().isDBNeedsUpdate())
-            downloadUserListIntoDB();
     }
 
     /**
@@ -99,58 +97,82 @@ public class LoadUsersIntoDBFragment extends Fragment {
         super.onDetach();
         mCallbacks = null;
     }
+    //endregion
 
-    public boolean isRequestStarted() {
-        return isRequestStarted;
-    }
+    //region Network Requests
 
     /**
      * The Activity can call this when it wants to start the task
      */
     public void downloadUserListIntoDB() {
         Log.d(TAG, "downloadUserListIntoDB: ");
-        if (!NetworkUtils.isNetworkAvailable(DevIntensiveApplication.getContext())) {
-            if (mCallbacks != null)
-                mCallbacks.onRequestCancelled(getString(R.string.error_no_network_connection));
+        if (!mDataManager.isUserAuthenticated() ||
+                !mDataManager.getPreferencesManager().isDBNeedsUpdate() || isRequestStarted)
             return;
-        }
 
-        isRequestSuccessful = false;
-        mError = null;
-        isRequestStarted = true;
+        onRequestStarted();
 
-        if (mCallbacks != null) mCallbacks.onRequestStarted();
         Call<BaseListModel<UserListRes>> call = DataManager.getInstance().getUserListFromNetwork();
         call.enqueue(new Callback<BaseListModel<UserListRes>>() {
                          @Override
                          public void onResponse(Call<BaseListModel<UserListRes>> call, final Response<BaseListModel<UserListRes>> response) {
                              if (response.isSuccessful()) {
-
                                  List<UserListRes> responseData = response.body().getData();
-
                                  if (UiHelper.isEmptyOrNull(responseData)) {
-                                     mError = getString(R.string.error_response_is_empty);
-                                     if (mCallbacks != null)
-                                         mCallbacks.onRequestCancelled(mError);
-                                     return;
+                                     onRequestEmpty();
+                                 } else {
+                                     onDownloadComplete(responseData);
                                  }
-
-                                 isRequestSuccessful = true;
-                                 mDataManager.fillDataBase(responseData);
-                                 if (mCallbacks != null) mCallbacks.onRequestFinished();
                              } else {
-                                 mError = ErrorUtils.parseHttpError(response).getErrorMessage();
-                                 if (mCallbacks != null) mCallbacks.onRequestCancelled(mError);
+                                 onRequestHttpError(ErrorUtils.parseHttpError(response));
                              }
                          }
 
                          @Override
                          public void onFailure(Call<BaseListModel<UserListRes>> call, Throwable t) {
-                             mError = String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage());
-                             if (mCallbacks != null)
-                                 mCallbacks.onRequestCancelled(mError);
+                             onRequestFailure(t);
                          }
                      }
         );
     }
+    //endregion
+
+    //region Handling Request's status
+
+    private void onRequestStarted() {
+        isRequestSuccessful = false;
+        isRequestStarted = true;
+        mError = null;
+        if (mCallbacks != null) mCallbacks.onLoadIntoDBStarted();
+    }
+
+    private void onRequestEmpty() {
+        isRequestStarted = false;
+        mError = getString(R.string.error_response_is_empty);
+        if (mCallbacks != null)
+            mCallbacks.onLoadIntoDBFailed(mError);
+    }
+
+    private void onRequestHttpError(ErrorUtils.BackendHttpError error) {
+        isRequestStarted = false;
+        mError = error.getErrorMessage();
+        Log.e(TAG, "onResponse: " + mError);
+        if (mCallbacks != null) mCallbacks.onLoadIntoDBFailed(mError);
+    }
+
+    private void onRequestFailure(Throwable t) {
+        isRequestStarted = false;
+        mError = String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage());
+        Log.e(TAG, "onFailure: " + mError);
+        if (mCallbacks != null) mCallbacks.onLoadIntoDBFailed(mError);
+    }
+
+    private void onDownloadComplete(List<UserListRes> responseData) {
+        isRequestStarted = false;
+        isRequestSuccessful = true;
+        mDataManager.fillDataBase(responseData);
+        if (mCallbacks != null) mCallbacks.onLoadIntoDBCompleted();
+    }
+
+    //endregion
 }

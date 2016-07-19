@@ -2,6 +2,7 @@ package com.softdesign.devintensive.data.network;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -11,10 +12,13 @@ import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
 import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
 import com.bumptech.glide.module.GlideModule;
+import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.UiHelper;
 
 public class CustomGlideModule implements GlideModule {
+
+    private static final String TAG = ConstantManager.TAG_PREFIX + "CustomGlideModule";
 
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {
@@ -36,7 +40,8 @@ public class CustomGlideModule implements GlideModule {
     public static void loadImage(final String path, final Drawable placeholder,
                                  final Drawable error, final ImageView target) {
         if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
-            throw new IllegalArgumentException("Some of arguments is null or empty");
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
         }
 
         String pathToPhoto = "null";
@@ -56,7 +61,8 @@ public class CustomGlideModule implements GlideModule {
     public static void loadImage(final String path, final int placeholder,
                                  final int error, final ImageView target) {
         if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
-            throw new IllegalArgumentException("Some of arguments is null or empty");
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
         }
 
         String pathToPhoto = "null";

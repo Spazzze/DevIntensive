@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="LinearLayout_AppBarBehavior">
-        <attr name="linear_layout_min_height" format="dimension" />
+    <declare-styleable name="CustomLinearLayoutBehavior">
+        <attr name="min_collapsed_height" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="AspectRatioImageView">

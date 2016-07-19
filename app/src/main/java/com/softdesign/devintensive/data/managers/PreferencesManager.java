@@ -57,8 +57,13 @@ public class PreferencesManager {
 
     public void saveLoginName(String login) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putBoolean(ConstantManager.SAVE_LOGIN, true);
-        editor.putString(ConstantManager.SAVED_LOGIN_NAME, login);
+        if (login == null) {
+            editor.putBoolean(ConstantManager.SAVE_LOGIN, false);
+            editor.putString(ConstantManager.SAVED_LOGIN_NAME, "");
+        } else {
+            editor.putBoolean(ConstantManager.SAVE_LOGIN, true);
+            editor.putString(ConstantManager.SAVED_LOGIN_NAME, login);
+        }
         editor.apply();
     }
 

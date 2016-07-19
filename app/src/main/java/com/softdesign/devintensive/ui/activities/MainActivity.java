@@ -2,7 +2,6 @@ package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -45,6 +44,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
@@ -140,20 +140,17 @@ public class MainActivity extends BaseActivity {
                 String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title));
-                builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int chosenItem) {
-                        switch (chosenItem) {
-                            case 0:
-                                loadPhotoFromCamera();
-                                break;
-                            case 1:
-                                loadPhotoFromGallery();
-                                break;
-                            case 2:
-                                dialog.cancel();
-                                break;
-                        }
+                builder.setItems(selectedItems, (dialog, chosenItem) -> {
+                    switch (chosenItem) {
+                        case 0:
+                            loadPhotoFromCamera();
+                            break;
+                        case 1:
+                            loadPhotoFromGallery();
+                            break;
+                        case 2:
+                            dialog.cancel();
+                            break;
                     }
                 });
                 return builder.create();
@@ -296,27 +293,24 @@ public class MainActivity extends BaseActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             setupDrawerItems(navigationView);
-            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.navMenu_team:
-                            startActivity(new Intent(MainActivity.this, UserListActivity.class));
-                            break;
-                        case R.id.navMenu_options:
-                            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
-                            break;
-                        case R.id.navMenu_logout:
-                            logout(1);
-                            break;
-                        default:
-                            showToast(item.getTitle().toString());
-                            item.setChecked(true);
-                            break;
-                    }
-                    mDrawerLayout.closeDrawer(GravityCompat.START);
-                    return false;
+            navigationView.setNavigationItemSelectedListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.navMenu_team:
+                        startActivity(new Intent(MainActivity.this, UserListActivity.class));
+                        break;
+                    case R.id.navMenu_options:
+                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                        break;
+                    case R.id.navMenu_logout:
+                        logout(1);
+                        break;
+                    default:
+                        showToast(item.getTitle().toString());
+                        item.setChecked(true);
+                        break;
                 }
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return false;
             });
         }
     }
@@ -366,19 +360,16 @@ public class MainActivity extends BaseActivity {
 
     private void setupUserInfoLayout() {
 
-        final View.OnFocusChangeListener focusListener = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    if (v instanceof EditText) {
-                        EditText et = (EditText) v;
-                        if (!et.isEnabled() && !et.isFocusable()) return;
-                        et.setSelection(et.getText().length());
-                    }
-                } else {
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
-                            .hideSoftInputFromWindow(v.getWindowToken(), 0);
+        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
+            if (hasFocus) {
+                if (v instanceof EditText) {
+                    EditText et = (EditText) v;
+                    if (!et.isEnabled() && !et.isFocusable()) return;
+                    et.setSelection(et.getText().length());
                 }
+            } else {
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
+                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
             }
         };
 
@@ -391,33 +382,19 @@ public class MainActivity extends BaseActivity {
 
     private void placeProfilePicture(Uri selectedImage) {
         Log.d(TAG, "placeProfilePicture: " + selectedImage);
-        if (selectedImage == null || selectedImage.toString().isEmpty()) return;
-        Glide.with(this)
-                .load(selectedImage)
-                .placeholder(R.drawable.user_bg)
-                .error(R.drawable.user_bg)
-                .centerCrop()
-                .into(mImageView_profilePhoto);
+        CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
     }
 
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
-    static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
-        @Override
-        public void set(@NonNull TextView view, String[] value, int index) {
-            view.setText(value[index]);
-        }
-    };
+    static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
 
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
-        @Override
-        public void set(@NonNull View view, Boolean value, int index) {
-            view.setEnabled(value);
-            view.setFocusable(value);
-            view.setFocusableInTouchMode(value);
-        }
+    static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
+        view.setEnabled(value);
+        view.setFocusable(value);
+        view.setFocusableInTouchMode(value);
     };
 
     //endregion
@@ -570,7 +547,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage()));
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
             }
         });
     }
@@ -604,7 +581,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response_error), t.getMessage()));
+                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
             }
         });
     }
@@ -693,11 +670,8 @@ public class MainActivity extends BaseActivity {
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
-                        }
+                    .setAction(R.string.header_allow, v -> {
+                        openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
                     }).show();
         }
     }
@@ -720,11 +694,8 @@ public class MainActivity extends BaseActivity {
                     new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     ConstantManager.REQUEST_PERMISSIONS_CAMERA);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
-                        }
+                    .setAction(R.string.header_allow, v -> {
+                        openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
                     }).show();
         }
     }

@@ -89,8 +89,7 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(llm);
         //// TODO: 18.07.2016 переделать
-        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0) &&
-                !networkFragment.isRequestStarted()) {
+        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0)) {
             showProgressDialog();
             networkFragment.downloadUserListIntoDB();
         } else
@@ -124,19 +123,19 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
 
     //region LoadUsersIntoDBFragment.TaskCallbacks
     @Override
-    public void onRequestStarted() {
+    public void onLoadIntoDBStarted() {
     }
 
     @Override
-    public void onRequestFinished() {
-        Log.d(TAG, "onRequestFinished: Запрос по сети и запись в БД выполнены успешно");
+    public void onLoadIntoDBCompleted() {
+        Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
         hideProgressDialog();
         initUserListAdapter(mDataManager.getUserListFromDb());
     }
 
     @Override
-    public void onRequestCancelled(String error) {
-        Log.e(TAG, "onRequestCancelled: " + error);
+    public void onLoadIntoDBFailed(String error) {
+        Log.e(TAG, "onLoadIntoDBFailed: " + error);
         hideProgressDialog();
         showSnackBar(getString(R.string.error_cannot_load_user_list));
     }
@@ -176,27 +175,24 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             setupDrawerItems(navigationView);
-            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.navMenu_userProfile:
-                            startActivity(new Intent(UserListActivity.this, MainActivity.class));
-                            break;
-                        case R.id.navMenu_options:
-                            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
-                            break;
-                        case R.id.navMenu_logout:
-                            logout(1);
-                            break;
-                        default:
-                            showToast(item.getTitle().toString());
-                            item.setChecked(true);
-                            break;
-                    }
-                    mDrawerLayout.closeDrawer(GravityCompat.START);
-                    return false;
+            navigationView.setNavigationItemSelectedListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.navMenu_userProfile:
+                        startActivity(new Intent(UserListActivity.this, MainActivity.class));
+                        break;
+                    case R.id.navMenu_options:
+                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                        break;
+                    case R.id.navMenu_logout:
+                        logout(1);
+                        break;
+                    default:
+                        showToast(item.getTitle().toString());
+                        item.setChecked(true);
+                        break;
                 }
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return false;
             });
         }
     }
@@ -280,14 +276,11 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
             showSnackBar(getString(R.string.error_cannot_load_user_list));
             return;
         }
-        mUsersAdapter = new UsersAdapter(userEntities, new UsersAdapter.UserViewHolder.CustomClickListener() {
-            @Override
-            public void onUserItemClickListener(int position) {
-                UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
-                Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-                profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                startActivity(profileUserIntent);
-            }
+        mUsersAdapter = new UsersAdapter(userEntities, position -> {
+            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
+            Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
+            profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+            startActivity(profileUserIntent);
         });
         mRecyclerView.setAdapter(mUsersAdapter);
     }

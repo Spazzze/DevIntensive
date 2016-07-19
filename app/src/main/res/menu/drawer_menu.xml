@@ -7,13 +7,13 @@
             android:icon="@drawable/ic_account_circle_black_24dp"
             android:title="@string/header.menu_myProfile" />
         <item
-            android:id="@+id/navMenu_contacts"
-            android:icon="@drawable/ic_people_black_24dp"
-            android:title="@string/header.menu_myContacts" />
-        <item
             android:id="@+id/navMenu_team"
             android:icon="@drawable/ic_team_black_24dp"
             android:title="@string/header.menu_myTeam" />
+        <item
+            android:id="@+id/navMenu_contacts"
+            android:icon="@drawable/ic_people_black_24dp"
+            android:title="@string/header.menu_myContacts" />
         <item
             android:id="@+id/navMenu_tasks"
             android:icon="@drawable/ic_tasks_black_24dp"

@@ -23,19 +23,16 @@ class CustomNestedScrollViewBehavior extends AppBarLayout.ScrollingViewBehavior 
 
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, View child, View dependency) {
-        final CoordinatorLayout.LayoutParams lp =
-                (CoordinatorLayout.LayoutParams) child.getLayoutParams();
-        LinearLayout linearLayout;
-        if (dependency instanceof LinearLayout) {
-            linearLayout = (LinearLayout) dependency;
-            if (lp.getAnchorId() != -1 && lp.getAnchorId() != linearLayout.getId()) {
-                // The anchor ID doesn't match the dependency
+        final CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+        if (dependency instanceof LinearLayout && !(dependency instanceof AppBarLayout)) {
+            if (lp.getAnchorId() != -1 && (lp.getAnchorId() != dependency.getId())) {
+                // The anchor ID exists and doesn't match the dependency
                 return false;
             }
         } else {
             return false;
         }
-        lp.topMargin = dependency.getBottom();
+        lp.topMargin = dependency.getHeight();
         child.setLayoutParams(lp);
         return super.onDependentViewChanged(parent, child, dependency);
     }

@@ -7,15 +7,18 @@ import android.util.Log;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
-import com.softdesign.devintensive.ui.fragments.UpdateUserInfoFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
-public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks, UpdateUserInfoFragment.TaskCallbacks {
+public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks, AuthNetworkFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Splash Activity";
+    private FragmentManager mFragmentManager = getFragmentManager();
+    private LoadUsersIntoDBFragment mDbNetworkFragment;
+    private AuthNetworkFragment mAuthNetworkFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,21 +28,27 @@ public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragm
         if (!NetworkUtils.isNetworkAvailable(DevIntensiveApplication.getContext()) || !dataManager.isUserAuthenticated())
             startAuthActivity();
 
-        //region Fragment
-        FragmentManager fm = getFragmentManager();
-        LoadUsersIntoDBFragment dbNetworkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
-        UpdateUserInfoFragment updateUserInfoFragment = (UpdateUserInfoFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_UPDATE_TASK_FRAGMENT);
-
-        if (dbNetworkFragment == null) {
-            dbNetworkFragment = new LoadUsersIntoDBFragment();
-            fm.beginTransaction().add(dbNetworkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
-        }
-        if (updateUserInfoFragment == null) {
-            updateUserInfoFragment = new UpdateUserInfoFragment();
-            fm.beginTransaction().add(updateUserInfoFragment, ConstantManager.TAG_USER_UPDATE_TASK_FRAGMENT).commit();
-        }
-        //endregion
+        attachAuthFragment();
+        attachLoadIntoDBFragment();
     }
+
+    //region Fragments
+    private void attachAuthFragment() {
+        mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
+        if (mAuthNetworkFragment == null) {
+            mAuthNetworkFragment = new AuthNetworkFragment();
+            mFragmentManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
+        }
+    }
+
+    private void attachLoadIntoDBFragment() {
+        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
+        if (mDbNetworkFragment == null) {
+            mDbNetworkFragment = new LoadUsersIntoDBFragment();
+            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+        }
+    }
+    //endregion
 
     //region TaskCallbacks
 
@@ -50,23 +59,34 @@ public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragm
     }
 
     @Override
+    public void onAuthRequestStarted() {
+
+    }
+
+    @Override
     public void onAuthRequestFinished() {
         Log.d(TAG, "onAuthRequestFinished: " + getString(R.string.notify_auth_successful));
+        mDbNetworkFragment.downloadUserListIntoDB();
         startMainActivity();
     }
 
     @Override
-    public void onRequestStarted() {
+    public void onAuthRequestFailed(int wrongPasswordCount) {
+
     }
 
     @Override
-    public void onRequestFinished() {
-        Log.d(TAG, "onRequestFinished: Запрос по сети и запись в БД выполнены успешно");
+    public void onLoadIntoDBStarted() {
     }
 
     @Override
-    public void onRequestCancelled(String error) {
-        Log.d(TAG, "onRequestCancelled: " + error);
+    public void onLoadIntoDBCompleted() {
+        Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
+    }
+
+    @Override
+    public void onLoadIntoDBFailed(String error) {
+        Log.d(TAG, "onLoadIntoDBFailed: " + error);
     }
     //endregion
 

@@ -54,7 +54,7 @@
     <string name="error.no_network_connection">Нет подключения к интернету, попробуйте позже.</string>
     <string name="error.wrong_credentials">Неверный логин или пароль.</string>
     <string name="error.tries_before_erase">"Осталось неудачных попыток до обнуления данных"</string>
-    <string name="error.unknown_response_error">Возникла ошибка при обращении к серверу: </string>
+    <string name="error.unknown_response">Возникла ошибка при обращении к серверу: </string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
