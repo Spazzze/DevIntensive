@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @SuppressWarnings("unused")
-public class UserPhotoRes {
+public class UserPhotoRes extends BaseResponse {
 
     @SerializedName("photo")
     @Expose

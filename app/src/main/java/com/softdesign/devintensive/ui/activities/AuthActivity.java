@@ -16,10 +16,11 @@ import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.operations.UserLoginDataOperation;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.utils.AppConfig;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UiHelper;
 import com.vk.sdk.VKAccessToken;
@@ -34,9 +35,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class AuthActivity extends BaseActivity implements AuthNetworkFragment.TaskCallbacks {
+public class AuthActivity extends BaseActivity implements AuthNetworkFragment.AuthTaskCallbacks {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
+    private static final String TAG = Const.TAG_PREFIX + "Auth Activity";
 
     @BindView(R.id.auth_CoordinatorL) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.auth_email_editText) EditText mEditText_login_email;
@@ -60,7 +61,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Ta
         attachLoadIntoDBFragment();
 
         mDataManager = DataManager.getInstance();
-        loadLoginName();
+        runOperation(new UserLoginDataOperation());
         mCheckBox_saveLogin.setOnClickListener(this::saveLoginName);
     }
     //endregion
@@ -93,7 +94,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Ta
     }
 
     @Override
-    public void onRequestCompleted() {
+    public void onRequestFinished() {
         mDbNetworkFragment.downloadUserListIntoDB();
         finishSignIn();
     }
@@ -115,13 +116,13 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Ta
     //endregion
 
     //region onClick
-    private void saveLoginName(View v) {  //// TODO: 19.07.2016 eventbus 
+    private void saveLoginName(View v) {
         CheckBox checkBox = (CheckBox) v;
+        String s = null;
         if (checkBox.isChecked()) {
-            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
-        } else {
-            mDataManager.getPreferencesManager().saveLoginName(null);
+            s = mEditText_login_email.getText().toString();
         }
+        runOperation(new UserLoginDataOperation(s));
     }
 
     @OnClick({R.id.login_button, R.id.forgot_pass_button, R.id.signIn_vk_icon})
@@ -166,6 +167,17 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Ta
     }
     //endregion
 
+    //region Background Operation Results
+    @SuppressWarnings("unused")
+    public void onOperationFinished(final UserLoginDataOperation.Result result) {
+        if (result.isSuccessful() && result.getOutput() != null) {
+            mCheckBox_saveLogin.setChecked(true);
+            mEditText_login_email.setText(result.getOutput());
+            mEditText_login_email.setSelection(mEditText_login_email.length());
+        }
+    }
+    //endregion
+
     //region Login methods
 
     private void startSignIn() {
@@ -189,20 +201,8 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Ta
 
     //region Ui methods
 
-    private void loadLoginName() {
-        if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
-            mCheckBox_saveLogin.setChecked(true);
-            mEditText_login_email.setText(mDataManager.getPreferencesManager().loadLoginName());
-            mEditText_login_email.setSelection(mEditText_login_email.length());
-        }
-    }
-
     private void showSnackBar(String message) {
         Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
-
-    private void showSnackBar(int id) {
-        Snackbar.make(mCoordinatorLayout, getString(id), Snackbar.LENGTH_LONG).show();
     }
 
     private void actionDependsOnFailTriesCount(int failsCount) {

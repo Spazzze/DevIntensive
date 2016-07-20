@@ -5,7 +5,7 @@ import android.util.Log;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 
 import retrofit2.Response;
 
@@ -14,13 +14,13 @@ import retrofit2.Response;
  * itself across configuration changes.
  */
 public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
-    private static final String TAG = ConstantManager.TAG_PREFIX + "getUsersIntoDBFrag";
+    private static final String TAG = Const.TAG_PREFIX + "getUsersIntoDBFrag";
 
     /**
      * The Activity can call this when it wants to start the task
      */
     public void downloadUserListIntoDB() {
-        if (getStatus() == Status.RUNNING || !mDataManager.isUserAuthenticated() ||
+        if (this.mStatus == Status.RUNNING || !mDataManager.isUserAuthenticated() ||
                 !mDataManager.getPreferencesManager().isDBNeedsUpdate()) return;
 
         onRequestStarted();

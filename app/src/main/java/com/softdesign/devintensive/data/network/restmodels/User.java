@@ -2,9 +2,10 @@ package com.softdesign.devintensive.data.network.restmodels;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.network.api.res.BaseResponse;
 
 @SuppressWarnings("unused")
-public class User {
+public class User extends BaseResponse {
     @SerializedName("_id")
     @Expose
     private String id;
@@ -95,7 +96,7 @@ public class User {
         this.profileValues = profileValues;
     }
 
-    public void setPublicInfo(com.softdesign.devintensive.data.network.restmodels.PublicInfo publicInfo) {
+    public void setPublicInfo(PublicInfo publicInfo) {
         PublicInfo = publicInfo;
     }
 }

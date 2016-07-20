@@ -73,6 +73,8 @@ dependencies {
 
     compile libraries.greenDao
 
+    compile libraries.eventbus
+
     compile libraries.support
     compile libraries.supportAnnotations
     compile libraries.supportAppCompat
@@ -82,13 +84,13 @@ dependencies {
     compile libraries.butterKnife
     apt libraries.butterKnifeCompiler
 
-    provided libraries.projectLombok
-
     compile libraries.glide
     compile libraries.timber
     compile libraries.robotoTextView
 
     compile libraries.vk
+
+    compile libraries.chronos
 
     // Developer tools (Developer Settings)
     debugCompile libraries.okHttp3LoggingInterceptor

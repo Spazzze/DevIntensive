@@ -4,17 +4,17 @@ import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.redmadrobot.chronos.gui.activity.ChronosAppCompatActivity;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 
 @SuppressWarnings("unused")
-public class BaseActivity extends AppCompatActivity {
-    private static final String TAG = ConstantManager.TAG_PREFIX + "BaseActivity";
+public class BaseActivity extends ChronosAppCompatActivity {
+    private static final String TAG = Const.TAG_PREFIX + "BaseActivity";
     private ProgressDialog mProgressDialog;
 
     public void showProgressDialog() {
@@ -35,7 +35,7 @@ public class BaseActivity extends AppCompatActivity {
 
     public void showError(int messageId) {
         try {
-            showDialogFragment(ConstantManager.DIALOG_SHOW_ERROR, getString(messageId));
+            showDialogFragment(Const.DIALOG_SHOW_ERROR, getString(messageId));
             Log.d(TAG, getString(messageId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,7 +43,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showError(String message) {
-        showDialogFragment(ConstantManager.DIALOG_SHOW_ERROR, message);
+        showDialogFragment(Const.DIALOG_SHOW_ERROR, message);
         Log.d(TAG, String.valueOf(message));
     }
 
@@ -59,5 +59,6 @@ public class BaseActivity extends AppCompatActivity {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId, message);
         newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
     }
+
 
 }

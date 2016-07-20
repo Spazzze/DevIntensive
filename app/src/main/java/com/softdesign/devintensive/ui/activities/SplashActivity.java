@@ -3,18 +3,19 @@ package com.softdesign.devintensive.ui.activities;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
-public class SplashActivity extends BaseActivity implements AuthNetworkFragment.TaskCallbacks {
+public class SplashActivity extends AppCompatActivity implements AuthNetworkFragment.AuthTaskCallbacks {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "Splash Activity";
+    private static final String TAG = Const.TAG_PREFIX + "Splash Activity";
     private FragmentManager mFragmentManager = getFragmentManager();
     private LoadUsersIntoDBFragment mDbNetworkFragment;
     private AuthNetworkFragment mAuthNetworkFragment;
@@ -56,8 +57,8 @@ public class SplashActivity extends BaseActivity implements AuthNetworkFragment.
     }
 
     @Override
-    public void onRequestCompleted() {
-        Log.d(TAG, "onRequestCompleted: ");
+    public void onRequestFinished() {
+        Log.d(TAG, "onRequestFinished: ");
         mDbNetworkFragment.downloadUserListIntoDB(); //// TODO: 19.07.2016 eventbus
         startMainActivity();
     }

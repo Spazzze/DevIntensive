@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.ui.fragments;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,11 +15,14 @@ import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.AppConfig;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.ErrorUtils;
 
+import de.greenrobot.event.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,7 +32,13 @@ import static com.softdesign.devintensive.utils.UiHelper.isEmptyOrNull;
 
 public class AuthNetworkFragment extends BaseNetworkFragment {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "AuthNetworkFragment";
+    private static final String TAG = Const.TAG_PREFIX + "AuthNetworkFragment";
+    public AuthTaskCallbacks mCallbacks;
+
+    public interface AuthTaskCallbacks extends BaseTaskCallbacks {
+
+        void onErrorCount(int count);
+    }
 
     private int mWrongPasswordCount;
     private User mUser;
@@ -41,6 +51,16 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         if (mDataManager.isUserAuthenticated()) silentSignIn();
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (activity instanceof AuthTaskCallbacks) {
+            mCallbacks = (AuthTaskCallbacks) activity;
+        } else {
+            throw new IllegalStateException("Parent activity must implement BaseTaskCallbacks");
+        }
+    }
+
     private void onWrongCredentials() {
         mError = getString(R.string.error_wrong_credentials);
         if (mUser != null) {
@@ -50,6 +70,11 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
             if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
         }
         onRequestHttpError(new ErrorUtils.BackendHttpError(0, mError));
+    }
+
+    public void onRequestComplete(User user) {
+        EventBus.getDefault().post(user);
+        super.onRequestComplete(null);
     }
 
     //region Network Requests
@@ -76,7 +101,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                     }
                 } else {
                     switch (response.code()) {
-                        case ConstantManager.HTTP_RESPONSE_NOT_FOUND:
+                        case Const.HTTP_RESPONSE_NOT_FOUND:
                             onWrongCredentials();
                             break;
                         default:
@@ -124,22 +149,24 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
 
     private void updateUserInfoFromServer(User user) {
         if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
-            onRequestComplete(null);
+            onRequestComplete(user);
         } else {
-            mDataManager.getPreferencesManager().saveAllUserData(user);
+            runOperation(new FullUserDataOperation(user));
             if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
-                String pathToPhoto = user.getPublicInfo().getPhoto();
-                if (!isEmptyOrNull(pathToPhoto)) downloadUserPhoto(pathToPhoto);
+                if (!isEmptyOrNull(user.getPublicInfo().getPhoto()))
+                    downloadUserPhoto(user);
             } else {
-                onRequestComplete(null);
+                onRequestComplete(user);
             }
         }
     }
 
-    private void downloadUserPhoto(@NonNull final String pathToPhoto) {
+    private void downloadUserPhoto(@NonNull final User user) {
         Log.d(TAG, "downloadUserPhoto: ");
+        String pathToPhoto = user.getPublicInfo().getPhoto();
+
         int photoWidth = getScreenWidth();
-        int photoHeight = (int) (photoWidth / ConstantManager.ASPECT_RATIO_3_2);
+        int photoHeight = (int) (photoWidth / Const.ASPECT_RATIO_3_2);
 
         final GlideTargetIntoBitmap photoTarget = new GlideTargetIntoBitmap(photoWidth, photoHeight, "photo") {
             @Override
@@ -147,14 +174,14 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                 super.onResourceReady(bitmap, anim);
                 Log.d(TAG, "onResourceReady: Success");
                 mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
-                onRequestComplete(null);
+                onRequestComplete(user);
             }
 
             @Override
             public void onLoadFailed(Exception e, Drawable errorDrawable) {
                 Log.e(TAG, "downloadUserPhoto onLoadFailed: " + e.getMessage());
                 mDataManager.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
-                onRequestComplete(null);
+                onRequestComplete(user);
             }
         };
         Glide.with(this)

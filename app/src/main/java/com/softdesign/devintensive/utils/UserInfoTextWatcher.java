@@ -220,7 +220,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format ***@**.**
      */
     private boolean isValidEmail(String email) {
-        String pattern = ConstantManager.PATTERN_EMAIL;
+        String pattern = Const.PATTERN_EMAIL;
         return !TextUtils.isEmpty(email) && email.matches(pattern);
     }
 
@@ -229,7 +229,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format vk.com/***
      */
     private boolean isValidVK(String vk) {
-        String pattern = ConstantManager.PATTERN_VK_LINK;
+        String pattern = Const.PATTERN_VK_LINK;
         return !TextUtils.isEmpty(vk) && vk.matches(pattern);
     }
 
@@ -238,7 +238,7 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @return true if it matches format gitHub.com/***
      */
     private boolean isValidGitHub(String s) {
-        String pattern = ConstantManager.PATTERN_GITHUB_LINK;
+        String pattern = Const.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
     //endregion
@@ -256,12 +256,9 @@ public class UserInfoTextWatcher implements TextWatcher {
             mTextInputLayout.setError(errorType);
 
             ERROR_STOP_HANDLER.removeCallbacksAndMessages(null);
-            ERROR_STOP_HANDLER.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mTextInputLayout.setError(null);
-                    mTextInputLayout.setErrorEnabled(false);
-                }
+            ERROR_STOP_HANDLER.postDelayed(() -> {
+                mTextInputLayout.setError(null);
+                mTextInputLayout.setErrorEnabled(false);
             }, ERROR_TIMER_LENGTH);
         } else {
             mTextInputLayout.setError(null);

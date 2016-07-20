@@ -12,13 +12,13 @@ import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
 import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
 import com.bumptech.glide.module.GlideModule;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.UiHelper;
 
 public class CustomGlideModule implements GlideModule {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "CustomGlideModule";
+    private static final String TAG = Const.TAG_PREFIX + "CustomGlideModule";
 
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {

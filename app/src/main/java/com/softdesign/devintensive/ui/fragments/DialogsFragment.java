@@ -8,17 +8,17 @@ import android.support.v7.app.AlertDialog;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 
 public class DialogsFragment extends DialogFragment {
-    private static final String TAG = ConstantManager.TAG_PREFIX + "DialogsFragment";
+    private static final String TAG = Const.TAG_PREFIX + "DialogsFragment";
 
     private MainActivityCallback mCallback;
 
     public static DialogsFragment newInstance(int type) {
         DialogsFragment dialogsFragment = new DialogsFragment();
         Bundle args = new Bundle();
-        args.putInt(ConstantManager.DIALOG_FRAGMENT_KEY, type);
+        args.putInt(Const.DIALOG_FRAGMENT_KEY, type);
         dialogsFragment.setArguments(args);
         return dialogsFragment;
     }
@@ -26,8 +26,8 @@ public class DialogsFragment extends DialogFragment {
     public static DialogsFragment newInstance(int type, String content) {
         DialogsFragment dialogsFragment = new DialogsFragment();
         Bundle args = new Bundle();
-        args.putInt(ConstantManager.DIALOG_FRAGMENT_KEY, type);
-        args.putString(ConstantManager.DIALOG_CONTENT_KEY, content);
+        args.putInt(Const.DIALOG_FRAGMENT_KEY, type);
+        args.putString(Const.DIALOG_CONTENT_KEY, content);
         dialogsFragment.setArguments(args);
         return dialogsFragment;
     }
@@ -43,14 +43,14 @@ public class DialogsFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        int type = getArguments().getInt(ConstantManager.DIALOG_FRAGMENT_KEY);
+        int type = getArguments().getInt(Const.DIALOG_FRAGMENT_KEY);
         switch (type) {
-            case ConstantManager.DIALOG_LOAD_PROFILE_PHOTO:
+            case Const.DIALOG_LOAD_PROFILE_PHOTO:
                 if (mCallback != null) return loadPhotoDialog();
                 else
                     throw new IllegalStateException("Parent activity must implement MainActivityCallback");
-            case ConstantManager.DIALOG_SHOW_ERROR:
-                return errorAlertDialog(getArguments().getString(ConstantManager.DIALOG_CONTENT_KEY));
+            case Const.DIALOG_SHOW_ERROR:
+                return errorAlertDialog(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             default:
                 return errorAlertDialog(getString(R.string.error));
         }

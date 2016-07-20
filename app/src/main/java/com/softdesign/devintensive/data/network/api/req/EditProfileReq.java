@@ -1,10 +1,9 @@
 package com.softdesign.devintensive.data.network.api.req;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
 public class EditProfileReq {
-    private static final String TAG = ConstantManager.TAG_PREFIX + "EditProfileReq";
+    private static final String TAG = Const.TAG_PREFIX + "EditProfileReq";
     @NonNull
     private Map<String, String> mParamsMap = new HashMap<>();
 
@@ -58,7 +57,6 @@ public class EditProfileReq {
         for (Map.Entry<String, String> pair : mParamsMap.entrySet()) {
             String value = pair.getValue();
             if (value == null) continue;
-            Log.d(TAG, "createReqBody: " + value);
             requestBodyMap.put(pair.getKey(),
                     RequestBody.create(MediaType.parse("multipart/form-data"), value));
         }

@@ -29,6 +29,8 @@ ext.versions = [
         glide                  : '3.7.0',
         robotoTextView         : '2.5.0',
         projectLombok          : '1.16.10',
+        chronos                : '1.0.7',
+        eventbus               : '2.4.0',
 
         vk                     : '1.6.5',
 
@@ -70,6 +72,9 @@ ext.libraries = [
         // DB
         greenDao                 : "org.greenrobot:greendao:$versions.greenDao",
 
+        // Events
+        eventbus                 : "de.greenrobot:eventbus:$versions.eventbus",
+
         // Support
         support                  : "com.android.support:support-v4",
         supportAnnotations       : "com.android.support:support-annotations:$versions.supportLibs",
@@ -80,7 +85,7 @@ ext.libraries = [
         butterKnife              : "com.jakewharton:butterknife:$versions.butterKnife",
         butterKnifeCompiler      : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
         projectLombok            : "org.projectlombok:lombok:$versions.projectLombok",
-
+        chronos                  : "com.redmadrobot:chronos:$versions.chronos",
 
         // Graph
         picasso                  : "com.squareup.picasso:picasso:$versions.picasso",

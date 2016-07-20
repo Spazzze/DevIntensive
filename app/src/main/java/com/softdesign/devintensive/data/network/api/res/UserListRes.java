@@ -7,7 +7,7 @@ import com.softdesign.devintensive.data.network.restmodels.PublicInfo;
 import com.softdesign.devintensive.data.network.restmodels.Repositories;
 
 @SuppressWarnings("unused")
-public class UserListRes {
+public class UserListRes extends BaseResponse{
 
     @SerializedName("_id")
     @Expose

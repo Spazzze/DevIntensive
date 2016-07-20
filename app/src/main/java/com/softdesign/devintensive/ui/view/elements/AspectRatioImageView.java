@@ -6,11 +6,11 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 
 public class AspectRatioImageView extends ImageView {
 
-    private static final float DEFAULT_ASPECT_RATIO = ConstantManager.ASPECT_RATIO_3_2;
+    private static final float DEFAULT_ASPECT_RATIO = Const.ASPECT_RATIO_3_2;
     private final float mAspectRatio;
 
     public AspectRatioImageView(Context context, AttributeSet attrs) {

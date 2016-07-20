@@ -20,7 +20,7 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import static com.softdesign.devintensive.utils.UiHelper.setListViewHeightBasedO
 
 public class UserProfileActivity extends BaseActivity {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "UserProfActivity";
+    private static final String TAG = Const.TAG_PREFIX + "UserProfActivity";
 
     @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
 
@@ -94,7 +94,7 @@ public class UserProfileActivity extends BaseActivity {
     }
 
     private void initProfileData() {
-        UserDTO userDTO = getIntent().getParcelableExtra(ConstantManager.PARCELABLE_KEY);
+        UserDTO userDTO = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);
 
         final List<String> repositories = userDTO.getRepositories();
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);

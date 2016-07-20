@@ -36,10 +36,11 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
 import java.util.List;
@@ -47,9 +48,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks {
+public class UserListActivity extends BaseActivity implements BaseTaskCallbacks {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
+    private static final String TAG = Const.TAG_PREFIX + "UserListActivity";
 
     @BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;
     @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
@@ -73,11 +74,11 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
 
         //region Fragment
         FragmentManager fm = getFragmentManager();
-        LoadUsersIntoDBFragment networkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(ConstantManager.TAG_USER_LIST_TASK_FRAGMENT);
+        LoadUsersIntoDBFragment networkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(Const.TAG_USER_LIST_TASK_FRAGMENT);
 
         if (networkFragment == null) {
             networkFragment = new LoadUsersIntoDBFragment();
-            fm.beginTransaction().add(networkFragment, ConstantManager.TAG_USER_LIST_TASK_FRAGMENT).commit();
+            fm.beginTransaction().add(networkFragment, Const.TAG_USER_LIST_TASK_FRAGMENT).commit();
         }
         //endregion
 
@@ -128,7 +129,7 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
     }
 
     @Override
-    public void onRequestCompleted() {
+    public void onRequestFinished() {
         Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
         hideProgressDialog();
         initUserListAdapter(mDataManager.getUserListFromDb());
@@ -139,11 +140,6 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
         Log.e(TAG, "onLoadIntoDBFailed: " + error);
         hideProgressDialog();
         showError(getString(R.string.error_cannot_load_user_list));
-    }
-
-    @Override
-    public void onErrorCount(int count) {
-
     }
     //endregion
 
@@ -282,7 +278,7 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
         mUsersAdapter = new UsersAdapter(userEntities, position -> {
             UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-            profileUserIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
             startActivity(profileUserIntent);
         });
         mRecyclerView.setAdapter(mUsersAdapter);

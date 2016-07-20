@@ -1,36 +1,33 @@
 package com.softdesign.devintensive.ui.fragments;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 
+import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.UiHelper;
 
+import de.greenrobot.event.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class BaseNetworkFragment extends Fragment {
+public class BaseNetworkFragment extends ChronosFragment {
 
-    public TaskCallbacks mCallbacks;
+    public static Context sContext;
+    public BaseTaskCallbacks mCallbacks;
     public DataManager mDataManager;
+    public EventBus mBus = EventBus.getDefault();
 
     public String mError = null;
     public volatile boolean mCancelled = false;
     public volatile Status mStatus = Status.PENDING;
 
-    public interface TaskCallbacks {
-        void onRequestStarted();
-
-        void onRequestCompleted();
-
-        void onRequestFailed(String error);
-
-        void onErrorCount(int count);
-    }
 
     public enum Status {
         PENDING,
@@ -52,7 +49,7 @@ public class BaseNetworkFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         if (mCallbacks != null && mStatus == Status.FINISHED) {
             if (!mCancelled) {
-                mCallbacks.onRequestCompleted();
+                mCallbacks.onRequestFinished();
             } else {
                 mCallbacks.onRequestFailed(mError);
             }
@@ -69,10 +66,10 @@ public class BaseNetworkFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (activity instanceof TaskCallbacks) {
-            mCallbacks = (TaskCallbacks) activity;
+        if (activity instanceof BaseTaskCallbacks) {
+            mCallbacks = (BaseTaskCallbacks) activity;
         } else {
-            throw new IllegalStateException("Parent activity must implement TaskCallbacks");
+            throw new IllegalStateException("Parent activity must implement BaseTaskCallbacks");
         }
     }
 
@@ -84,6 +81,7 @@ public class BaseNetworkFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        sContext = DevIntensiveApplication.getContext();
         mDataManager = DataManager.getInstance();
     }
 
@@ -142,7 +140,7 @@ public class BaseNetworkFragment extends Fragment {
 
     public void onRequestComplete(Response response) {
         mStatus = Status.FINISHED;
-        if (mCallbacks != null) mCallbacks.onRequestCompleted();
+        if (mCallbacks != null) mCallbacks.onRequestFinished();
     }
 //endregion
 

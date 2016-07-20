@@ -14,7 +14,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "UsersAdapter";
+    private static final String TAG = Const.TAG_PREFIX + "UsersAdapter";
 
     private List<UserEntity> mUsers;
     private final UserViewHolder.CustomClickListener mCustomClickListener;

@@ -68,7 +68,7 @@
     <string name="notify.auth_by_VK">Теперь приложение авторизовано для доступа к данным VK</string>
 
     <!--Dummies-->
-    <string name="dummy.app_name">Elena Space DevIntensive</string>
+    <string name="app_name">Elena Space DevIntensive</string>
     <string name="dummy.profile_phone" tools:ignore="UnusedResources">71234567890</string>
     <string name="dummy.profile_email" tools:ignore="UnusedResources">example@mail.com</string>
     <string name="dummy.profile_vk" tools:ignore="UnusedResources">vk.com/id00000000</string>

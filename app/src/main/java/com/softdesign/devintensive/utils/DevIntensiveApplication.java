@@ -32,7 +32,7 @@ public class DevIntensiveApplication extends Application {
         public void onVKAccessTokenChanged(VKAccessToken oldToken, VKAccessToken newToken) {
             if (newToken == null) {
                 // VKAccessToken is invalid
-                VKAccessToken.removeTokenAtKey(sContext, ConstantManager.VK_ACCESS_TOKEN);
+                VKAccessToken.removeTokenAtKey(sContext, Const.VK_ACCESS_TOKEN);
             }
         }
     };
