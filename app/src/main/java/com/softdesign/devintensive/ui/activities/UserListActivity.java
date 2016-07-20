@@ -34,16 +34,20 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
-import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
+import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.ui.fragments.BaseNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
+import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,6 +64,8 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
+    private LoadUsersIntoDBFragment mDbNetworkFragment;
+    private FragmentManager mFragmentManager = getFragmentManager();
     private User mUserData;
 
     //region OnCreate
@@ -68,19 +74,11 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_list);
 
+        attachLoadIntoDBFragment();
+
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
-
-        //region Fragment
-        FragmentManager fm = getFragmentManager();
-        LoadUsersIntoDBFragment networkFragment = (LoadUsersIntoDBFragment) fm.findFragmentByTag(Const.TAG_USER_LIST_TASK_FRAGMENT);
-
-        if (networkFragment == null) {
-            networkFragment = new LoadUsersIntoDBFragment();
-            fm.beginTransaction().add(networkFragment, Const.TAG_USER_LIST_TASK_FRAGMENT).commit();
-        }
-        //endregion
 
         initUserProfileInfo();
         setupDrawer();
@@ -88,12 +86,8 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(llm);
-        //// TODO: 18.07.2016 переделать
-        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0)) {
-            showProgressDialog();
-            networkFragment.downloadUserListIntoDB();
-        } else
-            initUserListAdapter(mDataManager.getUserListFromDb());
+
+        runOperation(new DatabaseOperation());
     }
 
     @Override
@@ -121,18 +115,35 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
     }
     //endregion
 
-    //region LoadUsersIntoDBFragment.TaskCallbacks
+    //region Fragments
+    private void attachLoadIntoDBFragment() {
+        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
+        if (mDbNetworkFragment == null) {
+            mDbNetworkFragment = new LoadUsersIntoDBFragment();
+            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+        }
+    }
+    //endregion
+
+    //region TaskCallbacks
 
     @Override
     public void onRequestStarted() {
-
+        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0)) {
+            showProgressDialog();
+        }
     }
 
     @Override
     public void onRequestFinished() {
-        Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
         hideProgressDialog();
-        initUserListAdapter(mDataManager.getUserListFromDb());
+        List<UserEntity> userEntities = mDataManager.getUserListFromDb();
+        if (userEntities == null || userEntities.size() == 0) {
+            showError(getString(R.string.error_cannot_load_user_list));
+            startMainActivity();
+        } else {
+            initUserListAdapter(userEntities);
+        }
     }
 
     @Override
@@ -180,10 +191,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
             navigationView.setNavigationItemSelectedListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.navMenu_userProfile:
-                        startActivity(new Intent(UserListActivity.this, MainActivity.class));
+                        startUserProfile(new Intent(UserListActivity.this, MainActivity.class));
                         break;
                     case R.id.navMenu_options:
-                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                        startMainActivity();
                         break;
                     case R.id.navMenu_logout:
                         logout(1);
@@ -197,6 +208,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
                 return false;
             });
         }
+    }
+
+    private void startUserProfile(Intent intent) {
+        startActivity(intent);
     }
 
     private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
@@ -270,11 +285,28 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
     }
     //endregion
 
-    private void initUserListAdapter(List<UserEntity> userEntities) {
-        if (userEntities == null || userEntities.size() == 0) {
+    //region Background Operation Results
+    @SuppressWarnings("unused")
+    public void onOperationFinished(final DatabaseOperation.Result result) {
+        if (result.isSuccessful()) {
+            if (result.getOutput() != null && result.getOutput().size() > 0) {
+                initUserListAdapter(result.getOutput());
+            } else {
+                if (mDbNetworkFragment != null &&
+                        mDbNetworkFragment.getStatus() != BaseNetworkFragment.Status.RUNNING) {
+                    mDbNetworkFragment.downloadUserListIntoDB();
+                }
+            }
+        } else {
+            Log.e(TAG, "onOperationFinished: Данные из БД не были загружены");
             showError(getString(R.string.error_cannot_load_user_list));
-            return;
+            startMainActivity();
         }
+    }
+
+    //endregion
+
+    private void initUserListAdapter(@Nonnull List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, position -> {
             UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
@@ -328,6 +360,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
         mUserData = mDataManager.getPreferencesManager().loadAllUserData();
         if (mUserData == null) logout(0);
         this.setTitle(getString(R.string.header_menu_myTeam));
+    }
+
+    private void startMainActivity() {
+        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
     }
 
     private void logout(int mode) {

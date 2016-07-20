@@ -12,9 +12,14 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
 import com.softdesign.devintensive.utils.Const;
 
+import de.greenrobot.event.EventBus;
+
 @SuppressWarnings("unused")
 public class BaseActivity extends ChronosAppCompatActivity {
+
     private static final String TAG = Const.TAG_PREFIX + "BaseActivity";
+
+    public static final EventBus BUS = EventBus.getDefault();
     private ProgressDialog mProgressDialog;
 
     public void showProgressDialog() {
@@ -55,10 +60,9 @@ public class BaseActivity extends ChronosAppCompatActivity {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId);
         newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
     }
+
     public void showDialogFragment(int dialogId, String message) {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId, message);
         newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
     }
-
-
 }

@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
-import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.NetworkUtils;
@@ -17,8 +16,6 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
 
     private static final String TAG = Const.TAG_PREFIX + "Splash Activity";
     private FragmentManager mFragmentManager = getFragmentManager();
-    private LoadUsersIntoDBFragment mDbNetworkFragment;
-    private AuthNetworkFragment mAuthNetworkFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,23 +26,14 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
             startAuthActivity();
 
         attachAuthFragment();
-        attachLoadIntoDBFragment();
     }
 
     //region Fragments
     private void attachAuthFragment() {
-        mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
-        if (mAuthNetworkFragment == null) {
-            mAuthNetworkFragment = new AuthNetworkFragment();
-            mFragmentManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
-        }
-    }
-
-    private void attachLoadIntoDBFragment() {
-        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
-        if (mDbNetworkFragment == null) {
-            mDbNetworkFragment = new LoadUsersIntoDBFragment();
-            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+        AuthNetworkFragment authNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
+        if (authNetworkFragment == null) {
+            authNetworkFragment = new AuthNetworkFragment();
+            mFragmentManager.beginTransaction().add(authNetworkFragment, AuthNetworkFragment.class.getName()).commit();
         }
     }
     //endregion
@@ -59,7 +47,6 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
     @Override
     public void onRequestFinished() {
         Log.d(TAG, "onRequestFinished: ");
-        mDbNetworkFragment.downloadUserListIntoDB(); //// TODO: 19.07.2016 eventbus
         startMainActivity();
     }
 

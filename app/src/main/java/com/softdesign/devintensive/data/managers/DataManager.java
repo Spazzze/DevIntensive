@@ -98,7 +98,6 @@ public class DataManager {
 
         try {
             userList = mDaoSession.queryBuilder(UserEntity.class)
-/*                    .where(UserEntityDao.Properties.Rating.gt(0))*/
                     .orderDesc(UserEntityDao.Properties.Rating)
                     .build()
                     .list();

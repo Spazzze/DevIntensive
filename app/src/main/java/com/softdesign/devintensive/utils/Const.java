@@ -29,8 +29,8 @@ public interface Const {
 
     MediaType MEDIA_TYPE_MULTIPART_FORM_DATA = MediaType.parse("multipart/form-data");
 
-    //Data methods keys
-    int SAVE_LOGIN_NAME = 999;
+    //DB loaders keys
+    int USERLIST_LOADER = 999;
 
     //Dialog constants
     int DIALOG_LOAD_PROFILE_PHOTO = 1;
@@ -64,4 +64,5 @@ public interface Const {
     String PATTERN_EMAIL = "^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";
     String PATTERN_VK_LINK = "^vk.com\\/\\w{3,}$";
     String PATTERN_GITHUB_LINK = "^github.com\\/\\w{3,}([\\/]\\w*)*$";
+
 }

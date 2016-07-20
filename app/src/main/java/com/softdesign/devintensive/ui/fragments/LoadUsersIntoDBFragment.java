@@ -1,10 +1,13 @@
 package com.softdesign.devintensive.ui.fragments;
 
+import android.app.Activity;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
+import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.utils.Const;
 
 import retrofit2.Response;
@@ -15,6 +18,18 @@ import retrofit2.Response;
  */
 public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
     private static final String TAG = Const.TAG_PREFIX + "getUsersIntoDBFrag";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        downloadUserListIntoDB();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (this.mStatus == Status.RUNNING && mCallbacks != null) mCallbacks.onRequestStarted();
+    }
 
     /**
      * The Activity can call this when it wants to start the task
@@ -35,6 +50,6 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
         super.onRequestComplete(response);
         Log.d(TAG, "onRequestComplete: ");
         Response<BaseListModel<UserListRes>> res = (Response<BaseListModel<UserListRes>>) response;
-        mDataManager.fillDataBase(res.body().getData());
+        runOperation(new DatabaseOperation(res.body().getData()));
     }
 }

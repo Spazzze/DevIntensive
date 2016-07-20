@@ -11,7 +11,7 @@ import com.softdesign.devintensive.utils.Const;
 import static com.softdesign.devintensive.utils.UiHelper.getJsonFromObject;
 import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
 
-public class FullUserDataOperation extends BasicChronosOperation<User> {
+public class FullUserDataOperation extends BaseChronosOperation<User> {
 
     User mUser;
 

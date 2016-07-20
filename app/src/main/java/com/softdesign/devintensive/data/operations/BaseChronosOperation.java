@@ -6,7 +6,7 @@ import com.redmadrobot.chronos.ChronosOperation;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
-public abstract class BasicChronosOperation<Output> extends ChronosOperation<Output> {
+public abstract class BaseChronosOperation<Output> extends ChronosOperation<Output> {
 
     public enum Action {
         SAVE,

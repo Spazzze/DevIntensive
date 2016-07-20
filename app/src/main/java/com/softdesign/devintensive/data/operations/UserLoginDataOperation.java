@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.utils.Const;
 
-public class UserLoginDataOperation extends BasicChronosOperation<String> {
+public class UserLoginDataOperation extends BaseChronosOperation<String> {
 
     private String mLogin;
 

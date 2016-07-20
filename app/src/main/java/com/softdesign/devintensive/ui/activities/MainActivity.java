@@ -50,6 +50,7 @@ import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
+import com.softdesign.devintensive.ui.events.UpdateDBEvent;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.fragments.UpdateServerDataFragment;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
@@ -111,15 +112,14 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
 
+        attachDataFragment();
+        attachLoadIntoDBFragment();
+
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
 
-        attachDataFragment();
-
-        loadFullUserData();
-
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null && mUserData != null) {
             mCurrentEditMode = savedInstanceState.getBoolean(Const.EDIT_MODE_KEY);
             changeEditMode(mCurrentEditMode);
         }
@@ -133,6 +133,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     //endregion
 
+    //region Fragments
     private void attachDataFragment() {
         mDataFragment = (UpdateServerDataFragment) mFragmentManager.findFragmentByTag(UpdateServerDataFragment.class.getName());
         if (mDataFragment == null) {
@@ -140,6 +141,15 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mFragmentManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
         }
     }
+
+    private void attachLoadIntoDBFragment() {
+        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
+        if (mDbNetworkFragment == null) {
+            mDbNetworkFragment = new LoadUsersIntoDBFragment();
+            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+        }
+    }
+    //endregion
 
     //region TaskCallbacks
     @Override
@@ -170,6 +180,25 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mUserData = res.getData().getUser();
             saveFullUserData();
         }
+    }
+    //endregion
+
+    //region Events
+    @SuppressWarnings("unused")
+    public void onEvent(User event) {
+        if (event != null) {
+            if (mUserData == null) {
+                mUserData = event;
+                initUI();
+            } else mUserData = event;
+        } else {
+            loadFullUserData();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void onEvent(UpdateDBEvent event) {
+        if (mDbNetworkFragment != null) mDbNetworkFragment.downloadUserListIntoDB();
     }
     //endregion
 
@@ -258,13 +287,15 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        BUS.registerSticky(this);
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         Log.d(TAG, "onPause");
+        BUS.unregister(this);
         saveUserInfoData();
+        super.onPause();
     }
 
     @Override

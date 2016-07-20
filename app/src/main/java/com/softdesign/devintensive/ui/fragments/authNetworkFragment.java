@@ -22,7 +22,6 @@ import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.ErrorUtils;
 
-import de.greenrobot.event.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -73,7 +72,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     public void onRequestComplete(User user) {
-        EventBus.getDefault().post(user);
+        mBus.postSticky(user);
         super.onRequestComplete(null);
     }
 

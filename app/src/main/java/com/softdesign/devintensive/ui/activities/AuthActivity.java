@@ -18,7 +18,6 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.operations.UserLoginDataOperation;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
-import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
@@ -47,7 +46,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     private DataManager mDataManager;
     private FragmentManager mFragmentManager = getFragmentManager();
-    private LoadUsersIntoDBFragment mDbNetworkFragment;
     private AuthNetworkFragment mAuthNetworkFragment;
 
     //region onCreate
@@ -58,7 +56,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         ButterKnife.bind(this);
 
         attachAuthFragment();
-        attachLoadIntoDBFragment();
 
         mDataManager = DataManager.getInstance();
         runOperation(new UserLoginDataOperation());
@@ -67,7 +64,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //endregion
 
     //region Fragments
-
     private void attachAuthFragment() {
         mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
         if (mAuthNetworkFragment == null) {
@@ -75,15 +71,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
             mFragmentManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
         }
     }
-
-    private void attachLoadIntoDBFragment() {
-        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
-        if (mDbNetworkFragment == null) {
-            mDbNetworkFragment = new LoadUsersIntoDBFragment();
-            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
-        }
-    }
-
     //endregion
 
     //region TaskCallbacks
@@ -95,7 +82,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     @Override
     public void onRequestFinished() {
-        mDbNetworkFragment.downloadUserListIntoDB();
         finishSignIn();
     }
 
