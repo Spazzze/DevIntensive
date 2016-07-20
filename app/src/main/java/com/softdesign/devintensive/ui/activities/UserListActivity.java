@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
@@ -122,22 +121,29 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
     //endregion
 
     //region LoadUsersIntoDBFragment.TaskCallbacks
+
     @Override
-    public void onLoadIntoDBStarted() {
+    public void onRequestStarted() {
+
     }
 
     @Override
-    public void onLoadIntoDBCompleted() {
+    public void onRequestCompleted() {
         Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
         hideProgressDialog();
         initUserListAdapter(mDataManager.getUserListFromDb());
     }
 
     @Override
-    public void onLoadIntoDBFailed(String error) {
+    public void onRequestFailed(String error) {
         Log.e(TAG, "onLoadIntoDBFailed: " + error);
         hideProgressDialog();
-        showSnackBar(getString(R.string.error_cannot_load_user_list));
+        showError(getString(R.string.error_cannot_load_user_list));
+    }
+
+    @Override
+    public void onErrorCount(int count) {
+
     }
     //endregion
 
@@ -240,9 +246,6 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
         }
     }
 
-    private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
     //endregion
 
     //region onClick
@@ -273,7 +276,7 @@ public class UserListActivity extends BaseActivity implements LoadUsersIntoDBFra
 
     private void initUserListAdapter(List<UserEntity> userEntities) {
         if (userEntities == null || userEntities.size() == 0) {
-            showSnackBar(getString(R.string.error_cannot_load_user_list));
+            showError(getString(R.string.error_cannot_load_user_list));
             return;
         }
         mUsersAdapter = new UsersAdapter(userEntities, position -> {

@@ -34,7 +34,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks, AuthNetworkFragment.TaskCallbacks {
+public class AuthActivity extends BaseActivity implements AuthNetworkFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Auth Activity";
 
@@ -66,6 +66,7 @@ public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragmen
     //endregion
 
     //region Fragments
+
     private void attachAuthFragment() {
         mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
         if (mAuthNetworkFragment == null) {
@@ -81,29 +82,24 @@ public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragmen
             mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
         }
     }
+
     //endregion
 
     //region TaskCallbacks
 
     @Override
-    public void onAuthRequestStarted() {
+    public void onRequestStarted() {
         showProgressDialog();
     }
 
     @Override
-    public void onAuthRequestFinished() {
+    public void onRequestCompleted() {
         mDbNetworkFragment.downloadUserListIntoDB();
         finishSignIn();
     }
 
     @Override
-    public void onAuthRequestFailed(int wrongPasswordCount) {
-        hideProgressDialog();
-        actionDependsOnFailTriesCount(wrongPasswordCount);
-    }
-
-    @Override
-    public void onAuthRequestCancelled(String error) {
+    public void onRequestFailed(String error) {
         hideProgressDialog();
         if (!UiHelper.isEmptyOrNull(error)) {
             Log.e(TAG, "onAuthRequestCancelled: " + error);
@@ -112,25 +108,26 @@ public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragmen
     }
 
     @Override
-    public void onLoadIntoDBStarted() {
-    }
-
-    @Override
-    public void onLoadIntoDBCompleted() {
-        Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
-    }
-
-    @Override
-    public void onLoadIntoDBFailed(String error) {
-        Log.d(TAG, "onLoadIntoDBFailed: " + error);
+    public void onErrorCount(int count) {
+        hideProgressDialog();
+        actionDependsOnFailTriesCount(count);
     }
     //endregion
 
     //region onClick
+    private void saveLoginName(View v) {  //// TODO: 19.07.2016 eventbus 
+        CheckBox checkBox = (CheckBox) v;
+        if (checkBox.isChecked()) {
+            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
+        } else {
+            mDataManager.getPreferencesManager().saveLoginName(null);
+        }
+    }
+
     @OnClick({R.id.login_button, R.id.forgot_pass_button, R.id.signIn_vk_icon})
     void submitAuthButton(View view) {
         if (!NetworkUtils.isNetworkAvailable(this)) {
-            showSnackBar(R.string.error_no_network_connection);
+            showError(R.string.error_no_network_connection);
             return;
         }
         switch (view.getId()) {
@@ -192,15 +189,6 @@ public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragmen
 
     //region Ui methods
 
-    private void saveLoginName(View v) {
-        CheckBox checkBox = (CheckBox) v;
-        if (checkBox.isChecked()) {
-            mDataManager.getPreferencesManager().saveLoginName(mEditText_login_email.getText().toString());
-        } else {
-            mDataManager.getPreferencesManager().saveLoginName(null);
-        }
-    }
-
     private void loadLoginName() {
         if (mDataManager.getPreferencesManager().isLoginNameSavingEnabled()) {
             mCheckBox_saveLogin.setChecked(true);
@@ -219,9 +207,8 @@ public class AuthActivity extends BaseActivity implements LoadUsersIntoDBFragmen
 
     private void actionDependsOnFailTriesCount(int failsCount) {
         if (failsCount == AppConfig.MAX_LOGIN_TRIES) {
-            mDataManager.getPreferencesManager().totalLogout();
             mEditText_login_email.setText("");
-            showSnackBar(R.string.error_current_user_data_erased);
+            showError(R.string.error_current_user_data_erased);
         } else if (failsCount < AppConfig.MAX_LOGIN_TRIES) {
             String s = MessageFormat.format("{0}: {1}",
                     getString(R.string.error_tries_before_erase),

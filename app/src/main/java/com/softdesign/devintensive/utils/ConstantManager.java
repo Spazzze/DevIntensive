@@ -1,5 +1,7 @@
 package com.softdesign.devintensive.utils;
 
+import okhttp3.MediaType;
+
 /**
  * Used to store all constants
  */
@@ -14,6 +16,8 @@ public interface ConstantManager {
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";
     String USER_PROFILE_AVATAR_URI = "USER_PROFILE_AVATAR_URI";
     String PARCELABLE_KEY = "PARCELABLE_KEY";
+    String DIALOG_FRAGMENT_KEY = "DIALOG_FRAGMENT_KEY";
+    String DIALOG_CONTENT_KEY = "DIALOG_CONTENT_KEY";
 
     String VK_ACCESS_TOKEN = "VK_ACCESS_TOKEN";
     String BUILTIN_ACCESS_USER_ID = "BUILTIN_ACCESS_USER_ID";
@@ -23,8 +27,11 @@ public interface ConstantManager {
 
     String DB_UPDATED_TIME_KEY = "DB_UPDATED_TIME";
 
+    MediaType MEDIA_TYPE_MULTIPART_FORM_DATA = MediaType.parse("multipart/form-data");
+
     //Dialog constants
-    int LOAD_PROFILE_PHOTO = 1;
+    int DIALOG_LOAD_PROFILE_PHOTO = 1;
+    int DIALOG_SHOW_ERROR = 2;
 
     //Request permission constants
     int REQUEST_PERMISSIONS_CAMERA = 100;

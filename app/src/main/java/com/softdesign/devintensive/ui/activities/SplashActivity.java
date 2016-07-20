@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
@@ -13,7 +12,7 @@ import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.NetworkUtils;
 
-public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragment.TaskCallbacks, AuthNetworkFragment.TaskCallbacks {
+public class SplashActivity extends BaseActivity implements AuthNetworkFragment.TaskCallbacks {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Splash Activity";
     private FragmentManager mFragmentManager = getFragmentManager();
@@ -51,42 +50,27 @@ public class SplashActivity extends BaseActivity implements LoadUsersIntoDBFragm
     //endregion
 
     //region TaskCallbacks
-
     @Override
-    public void onAuthRequestCancelled(String error) {
-        Log.e(TAG, "onAuthRequestCancelled: " + error);
-        startAuthActivity();
-    }
-
-    @Override
-    public void onAuthRequestStarted() {
+    public void onRequestStarted() {
 
     }
 
     @Override
-    public void onAuthRequestFinished() {
-        Log.d(TAG, "onAuthRequestFinished: " + getString(R.string.notify_auth_successful));
-        mDbNetworkFragment.downloadUserListIntoDB();
+    public void onRequestCompleted() {
+        Log.d(TAG, "onRequestCompleted: ");
+        mDbNetworkFragment.downloadUserListIntoDB(); //// TODO: 19.07.2016 eventbus
         startMainActivity();
     }
 
     @Override
-    public void onAuthRequestFailed(int wrongPasswordCount) {
-
+    public void onRequestFailed(String error) {
+        Log.e(TAG, "onRequestFailed: " + error);
+        startAuthActivity();
     }
 
     @Override
-    public void onLoadIntoDBStarted() {
-    }
+    public void onErrorCount(int count) {
 
-    @Override
-    public void onLoadIntoDBCompleted() {
-        Log.d(TAG, "onLoadIntoDBCompleted: Запрос по сети и запись в БД выполнены успешно");
-    }
-
-    @Override
-    public void onLoadIntoDBFailed(String error) {
-        Log.d(TAG, "onLoadIntoDBFailed: " + error);
     }
     //endregion
 

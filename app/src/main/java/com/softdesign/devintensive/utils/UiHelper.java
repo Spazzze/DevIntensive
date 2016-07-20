@@ -24,10 +24,12 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.softdesign.devintensive.data.network.restmodels.Repo;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -256,6 +258,16 @@ public class UiHelper {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         return gson.fromJson(json, typeClass);
+    }
+
+    public static String repoListIntoJson(List<Repo> list) {
+
+        String[] array = new String[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = getJsonFromObject(list.get(i), Repo.class);
+        }
+
+        return Arrays.toString(array);
     }
     //endregion
 }

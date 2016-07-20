@@ -10,7 +10,7 @@ import com.softdesign.devintensive.utils.ConstantManager;
 
 public class AspectRatioImageView extends ImageView {
 
-    private static final float DEFAULT_ASPECT_RATIO = ConstantManager.ASPECT_RATIO_16_9;
+    private static final float DEFAULT_ASPECT_RATIO = ConstantManager.ASPECT_RATIO_3_2;
     private final float mAspectRatio;
 
     public AspectRatioImageView(Context context, AttributeSet attrs) {

@@ -41,6 +41,7 @@
     <string name="header.current_homeTask">Hometask</string>
 
     <!--Errors-->
+    <string name="error">Ошибка</string>
     <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать требуемые разрешения</string>
     <string name="error.cannot_save_file">"Проблема при сохранении файла: "</string>
     <string name="error.editText_email">Введите существующий e-mail</string>
@@ -50,11 +51,11 @@
     <string name="error.editText_phone_wrong_length">Номер должен состоять из 11 цифр</string>
     <string name="error.editText_phone_wrong_code">Номер должен начинаться с 7 или 8</string>
     <string name="error.email_client_not_configured">Невозможно отправить сообщение, не настроено ни одного почтового клиента.</string>
-    <string name="error.connection_failed" tools:ignore="UnusedResources">Невозможно соединиться с сервером.</string>
+    <string name="error.connection_failed">Невозможно соединиться с сервером.</string>
     <string name="error.no_network_connection">Нет подключения к интернету, попробуйте позже.</string>
     <string name="error.wrong_credentials">Неверный логин или пароль.</string>
     <string name="error.tries_before_erase">"Осталось неудачных попыток до обнуления данных"</string>
-    <string name="error.unknown_response">Возникла ошибка при обращении к серверу: </string>
+    <string name="error.unknown_response">Возникла ошибка при обращении к серверу</string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>

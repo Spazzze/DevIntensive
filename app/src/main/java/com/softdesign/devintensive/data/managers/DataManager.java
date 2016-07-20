@@ -3,6 +3,7 @@ package com.softdesign.devintensive.data.managers;
 import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
+import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
@@ -17,13 +18,16 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 
 /**
@@ -81,6 +85,10 @@ public class DataManager {
 
     public Call<BaseListModel<UserListRes>> getUserListFromNetwork() {
         return mRestService.getUserList();
+    }
+
+    public Call<BaseModel<EditProfileRes>> uploadUserInfo(@PartMap() Map<String, RequestBody> map) {
+        return mRestService.uploadUserInfo(map);
     }
     //endregion
 

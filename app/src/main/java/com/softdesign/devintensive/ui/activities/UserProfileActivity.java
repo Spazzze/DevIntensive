@@ -5,14 +5,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -87,10 +84,6 @@ public class UserProfileActivity extends BaseActivity {
         }
     }
 
-    private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
-
     @SuppressWarnings("SameParameterValue")
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
@@ -107,12 +100,7 @@ public class UserProfileActivity extends BaseActivity {
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
         mListView_repo.setAdapter(repositoriesAdapter);
-        mListView_repo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + repositories.get(position))));
-            }
-        });
+        mListView_repo.setOnItemClickListener((parent, view, position, id) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + repositories.get(position)))));
 
         if (repositories.size() > 0) setListViewHeightBasedOnChildren(mListView_repo);
 

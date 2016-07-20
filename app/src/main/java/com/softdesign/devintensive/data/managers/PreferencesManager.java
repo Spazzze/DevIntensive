@@ -31,11 +31,6 @@ public class PreferencesManager {
         mSharedPreferences = DevIntensiveApplication.getSharedPreferences();
         mContext = DevIntensiveApplication.getContext();
     }
-
-    public Boolean isEmpty() {
-        return mSharedPreferences.getAll().isEmpty();
-    }
-
     //region User Data save & load
 
     public void saveAllUserData(User res) {

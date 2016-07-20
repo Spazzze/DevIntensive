@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -27,7 +26,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -45,10 +43,13 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
+import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.ui.adapters.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ErrorUtils;
 import com.softdesign.devintensive.utils.NetworkUtils;
@@ -75,7 +76,7 @@ import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
 import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements MainActivityCallback {
 
     private static final String TAG = ConstantManager.TAG_PREFIX + "Main Activity";
 
@@ -132,33 +133,6 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case ConstantManager.LOAD_PROFILE_PHOTO:
-                String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title));
-                builder.setItems(selectedItems, (dialog, chosenItem) -> {
-                    switch (chosenItem) {
-                        case 0:
-                            loadPhotoFromCamera();
-                            break;
-                        case 1:
-                            loadPhotoFromGallery();
-                            break;
-                        case 2:
-                            dialog.cancel();
-                            break;
-                    }
-                });
-                return builder.create();
-            default:
-                return null;
-        }
-    }
-
     //endregion
 
     //region OnClick
@@ -185,7 +159,7 @@ public class MainActivity extends BaseActivity {
                 changeEditMode(!mCurrentEditMode);
                 break;
             case R.id.placeholder_profilePhoto:
-                showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
+                showDialogFragment(ConstantManager.DIALOG_LOAD_PROFILE_PHOTO);
                 break;
             case R.id.makeCall_img:
                 startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mEditTexts_userInfoList.get(0).getText().toString(), null)));
@@ -195,7 +169,7 @@ public class MainActivity extends BaseActivity {
                 if (queryIntentActivities(this, sendEmail)) {
                     startActivity(sendEmail);
                 } else {
-                    showSnackBar(getString(R.string.error_email_client_not_configured));
+                    showError(getString(R.string.error_email_client_not_configured));
                 }
                 break;
             case R.id.openVK_img:
@@ -260,6 +234,7 @@ public class MainActivity extends BaseActivity {
     //endregion
 
     //region Setup Ui Items
+
     private void setupToolbar() {
         setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -385,10 +360,6 @@ public class MainActivity extends BaseActivity {
         CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
     }
 
-    private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
-
     static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
 
     static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
@@ -462,7 +433,10 @@ public class MainActivity extends BaseActivity {
         mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
         mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
 
-        mDataManager.getPreferencesManager().saveAllUserData(mUserData);
+        if (!mDataManager.getPreferencesManager().loadAllUserData().equals(mUserData)) {
+            uploadUserData(mUserData);
+            mDataManager.getPreferencesManager().saveAllUserData(mUserData);
+        }
     }
     //endregion
 
@@ -517,7 +491,7 @@ public class MainActivity extends BaseActivity {
 
     //region functional methods
 
-    //region Network
+    //region Network   //// TODO: 19.07.2016 выделить в отд. фрагмент
     private void uploadUserPhoto(Uri uri_SelectedImage) {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
@@ -547,7 +521,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
+                showError(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
             }
         });
     }
@@ -581,7 +555,26 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
+                showError(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
+            }
+        });
+    }
+
+    private void uploadUserData(User user) {
+        if (!NetworkUtils.isNetworkAvailable(this)) return;
+
+        Call<BaseModel<EditProfileRes>> call = mDataManager.uploadUserInfo(new EditProfileReq(user).createReqBody());
+        call.enqueue(new Callback<BaseModel<EditProfileRes>>() {
+            @Override
+            public void onResponse(Call<BaseModel<EditProfileRes>> call,
+                                   Response<BaseModel<EditProfileRes>> response) {
+                mDataManager.getPreferencesManager().saveAllUserData(response.body().getData().getUser());
+                mUserData = response.body().getData().getUser();
+            }
+
+            @Override
+            public void onFailure(Call<BaseModel<EditProfileRes>> call, Throwable t) {
+                showError(String.format("%s: %s", getString(R.string.error_unknown_response), t.getMessage()));
             }
         });
     }
@@ -660,7 +653,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void loadPhotoFromGallery() {
+    public void loadPhotoFromGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
@@ -676,14 +669,14 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void loadPhotoFromCamera() {
+    public void loadPhotoFromCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             try {
                 mPhotoFile = createImageFile();
             } catch (IOException e) {
-                showSnackBar(getString(R.string.error_cannot_save_file) + e.getMessage());
+                showError(getString(R.string.error_cannot_save_file) + e.getMessage());
             }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
