@@ -57,6 +57,27 @@ public class CustomGlideModule implements GlideModule {
                 .into(target);
     }
 
+    public static void loadImage(final String path, final Drawable placeholder,
+                                 final Drawable error, int width, int height, final ImageView target) {
+        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
+        }
+
+        String pathToPhoto = "null";
+        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+
+        Glide.with(DevIntensiveApplication.getContext())
+                .load(pathToPhoto)
+                .error(error)
+                .placeholder(placeholder)
+                .override(width, height)
+                .centerCrop()
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(target);
+    }
+
     @SuppressWarnings("SameParameterValue")
     public static void loadImage(final String path, final int placeholder,
                                  final int error, final ImageView target) {

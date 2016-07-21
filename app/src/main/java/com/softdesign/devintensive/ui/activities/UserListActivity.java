@@ -53,8 +53,6 @@ import com.softdesign.devintensive.utils.NetworkUtils;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -104,7 +102,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
         mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.color_accent);
-
     }
 
     private void refresh() {
@@ -169,7 +166,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         } else {
             showError(Const.DIALOG_SHOW_ERROR, R.string.error_cannot_load_user_list);
         }
-
     }
     //endregion
 
@@ -272,6 +268,21 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         }
     }
 
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        mItemTouchHelper.startDrag(viewHolder);
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void showProgressDialog() {
+        mSwipeRefreshLayout.setRefreshing(true);
+    }
+
     //endregion
 
     //region onClick
@@ -335,7 +346,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         }
     }
 
-    private void updateUserListAdapter(@Nonnull List<UserEntity> userEntities) {
+    private void updateUserListAdapter(List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
             UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
@@ -348,7 +359,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
     //endregion
 
-    private void initUserListAdapter(@Nonnull List<UserEntity> userEntities) {
+    private void initUserListAdapter(List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
             UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
@@ -418,21 +429,8 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
             runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             mDataManager.getPreferencesManager().totalLogout();
         }
-        startActivity(new Intent(this, AuthActivity.class));
-    }
-
-    @Override
-    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
-        mItemTouchHelper.startDrag(viewHolder);
-    }
-
-    @Override
-    public void hideProgressDialog() {
-        mSwipeRefreshLayout.setRefreshing(false);
-    }
-
-    @Override
-    public void showProgressDialog() {
-        mSwipeRefreshLayout.setRefreshing(true);
+        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

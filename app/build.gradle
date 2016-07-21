@@ -47,9 +47,9 @@ android {
         release {
             buildConfigField STRING, API_URL, urls.api
 
-            shrinkResources true
+            /*shrinkResources true
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'*/
         }
     }
 
@@ -93,9 +93,9 @@ dependencies {
     compile libraries.chronos
 
     // Developer tools (Developer Settings)
-    debugCompile libraries.okHttp3LoggingInterceptor
-    debugCompile libraries.stetho
-    debugCompile libraries.stethoOkHttp3
+    compile libraries.okHttp3LoggingInterceptor
+    compile libraries.stetho
+    compile libraries.stethoOkHttp3
 
     // Developer tools (Developer Settings)
     testCompile libraries.junit

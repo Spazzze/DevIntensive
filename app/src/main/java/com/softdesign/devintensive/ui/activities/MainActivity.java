@@ -627,7 +627,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     //region Network
     @SuppressWarnings("all")
-    private void loadUserAvatarFromServer() {        //// TODO: 20.07.2016  
+    private void loadUserAvatarFromServer() {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
 
@@ -763,7 +763,9 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             mDataManager.getPreferencesManager().totalLogout();
         }
-        startActivity(new Intent(this, AuthActivity.class));
+        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
     //endregion
 }

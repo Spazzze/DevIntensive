@@ -68,6 +68,8 @@
 #  Library JARs.
 -keep class de.greenrobot.dao.** { *; }
 -keep interface de.greenrobot.dao.** { *; }
+-keep class com.facebook.stetho.** { *; }
+
 
 # Library projects.
 #-keep class com.actionbarsherlock.** { *; }
@@ -86,7 +88,7 @@
   **[] $VALUES;
   public *;
 }
--keepresourcexmlelements manifest/application/meta-data@value=GlideModule
+#-keepresourcexmlelements manifest/application/meta-data@value=GlideModule
 -keep class com.bumptech.glide.integration.okhttp.OkHttpGlideModule
 
 #ButterKnife

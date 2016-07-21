@@ -171,7 +171,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         mEditText_login_password.setText("");
     }
 
-    private void forgotPassword() {  //// TODO: 10.07.2016 переделать в отдельную форму
+    private void forgotPassword() {
         Intent forgotPassIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AppConfig.FORGOT_PASS_URL));
         startActivity(forgotPassIntent);
     }
