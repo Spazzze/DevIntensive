@@ -17,11 +17,13 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,11 +36,15 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.operations.BaseChronosOperation;
 import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperCallback;
+import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
+import com.softdesign.devintensive.ui.callbacks.UserListActivityCallback;
 import com.softdesign.devintensive.ui.fragments.BaseNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
@@ -52,7 +58,7 @@ import javax.annotation.Nonnull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity implements BaseTaskCallbacks {
+public class UserListActivity extends BaseActivity implements BaseTaskCallbacks, OnStartDragListener, UserListActivityCallback {
 
     private static final String TAG = Const.TAG_PREFIX + "UserListActivity";
 
@@ -61,12 +67,16 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.appbar_layout) AppBarLayout mAppBarLayout;
     @BindView(R.id.user_list) RecyclerView mRecyclerView;
+    @BindView(R.id.swipeRefresh) SwipeRefreshLayout mSwipeRefreshLayout;
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
     private LoadUsersIntoDBFragment mDbNetworkFragment;
     private FragmentManager mFragmentManager = getFragmentManager();
     private User mUserData;
+    private ItemTouchHelper mItemTouchHelper;
+    private ItemTouchHelperCallback mItemTouchHelperCallback;
+    private DatabaseOperation.Sort mSort = DatabaseOperation.Sort.CUSTOM;
 
     //region OnCreate
     @Override
@@ -84,10 +94,22 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
         setupDrawer();
         setupToolbar();
 
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(llm);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (mDbNetworkFragment != null) {
+            if (mDbNetworkFragment.isCancelled() || mDbNetworkFragment.getStatus() == BaseNetworkFragment.Status.PENDING) {
+                showProgressDialog();
+                mDbNetworkFragment.downloadUserListIntoDB();
+            }
+        }
 
-        runOperation(new DatabaseOperation());
+        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.color_accent);
+
+    }
+
+    private void refresh() {
+        showProgressDialog();
+        if (mDbNetworkFragment != null) mDbNetworkFragment.forceRefreshUserListIntoDB();
     }
 
     @Override
@@ -129,28 +151,25 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
 
     @Override
     public void onRequestStarted() {
-        if ((mDataManager.getUsersDBSize() == 0 || mDataManager.getRepoDBSize() == 0)) {
-            showProgressDialog();
-        }
     }
 
     @Override
     public void onRequestFinished() {
+        Log.d(TAG, "onRequestFinished: ");
         hideProgressDialog();
-        List<UserEntity> userEntities = mDataManager.getUserListFromDb();
-        if (userEntities == null || userEntities.size() == 0) {
-            showError(getString(R.string.error_cannot_load_user_list));
-            startMainActivity();
-        } else {
-            initUserListAdapter(userEntities);
-        }
+        runOperation(new DatabaseOperation(mSort));
     }
 
     @Override
     public void onRequestFailed(String error) {
         Log.e(TAG, "onLoadIntoDBFailed: " + error);
         hideProgressDialog();
-        showError(getString(R.string.error_cannot_load_user_list));
+        if (mUsersAdapter == null) {
+            showError(Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN, R.string.error_cannot_load_user_list);
+        } else {
+            showError(Const.DIALOG_SHOW_ERROR, R.string.error_cannot_load_user_list);
+        }
+
     }
     //endregion
 
@@ -191,10 +210,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
             navigationView.setNavigationItemSelectedListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.navMenu_userProfile:
-                        startUserProfile(new Intent(UserListActivity.this, MainActivity.class));
+                        startMainActivity();
                         break;
                     case R.id.navMenu_options:
-                        startMainActivity();
+                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
                         break;
                     case R.id.navMenu_logout:
                         logout(1);
@@ -208,10 +227,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
                 return false;
             });
         }
-    }
-
-    private void startUserProfile(Intent intent) {
-        startActivity(intent);
     }
 
     private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
@@ -266,6 +281,21 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
+            case R.id.toolbar_refresh:
+                refresh();
+                return true;
+            case R.id.toolbar_sortByRating:
+                mSort = DatabaseOperation.Sort.RATING;
+                runOperation(new DatabaseOperation(mSort));
+                return true;
+            case R.id.toolbar_sortByCode:
+                mSort = DatabaseOperation.Sort.CODE;
+                runOperation(new DatabaseOperation(mSort));
+                return true;
+            case R.id.toolbar_customSort:
+                mSort = DatabaseOperation.Sort.CUSTOM;
+                runOperation(new DatabaseOperation(mSort));
+                return true;
             case R.id.toolbar_logout:
                 logout(1);
                 return true;
@@ -288,32 +318,47 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
     //region Background Operation Results
     @SuppressWarnings("unused")
     public void onOperationFinished(final DatabaseOperation.Result result) {
+        Log.d(TAG, "onOperationFinished: ");
+        hideProgressDialog();
+
         if (result.isSuccessful()) {
             if (result.getOutput() != null && result.getOutput().size() > 0) {
-                initUserListAdapter(result.getOutput());
-            } else {
-                if (mDbNetworkFragment != null &&
-                        mDbNetworkFragment.getStatus() != BaseNetworkFragment.Status.RUNNING) {
-                    mDbNetworkFragment.downloadUserListIntoDB();
+                if (mUsersAdapter == null) {
+                    initUserListAdapter(result.getOutput());
+                } else {
+                    updateUserListAdapter(result.getOutput());
                 }
             }
         } else {
+            onRequestFailed("");
             Log.e(TAG, "onOperationFinished: Данные из БД не были загружены");
-            showError(getString(R.string.error_cannot_load_user_list));
-            startMainActivity();
         }
+    }
+
+    private void updateUserListAdapter(@Nonnull List<UserEntity> userEntities) {
+        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
+            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
+            Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
+            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
+            startActivity(profileUserIntent);
+        });
+        mRecyclerView.swapAdapter(mUsersAdapter, true);
+        mItemTouchHelperCallback.swapAdapter(mUsersAdapter);
     }
 
     //endregion
 
     private void initUserListAdapter(@Nonnull List<UserEntity> userEntities) {
-        mUsersAdapter = new UsersAdapter(userEntities, position -> {
+        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
             UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
             profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
             startActivity(profileUserIntent);
         });
         mRecyclerView.setAdapter(mUsersAdapter);
+        mItemTouchHelperCallback = new ItemTouchHelperCallback(mUsersAdapter);
+        mItemTouchHelper = new ItemTouchHelper(mItemTouchHelperCallback);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     @SuppressWarnings("all")
@@ -362,14 +407,32 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks 
         this.setTitle(getString(R.string.header_menu_myTeam));
     }
 
-    private void startMainActivity() {
-        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+    public void startMainActivity() {
+        startActivity(new Intent(this, MainActivity.class));
+        UserListActivity.this.finish();
     }
 
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
-        if (mode == 1)
+        if (mode == 1) {
+            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             mDataManager.getPreferencesManager().totalLogout();
+        }
         startActivity(new Intent(this, AuthActivity.class));
+    }
+
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        mItemTouchHelper.startDrag(viewHolder);
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void showProgressDialog() {
+        mSwipeRefreshLayout.setRefreshing(true);
     }
 }

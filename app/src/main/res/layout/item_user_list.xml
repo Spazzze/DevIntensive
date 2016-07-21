@@ -42,6 +42,15 @@
                 android:textSize="@dimen/font_medium_24"
                 app:typeface="roboto_medium" />
 
+            <ImageView
+                android:id="@+id/handle"
+                android:layout_width="?listPreferredItemHeight"
+                android:layout_height="match_parent"
+                android:layout_gravity="top|right"
+                android:scaleType="center"
+                android:src="@drawable/ic_menu_black_24dp"
+                tools:ignore="ContentDescription,RtlHardcoded" />
+
         </FrameLayout>
 
         <!--ScoreBox-->

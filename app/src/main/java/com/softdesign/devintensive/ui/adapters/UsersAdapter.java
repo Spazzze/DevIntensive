@@ -1,33 +1,42 @@
 package com.softdesign.devintensive.ui.adapters;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable {
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
 
     private static final String TAG = Const.TAG_PREFIX + "UsersAdapter";
 
     private List<UserEntity> mUsers;
-    private final UserViewHolder.CustomClickListener mCustomClickListener;
     private final CustomUserListFilter mFilter;
+    private final UserViewHolder.CustomClickListener mCustomClickListener;
+    private final OnStartDragListener mDragStartListener;
 
+    //region Adapter
     @Override
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
@@ -35,8 +44,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return new UserViewHolder(convertView, mCustomClickListener);
     }
 
-    public UsersAdapter(List<UserEntity> users, UserViewHolder.CustomClickListener customClickListener) {
+    public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, UserViewHolder.CustomClickListener customClickListener) {
         mUsers = users;
+        mDragStartListener = dragStartListener;
         mCustomClickListener = customClickListener;
         mFilter = new CustomUserListFilter(UsersAdapter.this);
     }
@@ -60,6 +70,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             holder.mBio.setVisibility(View.VISIBLE);
             holder.mBio.setText(user.getBio().trim());
         }
+
+        holder.mHandleView.setOnTouchListener((v, event) -> {
+            if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                mDragStartListener.onStartDrag(holder);
+            }
+            return false;
+        });
     }
 
     @Override
@@ -72,6 +89,28 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return mFilter;
     }
 
+    @Override
+    public void onItemDismiss(int position) {
+        UserEntity u = mUsers.get(position);
+        mFilter.getList().remove(u);
+        mUsers.remove(position);
+        notifyItemRemoved(position);
+        DataManager.getInstance().changeUserInternalId(position, mUsers.size() * 2);      //// TODO: 21.07.2016 в поток
+    }
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        Collections.swap(mUsers, fromPosition, toPosition);
+        notifyItemMoved(fromPosition, toPosition);
+        DataManager.getInstance().changeUserInternalId(fromPosition, toPosition);      //// TODO: 21.07.2016 в поток
+        return true;
+    }
+
+    @Override
+    public void onItemPendToDelete(int position) {
+
+    }
+
     public List<UserEntity> getUsers() {
         return mUsers;
     }
@@ -79,8 +118,10 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void setUsers(List<UserEntity> users) {
         mUsers = users;
     }
+    //endregion
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    //region ViewHolder
+    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, ItemTouchHelperViewHolder {
 
         private final AspectRatioImageView mUserPhoto;
         private final TextView mFullName;
@@ -91,6 +132,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         private final TextView mHomeTask;
         private final Button mButton;
         private final CustomClickListener mClickListener;
+        private final ImageView mHandleView;
         private Drawable mPlaceHolder;
 
         @SuppressWarnings("deprecation")
@@ -106,6 +148,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             mBio = (TextView) itemView.findViewById(R.id.list_bio_txt);
             mHomeTask = (TextView) itemView.findViewById(R.id.cur_homeTask_txt);
             mButton = (Button) itemView.findViewById(R.id.list_more_info_btn);
+            mHandleView = (ImageView) itemView.findViewById(R.id.handle);
 
             mPlaceHolder = mUserPhoto.getContext().getResources().getDrawable(R.drawable.user_bg);
             if (mPlaceHolder == null) {
@@ -128,15 +171,31 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             }
         }
 
+        @Override
+        public void onItemSelected() {
+            itemView.setBackgroundColor(Color.LTGRAY);
+        }
+
+        @Override
+        public void onItemClear() {
+            itemView.setBackgroundColor(0);
+        }
+
         public interface CustomClickListener {
             void onUserItemClickListener(int position);
         }
     }
+    //endregion
 
+    //region Filter
     public static class CustomUserListFilter extends Filter {
 
         private final UsersAdapter mAdapter;
         private final List<UserEntity> mList;
+
+        public List<UserEntity> getList() {
+            return mList;
+        }
 
         public CustomUserListFilter(UsersAdapter mAdapter) {
             super();
@@ -172,5 +231,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             this.mAdapter.notifyDataSetChanged();
         }
     }
+    //endregion
 }
 

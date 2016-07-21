@@ -9,6 +9,7 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 public abstract class BaseChronosOperation<Output> extends ChronosOperation<Output> {
 
     public enum Action {
+        CLEAR,
         SAVE,
         LOAD,
     }

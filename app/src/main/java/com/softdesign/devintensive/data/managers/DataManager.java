@@ -11,7 +11,6 @@ import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
-import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -19,8 +18,6 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -108,49 +105,34 @@ public class DataManager {
         return userList;
     }
 
-    public void fillDataBase(@Nonnull List<UserListRes> response) {
-
-        List<RepositoryEntity> allRepositories = new ArrayList<>();
-        List<UserEntity> allUsers = new ArrayList<>();
-
-        for (UserListRes user : response) {
-            List<RepositoryEntity> l = user.getRepositories()
-                    .getRepoEntitiesList(String.valueOf(user.getId()));
-            allRepositories.addAll(l);
-            allUsers.add(new UserEntity(user));
-        }
-
-        mDaoSession.getRepositoryEntityDao().insertOrReplaceInTx(allRepositories);
-        mDaoSession.getUserEntityDao().insertOrReplaceInTx(allUsers);
-        mPreferencesManager.saveDBUpdateTime();
-    }
-
-    public long getUsersDBSize() {
+    public void changeUserInternalId(int oldInternalId, int newInternalId) {
+        UserEntity firstEntity = null;
         try {
-            return mDaoSession.queryBuilder(UserEntity.class)
+            firstEntity = mDaoSession.queryBuilder(UserEntity.class)
+                    .where(UserEntityDao.Properties.InternalId.eq(oldInternalId))
                     .build()
-                    .list().size();
+                    .unique();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0;
-    }
-
-    public long getRepoDBSize() {
+        UserEntity secondEntity = null;
         try {
-            return mDaoSession.queryBuilder(RepositoryEntity.class)
+            secondEntity = mDaoSession.queryBuilder(UserEntity.class)
+                    .where(UserEntityDao.Properties.InternalId.eq(newInternalId))
                     .build()
-                    .list().size();
+                    .unique();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0;
-    }
+        if (firstEntity != null) {
+            firstEntity.setInternalId(newInternalId);
+            mDaoSession.getUserEntityDao().update(firstEntity);
+        }
 
-    public void clearDatabases() {
-        mDaoSession.getRepositoryEntityDao().deleteAll();
-        mDaoSession.getUserEntityDao().deleteAll();
-        mDaoSession.clear();
+        if (secondEntity != null) {
+            secondEntity.setInternalId(oldInternalId);
+            mDaoSession.getUserEntityDao().update(secondEntity);
+        }
     }
 
     //endregion

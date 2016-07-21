@@ -8,12 +8,14 @@ import android.support.v7.app.AlertDialog;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
+import com.softdesign.devintensive.ui.callbacks.UserListActivityCallback;
 import com.softdesign.devintensive.utils.Const;
 
 public class DialogsFragment extends DialogFragment {
     private static final String TAG = Const.TAG_PREFIX + "DialogsFragment";
 
     private MainActivityCallback mCallback;
+    private UserListActivityCallback mULCallback;
 
     public static DialogsFragment newInstance(int type) {
         DialogsFragment dialogsFragment = new DialogsFragment();
@@ -39,6 +41,9 @@ public class DialogsFragment extends DialogFragment {
         if (activity instanceof MainActivityCallback) {
             mCallback = (MainActivityCallback) activity;
         }
+        if (activity instanceof UserListActivityCallback) {
+            mULCallback = (UserListActivityCallback) activity;
+        }
     }
 
     @Override
@@ -51,6 +56,8 @@ public class DialogsFragment extends DialogFragment {
                     throw new IllegalStateException("Parent activity must implement MainActivityCallback");
             case Const.DIALOG_SHOW_ERROR:
                 return errorAlertDialog(getArguments().getString(Const.DIALOG_CONTENT_KEY));
+            case Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN:
+                return errorAlertDialogWithAction(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             default:
                 return errorAlertDialog(getString(R.string.error));
         }
@@ -82,6 +89,16 @@ public class DialogsFragment extends DialogFragment {
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.ok, (dialog, id) -> {
                     dialog.cancel();
+                }).create();
+    }
+
+    public Dialog errorAlertDialogWithAction(String error) {
+        return new AlertDialog.Builder(getActivity())
+                .setMessage(error)
+                .setCancelable(true)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.ok, (dialog, id) -> {
+                    if (mULCallback != null) mULCallback.startMainActivity();
                 }).create();
     }
     //endregion

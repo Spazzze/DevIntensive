@@ -41,7 +41,16 @@ public class BaseActivity extends ChronosAppCompatActivity {
     public void showError(int messageId) {
         try {
             showDialogFragment(Const.DIALOG_SHOW_ERROR, getString(messageId));
-            Log.d(TAG, getString(messageId));
+            Log.e(TAG, getString(messageId));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showError(int dialogId, int messageId) {
+        try {
+            showDialogFragment(dialogId, getString(messageId));
+            Log.e(TAG, getString(messageId));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,7 +58,7 @@ public class BaseActivity extends ChronosAppCompatActivity {
 
     public void showError(String message) {
         showDialogFragment(Const.DIALOG_SHOW_ERROR, message);
-        Log.d(TAG, String.valueOf(message));
+        Log.e(TAG, String.valueOf(message));
     }
 
     public void showToast(String message) {

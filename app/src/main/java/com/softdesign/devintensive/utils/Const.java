@@ -35,6 +35,7 @@ public interface Const {
     //Dialog constants
     int DIALOG_LOAD_PROFILE_PHOTO = 1;
     int DIALOG_SHOW_ERROR = 2;
+    int DIALOG_SHOW_ERROR_RETURN_TO_MAIN = 3;
 
     //Request permission constants
     int REQUEST_PERMISSIONS_CAMERA = 100;

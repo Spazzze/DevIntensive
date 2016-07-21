@@ -141,16 +141,10 @@ public class PreferencesManager {
         VKAccessToken.removeTokenAtKey(mContext, Const.VK_ACCESS_TOKEN);
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.clear().apply();
-        DataManager.getInstance().clearDatabases();
     }
     //endregion
 
     //region DB
-    public void saveDBUpdateTime() {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putLong(Const.DB_UPDATED_TIME_KEY, new Date().getTime());
-        editor.apply();
-    }
 
     public boolean isDBNeedsUpdate() {
         long updatedTime = mSharedPreferences.getLong(Const.DB_UPDATED_TIME_KEY, 0);

@@ -34,6 +34,10 @@
     <string name="header.allow">Разрешить</string>
     <string name="header.login">Войти</string>
     <string name="header.logout">Выйти</string>
+    <string name="header.refresh">Обновить с сервера</string>
+    <string name="header.sortByRating">Сортировка по рейтингу</string>
+    <string name="header.sortByCode">Сортировка по строкам кода</string>
+    <string name="header.sortByCustom">Своя сортировка</string>
     <string name="header.auth_forgot_password">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
     <string name="header.auth_save_email">Сохранять e-mail</string>

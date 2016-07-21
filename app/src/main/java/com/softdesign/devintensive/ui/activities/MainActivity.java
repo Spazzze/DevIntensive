@@ -48,6 +48,8 @@ import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.ui.events.UpdateDBEvent;
@@ -757,8 +759,10 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
         mNotSavingUserValues = true;
-        if (mode == 1)
+        if (mode == 1) {
+            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             mDataManager.getPreferencesManager().totalLogout();
+        }
         startActivity(new Intent(this, AuthActivity.class));
     }
     //endregion

@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.ui.fragments;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -25,20 +24,40 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
         downloadUserListIntoDB();
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (this.mStatus == Status.RUNNING && mCallbacks != null) mCallbacks.onRequestStarted();
-    }
-
     /**
      * The Activity can call this when it wants to start the task
      */
     public void downloadUserListIntoDB() {
-        if (this.mStatus == Status.RUNNING || !mDataManager.isUserAuthenticated() ||
-                !mDataManager.getPreferencesManager().isDBNeedsUpdate()) return;
+
+        if (!DataManager.getInstance().getPreferencesManager().isDBNeedsUpdate()) {
+            this.mStatus = Status.FINISHED;
+            return;
+        } else if (this.mStatus == Status.RUNNING){
+            return;
+        } else if (!DataManager.getInstance().isUserAuthenticated()) {
+            this.mStatus = Status.FINISHED;
+            mCancelled = true;
+            return;
+        }
 
         onRequestStarted();
+
+        Log.d(TAG, "downloadUserListIntoDB: ");
+
+        DataManager.getInstance().getUserListFromNetwork().enqueue(new NetworkCallback<>());
+    }
+
+    public void forceRefreshUserListIntoDB() {
+        if (this.mStatus == Status.RUNNING){
+            return;
+        } else if (!DataManager.getInstance().isUserAuthenticated()) {
+            this.mStatus = Status.FINISHED;
+            mCancelled = true;
+            return;
+        }
+
+        onRequestStarted();
+
         Log.d(TAG, "downloadUserListIntoDB: ");
 
         DataManager.getInstance().getUserListFromNetwork().enqueue(new NetworkCallback<>());

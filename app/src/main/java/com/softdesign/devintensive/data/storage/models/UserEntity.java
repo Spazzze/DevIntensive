@@ -37,6 +37,8 @@ public class UserEntity {
     private String homeTask;
     private String bio;
     private String photo;
+    @NotNull
+    private int internalId;
 
     @ToMany(joinProperties = {
             @JoinProperty(name = "remoteId", referencedName = "userRemoteId")
@@ -132,9 +134,9 @@ public class UserEntity {
         myDao = daoSession != null ? daoSession.getUserEntityDao() : null;
     }
 
-    @Generated(hash = 234164541)
+    @Generated(hash = 1524954784)
     public UserEntity(Long id, @NotNull String remoteId, @NotNull String fullName, @NotNull String searchName, int rating,
-            int codeLines, int projects, String homeTask, String bio, String photo) {
+            int codeLines, int projects, String homeTask, String bio, String photo, int internalId) {
         this.id = id;
         this.remoteId = remoteId;
         this.fullName = fullName;
@@ -145,6 +147,7 @@ public class UserEntity {
         this.homeTask = homeTask;
         this.bio = bio;
         this.photo = photo;
+        this.internalId = internalId;
     }
 
     @Generated(hash = 1433178141)
@@ -234,7 +237,7 @@ public class UserEntity {
     }
     //endregion
 
-    public UserEntity(@NotNull UserListRes user) {
+    public UserEntity(@NotNull UserListRes user, int index) {
 
         this.remoteId = user.getId();
         this.photo = user.getPublicInfo().getPhoto();
@@ -245,6 +248,7 @@ public class UserEntity {
         this.codeLines = Integer.parseInt(user.getProfileValues().getCodeLines());
         this.projects = Integer.parseInt(user.getProfileValues().getProjects());
         this.bio = user.getPublicInfo().getBio();
+        this.internalId = index;
     }
 
     public List<String> getRepoList() {
@@ -256,4 +260,13 @@ public class UserEntity {
                 }
             }};
     }
+
+    public int getInternalId() {
+        return this.internalId;
+    }
+
+    public void setInternalId(int internalId) {
+        this.internalId = internalId;
+    }
+
 }
