@@ -12,10 +12,12 @@ import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
 import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
 import com.bumptech.glide.module.GlideModule;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.UiHelper;
 
+@SuppressWarnings("unused")
 public class CustomGlideModule implements GlideModule {
 
     private static final String TAG = Const.TAG_PREFIX + "CustomGlideModule";
@@ -29,12 +31,15 @@ public class CustomGlideModule implements GlideModule {
         builder.setBitmapPool(new LruBitmapPool(customBitmapPoolSize));
 
         builder.setDiskCache(
-                new DiskLruCacheFactory(DevIntensiveApplication.getContext().getCacheDir().getPath(), 1024 * 1024 * 500));
+                new DiskLruCacheFactory(DevIntensiveApplication
+                        .getContext()
+                        .getCacheDir()
+                        .getPath(),
+                        AppConfig.MAX_GLIDE_CACHE_SIZE));
     }
 
     @Override
     public void registerComponents(Context context, Glide glide) {
-
     }
 
     public static void loadImage(final String path, final Drawable placeholder,
@@ -95,7 +100,7 @@ public class CustomGlideModule implements GlideModule {
                 .placeholder(placeholder)
                 .centerCrop()
                 .skipMemoryCache(true)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(target);
     }
 }

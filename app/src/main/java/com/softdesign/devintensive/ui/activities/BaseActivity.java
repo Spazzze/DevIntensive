@@ -2,26 +2,79 @@ package com.softdesign.devintensive.ui.activities;
 
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.provider.Settings;
+import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.redmadrobot.chronos.gui.activity.ChronosAppCompatActivity;
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.operations.DatabaseOperation;
+import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
 import com.softdesign.devintensive.utils.Const;
 
+import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
 @SuppressWarnings("unused")
-public class BaseActivity extends ChronosAppCompatActivity {
+public class BaseActivity extends ChronosAppCompatActivity implements BaseActivityCallback {
 
     private static final String TAG = Const.TAG_PREFIX + "BaseActivity";
 
+    public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final EventBus BUS = EventBus.getDefault();
     private ProgressDialog mProgressDialog;
 
+    //region Activity's LifeCycle
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+    }
+    //endregion
+
+    //region Announce
     public void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this, R.style.custom_dialog);
@@ -73,5 +126,58 @@ public class BaseActivity extends ChronosAppCompatActivity {
     public void showDialogFragment(int dialogId, String message) {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId, message);
         newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
+    }
+    //endregion
+
+    //region UTIL (стырила у Сереги Куприна, на память)
+    public <T extends View> T $(@IdRes int id) {
+        //noinspection unchecked
+        return (T) findViewById(id);
+    }
+
+    @Nullable
+    public <T extends BaseActivity> T as(Class<T> clazz) {
+        //noinspection unchecked
+        return (T) this;
+    }
+    //endregion
+
+    @Override
+    public void setContentView(@LayoutRes int layoutResID) {
+        super.setContentView(layoutResID);
+        ButterKnife.bind(this);
+    }
+
+    public void logout(int mode) {
+        Log.d(TAG, "logout: ");
+        if (mode == 1) {
+            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
+            DATA_MANAGER.getPreferencesManager().totalLogout();
+        }
+        startAuthActivity();
+    }
+
+    public void startAuthActivity() {
+        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    public void startMainActivity() {
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        this.finish();
+    }
+
+    public void startUserListActivity() {
+        startActivity(new Intent(getApplicationContext(), UserListActivity.class));
+    }
+
+    public void openAppSettings() {
+        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+    }
+
+    public void openAppSettingsForResult(int flag) {
+        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+        startActivityForResult(appSettingsIntent, flag);
     }
 }

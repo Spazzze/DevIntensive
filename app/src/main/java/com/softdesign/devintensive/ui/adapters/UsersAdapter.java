@@ -15,26 +15,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
-import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
+import de.greenrobot.event.EventBus;
 
-    private static final String TAG = Const.TAG_PREFIX + "UsersAdapter";
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
 
     private List<UserEntity> mUsers;
     private final CustomUserListFilter mFilter;
     private final UserViewHolder.CustomClickListener mCustomClickListener;
     private final OnStartDragListener mDragStartListener;
+    private static final EventBus BUS = EventBus.getDefault();
 
     //region Adapter
     @Override
@@ -92,31 +91,44 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onItemDismiss(int position) {
         UserEntity u = mUsers.get(position);
+        BUS.post(new ChangeUserInternalId(u.getRemoteId(), null));
         mFilter.getList().remove(u);
-        mUsers.remove(position);
+        mUsers.remove(u);
         notifyItemRemoved(position);
-        DataManager.getInstance().changeUserInternalId(position, mUsers.size() * 2);      //// TODO: 21.07.2016 в поток
     }
 
     @Override
-    public boolean onItemMove(int fromPosition, int toPosition) {
+    public void onItemMove(int fromPosition, int toPosition) {
+        BUS.post(new ChangeUserInternalId(mUsers.get(fromPosition).getRemoteId(), mUsers.get(toPosition).getRemoteId()));
         Collections.swap(mUsers, fromPosition, toPosition);
+        Collections.swap(mFilter.getList(), fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
-        DataManager.getInstance().changeUserInternalId(fromPosition, toPosition);      //// TODO: 21.07.2016 в поток
-        return true;
-    }
-
-    @Override
-    public void onItemPendToDelete(int position) {
-
     }
 
     public List<UserEntity> getUsers() {
         return mUsers;
     }
 
-    public void setUsers(List<UserEntity> users) {
+    private void setUsers(List<UserEntity> users) {
         mUsers = users;
+    }
+
+    public class ChangeUserInternalId {
+        final String firstUserRemoteId;
+        final String secondUserRemoteId;
+
+        public ChangeUserInternalId(String firstUserRemoteId, String secondUserRemoteId) {
+            this.firstUserRemoteId = firstUserRemoteId;
+            this.secondUserRemoteId = secondUserRemoteId;
+        }
+
+        public String getFirstUserRemoteId() {
+            return firstUserRemoteId;
+        }
+
+        public String getSecondUserRemoteId() {
+            return secondUserRemoteId;
+        }
     }
     //endregion
 
@@ -200,13 +212,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         public CustomUserListFilter(UsersAdapter mAdapter) {
             super();
             this.mAdapter = mAdapter;
-            mList = mAdapter.getUsers();
+            this.mList = mAdapter.getUsers();
         }
 
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
-            FilterResults results = new FilterResults();
             List<UserEntity> tempList = new ArrayList<>();
 
             if (constraint.length() != 0) {
@@ -221,9 +232,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                 tempList = mList;
             }
             mAdapter.setUsers(tempList);
-            results.values = tempList;
-            results.count = tempList.size();
-            return results;
+            return null;
         }
 
         @Override

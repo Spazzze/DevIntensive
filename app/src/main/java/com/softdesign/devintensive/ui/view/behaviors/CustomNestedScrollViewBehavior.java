@@ -10,9 +10,9 @@ import android.widget.LinearLayout;
 /**
  * Behavior to link Nested scroll to bottom edge of LinearLayout
  */
+@SuppressWarnings("unused")
 class CustomNestedScrollViewBehavior extends AppBarLayout.ScrollingViewBehavior {
 
-    @SuppressWarnings({"unused"})
     public CustomNestedScrollViewBehavior(Context context, AttributeSet attrs) {
     }
 

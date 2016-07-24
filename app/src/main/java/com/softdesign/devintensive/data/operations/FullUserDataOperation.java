@@ -13,7 +13,7 @@ import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
 
 public class FullUserDataOperation extends BaseChronosOperation<User> {
 
-    User mUser;
+    private User mUser;
 
     public FullUserDataOperation() {
         this.mAction = Action.LOAD;

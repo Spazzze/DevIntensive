@@ -32,22 +32,22 @@ import static com.softdesign.devintensive.utils.UiHelper.isEmptyOrNull;
 public class AuthNetworkFragment extends BaseNetworkFragment {
 
     private static final String TAG = Const.TAG_PREFIX + "AuthNetworkFragment";
-    public AuthTaskCallbacks mCallbacks;
+
+    private AuthTaskCallbacks mCallbacks;
+    private volatile int mWrongPasswordCount;
+    private volatile User mUser;
 
     public interface AuthTaskCallbacks extends BaseTaskCallbacks {
 
         void onErrorCount(int count);
     }
 
-    private int mWrongPasswordCount;
-    private User mUser;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mUser = mDataManager.getPreferencesManager().loadAllUserData();
-        if (mDataManager.isUserAuthenticated()) silentSignIn();
+        mUser = DATA_MANAGER.getPreferencesManager().loadAllUserData();
+        if (DATA_MANAGER.isUserAuthenticated()) silentSignIn();
     }
 
     @Override
@@ -56,23 +56,40 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         if (activity instanceof AuthTaskCallbacks) {
             mCallbacks = (AuthTaskCallbacks) activity;
         } else {
-            throw new IllegalStateException("Parent activity must implement BaseTaskCallbacks");
+            throw new IllegalStateException("Parent activity must implement AuthTaskCallbacks");
         }
     }
 
-    private void onWrongCredentials() {
-        mError = getString(R.string.error_wrong_credentials);
-        if (mUser != null) {
-            mWrongPasswordCount++;
-            if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES)
-                mDataManager.getPreferencesManager().totalLogout();
-            if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
+    @Override
+    public void onRequestHttpError(ErrorUtils.BackendHttpError error) {
+
+        mStatus = Status.FINISHED;
+        mCancelled = true;
+
+        switch (error.getStatusCode()) {
+            case Const.HTTP_RESPONSE_NOT_FOUND:
+                synchronized (this) {
+                    mError = getString(R.string.error_wrong_credentials);
+                    mWrongPasswordCount++;
+                }
+                if (mUser != null) {
+                    if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES)
+                        DATA_MANAGER.getPreferencesManager().totalLogout();
+                    if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
+                }
+                break;
+            default:
+                synchronized (this) {
+                    mError = error.getErrorMessage();
+                }
+                break;
         }
-        onRequestHttpError(new ErrorUtils.BackendHttpError(0, mError));
+
+        if (mCallbacks != null) mCallbacks.onRequestFailed(mError);
     }
 
     public void onRequestComplete(User user) {
-        mBus.postSticky(user);
+        BUS.postSticky(user);
         super.onRequestComplete(null);
     }
 
@@ -84,7 +101,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
 
         onRequestStarted();
 
-        Call<BaseModel<UserAuthRes>> call = mDataManager.loginUser(new UserLoginReq(id, pass));
+        Call<BaseModel<UserAuthRes>> call = DATA_MANAGER.loginUser(new UserLoginReq(id, pass));
 
         call.enqueue(new Callback<BaseModel<UserAuthRes>>() {
             @Override
@@ -99,14 +116,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                         onRequestResponseEmpty();
                     }
                 } else {
-                    switch (response.code()) {
-                        case Const.HTTP_RESPONSE_NOT_FOUND:
-                            onWrongCredentials();
-                            break;
-                        default:
-                            onRequestHttpError(ErrorUtils.parseHttpError(response));
-                            break;
-                    }
+                    onRequestHttpError(ErrorUtils.parseHttpError(response));
                 }
             }
 
@@ -118,11 +128,11 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     private void silentSignIn() {
-        if (getStatus() == Status.RUNNING) return;
+        if (getStatus() == Status.RUNNING || !isExecutePossible()) return;
 
         onRequestStarted();
 
-        Call<BaseModel<User>> call = mDataManager.getUserData(mDataManager.getPreferencesManager().loadBuiltInAuthId());
+        Call<BaseModel<User>> call = DATA_MANAGER.getUserData(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId());
 
         call.enqueue(new NetworkCallback<BaseModel<User>>() {
             @Override
@@ -140,7 +150,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     //endregion
 
     private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
-        mDataManager.getPreferencesManager().saveBuiltInAuthInfo(
+        DATA_MANAGER.getPreferencesManager().saveBuiltInAuthInfo(
                 userModelRes.getData().getUser().getId(),
                 userModelRes.getData().getToken()
         );
@@ -172,14 +182,14 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
             public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                 super.onResourceReady(bitmap, anim);
                 Log.d(TAG, "onResourceReady: Success");
-                mDataManager.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
+                DATA_MANAGER.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
                 onRequestComplete(user);
             }
 
             @Override
             public void onLoadFailed(Exception e, Drawable errorDrawable) {
                 Log.e(TAG, "downloadUserPhoto onLoadFailed: " + e.getMessage());
-                mDataManager.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
+                DATA_MANAGER.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
                 onRequestComplete(user);
             }
         };

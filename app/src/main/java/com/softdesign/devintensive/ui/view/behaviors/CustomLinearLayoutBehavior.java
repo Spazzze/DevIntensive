@@ -12,7 +12,7 @@ import android.view.View;
 import com.softdesign.devintensive.R;
 
 import static com.softdesign.devintensive.utils.UiHelper.getAppBarSize;
-import static com.softdesign.devintensive.utils.UiHelper.getMinHeight;
+import static com.softdesign.devintensive.utils.UiHelper.getViewMinHeight;
 import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
 
 /**
@@ -20,14 +20,12 @@ import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
  *
  * @param <LinearLayout> to link to.
  */
+@SuppressWarnings("unused")
 class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout.ScrollingViewBehavior {
 
-    private final Context mContext;
     private float mMinLLSize, mMaxLLSize, mMinAppbarHeight, mMaxAppbarHeight, mExpandedPercentageFactor;
 
-    @SuppressWarnings({"unused"})
     public CustomLinearLayoutBehavior(Context context, AttributeSet attrs) {
-        this.mContext = context;
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomLinearLayoutBehavior);
         mMinLLSize = a.getDimensionPixelSize(R.styleable.CustomLinearLayoutBehavior_min_collapsed_height, 0);
         a.recycle();
@@ -94,8 +92,8 @@ class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout
 
     private void initProperties(View child, AppBarLayout dependency) {  //расчет начальных параметров
         mMaxLLSize = child.getHeight();
-        if (mMinLLSize == 0.0f) mMinLLSize = getMinHeight(child);
-        mMinAppbarHeight = getStatusBarHeight(mContext) + getAppBarSize(mContext);
+        if (mMinLLSize == 0.0f) mMinLLSize = getViewMinHeight(child);
+        mMinAppbarHeight = getStatusBarHeight() + getAppBarSize();
         mMaxAppbarHeight = dependency.getHeight() - mMinAppbarHeight;
     }
 }

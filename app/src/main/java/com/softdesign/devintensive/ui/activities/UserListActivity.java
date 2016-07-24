@@ -5,10 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -36,27 +33,27 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.BaseChronosOperation;
 import com.softdesign.devintensive.data.operations.DatabaseOperation;
+import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperCallback;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
-import com.softdesign.devintensive.ui.callbacks.UserListActivityCallback;
+import com.softdesign.devintensive.ui.events.UpdateDBEvent;
 import com.softdesign.devintensive.ui.fragments.BaseNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
+import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity implements BaseTaskCallbacks, OnStartDragListener, UserListActivityCallback {
+public class UserListActivity extends BaseActivity implements BaseTaskCallbacks, OnStartDragListener {
 
     private static final String TAG = Const.TAG_PREFIX + "UserListActivity";
 
@@ -70,7 +67,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
     private LoadUsersIntoDBFragment mDbNetworkFragment;
-    private FragmentManager mFragmentManager = getFragmentManager();
+    private final FragmentManager mFragmentManager = getFragmentManager();
     private User mUserData;
     private ItemTouchHelper mItemTouchHelper;
     private ItemTouchHelperCallback mItemTouchHelperCallback;
@@ -84,20 +81,20 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
         attachLoadIntoDBFragment();
 
-        ButterKnife.bind(this);
-
         mDataManager = DataManager.getInstance();
 
-        initUserProfileInfo();
-        setupDrawer();
+        this.setTitle(getString(R.string.header_menu_myTeam));
+        runOperation(new FullUserDataOperation());
         setupToolbar();
+        setupDrawer();
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        if (mDbNetworkFragment != null) {
-            if (mDbNetworkFragment.isCancelled() || mDbNetworkFragment.getStatus() == BaseNetworkFragment.Status.PENDING) {
-                showProgressDialog();
-                mDbNetworkFragment.downloadUserListIntoDB();
-            }
+
+        if (mUsersAdapter == null && mDbNetworkFragment != null && mDbNetworkFragment.getStatus() != BaseNetworkFragment.Status.RUNNING) {
+            showProgressDialog();
+            mDbNetworkFragment.downloadUserListIntoDB();
+        } else {
+            onRequestFailed(getString(R.string.error_data_from_db_is_not_loaded));
         }
 
         mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
@@ -126,7 +123,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mUsersAdapter.getFilter().filter(newText);
+                if (!UiHelper.isEmptyOrNull(newText)) mUsersAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -202,14 +199,14 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         });
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
-            setupDrawerItems(navigationView);
+            updateDrawerItems();
             navigationView.setNavigationItemSelectedListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.navMenu_userProfile:
                         startMainActivity();
                         break;
                     case R.id.navMenu_options:
-                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                        openAppSettings();
                         break;
                     case R.id.navMenu_logout:
                         logout(1);
@@ -225,30 +222,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         }
     }
 
-    private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
-
-        TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-        TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-        ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-        mTextView_menuUserName.setText(this.getTitle());
-
-        mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-        Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-        if (src == null) {
-            loadUserAvatarFromServer();
-        } else {
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-            mRoundedAvatar_img.setImageDrawable(dr);
-        }
-    }
-
     private void updateDrawerItems() {  //redraw navigation view items
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
+        if (navigationView != null && mUserData != null) {
             TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
             TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
             ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
@@ -326,6 +303,34 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     }
     //endregion
 
+    //region Life cycle
+    @Override
+    protected void onResume() {
+        super.onResume();                //// TODO: 23.07.2016 переделать когда будут фрагменты
+        BUS.registerSticky(this);
+    }
+
+    @Override
+    protected void onPause() {
+        BUS.unregister(this);
+        super.onPause();
+    }
+    //endregion
+
+    //region Events
+    @SuppressWarnings("unused")
+    public void onEvent(UsersAdapter.ChangeUserInternalId event) {
+        if (event != null && !UiHelper.isEmptyOrNull(event.getFirstUserRemoteId())) {
+            runOperation(new DatabaseOperation(event.getFirstUserRemoteId(), event.getSecondUserRemoteId()));
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void onEvent(UpdateDBEvent event) {
+        if (mDbNetworkFragment != null) mDbNetworkFragment.downloadUserListIntoDB();
+    }
+    //endregion
+
     //region Background Operation Results
     @SuppressWarnings("unused")
     public void onOperationFinished(final DatabaseOperation.Result result) {
@@ -341,20 +346,21 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
                 }
             }
         } else {
-            onRequestFailed("");
-            Log.e(TAG, "onOperationFinished: Данные из БД не были загружены");
+            onRequestFailed(getString(R.string.error_data_from_db_is_not_loaded));
         }
     }
 
-    private void updateUserListAdapter(List<UserEntity> userEntities) {
-        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
-            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
-            Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
-            startActivity(profileUserIntent);
-        });
-        mRecyclerView.swapAdapter(mUsersAdapter, true);
-        mItemTouchHelperCallback.swapAdapter(mUsersAdapter);
+    public void onOperationFinished(final FullUserDataOperation.Result result) {
+        if (result.isSuccessful()) {
+            if (result.getOutput() != null) {//only Loading
+                mUserData = result.getOutput();
+            } else {
+                logout(0);
+            }
+        } else {
+            Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
+            if (mUserData == null) logout(0);
+        }
     }
 
     //endregion
@@ -372,10 +378,21 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
+    private void updateUserListAdapter(List<UserEntity> userEntities) {
+        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
+            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
+            Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
+            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
+            startActivity(profileUserIntent);
+        });
+        mRecyclerView.swapAdapter(mUsersAdapter, true);
+        mItemTouchHelperCallback.swapAdapter(mUsersAdapter);
+    }
+
     @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
-        if (!NetworkUtils.isNetworkAvailable(this)) return;
+        if (!NetworkUtils.isNetworkAvailable()) return;
 
         final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 
@@ -408,29 +425,5 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
                 .load(pathToAvatar)
                 .asBitmap()
                 .into(avatarTarget);
-    }
-
-    private void initUserProfileInfo() {
-        Log.d(TAG, "initUserProfileInfo");
-
-        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
-        if (mUserData == null) logout(0);
-        this.setTitle(getString(R.string.header_menu_myTeam));
-    }
-
-    public void startMainActivity() {
-        startActivity(new Intent(this, MainActivity.class));
-        UserListActivity.this.finish();
-    }
-
-    private void logout(int mode) {
-        Log.d(TAG, "logout: ");
-        if (mode == 1) {
-            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
-            mDataManager.getPreferencesManager().totalLogout();
-        }
-        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 }

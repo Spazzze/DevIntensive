@@ -1,11 +1,9 @@
 package com.softdesign.devintensive.ui.view.elements;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.softdesign.devintensive.utils.Const;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,7 +17,6 @@ import static com.softdesign.devintensive.utils.UiHelper.createImageFromName;
 @SuppressWarnings("unused")
 public class GlideTargetIntoBitmap extends SimpleTarget<Bitmap> {
 
-    private static final String TAG = Const.TAG_PREFIX + "GlideSTIB";
     private final File file;
 
     public GlideTargetIntoBitmap(File file) {
@@ -43,8 +40,7 @@ public class GlideTargetIntoBitmap extends SimpleTarget<Bitmap> {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
             fileOutputStream.close();
-        } catch (IOException e) {
-            Log.e(TAG, "GlideTargetIntoBitmap onResourceReady: " + e.getMessage());
+        } catch (IOException ignored) {
         }
     }
 

@@ -45,7 +45,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     @BindView(R.id.signIn_vk_icon) ImageView mImageView_vk;
 
     private DataManager mDataManager;
-    private FragmentManager mFragmentManager = getFragmentManager();
+    private final FragmentManager mFragmentManager = getFragmentManager();
     private AuthNetworkFragment mAuthNetworkFragment;
 
     //region onCreate
@@ -113,7 +113,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     @OnClick({R.id.login_button, R.id.forgot_pass_button, R.id.signIn_vk_icon})
     void submitAuthButton(View view) {
-        if (!NetworkUtils.isNetworkAvailable(this)) {
+        if (!NetworkUtils.isNetworkAvailable()) {
             showError(R.string.error_no_network_connection);
             return;
         }
@@ -167,7 +167,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //region Login methods
 
     private void startSignIn() {
-        mAuthNetworkFragment.signIn(mEditText_login_email.getText().toString(), mEditText_login_password.getText().toString());
+        if (mAuthNetworkFragment != null) mAuthNetworkFragment.signIn(
+                    mEditText_login_email.getText().toString(),
+                    mEditText_login_password.getText().toString());
         mEditText_login_password.setText("");
     }
 
@@ -179,8 +181,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     private void finishSignIn() {
         hideProgressDialog();
         showToast(getString(R.string.notify_auth_successful));
-        startActivity(new Intent(AuthActivity.this, MainActivity.class));
-        AuthActivity.this.finish();
+        startMainActivity();
     }
 
     //endregion

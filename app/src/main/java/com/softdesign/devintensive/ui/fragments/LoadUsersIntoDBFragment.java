@@ -3,7 +3,6 @@ package com.softdesign.devintensive.ui.fragments;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.operations.DatabaseOperation;
@@ -29,38 +28,30 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
      */
     public void downloadUserListIntoDB() {
 
-        if (!DataManager.getInstance().getPreferencesManager().isDBNeedsUpdate()) {
+        if (this.mStatus == Status.RUNNING) {
+            return;
+        } else if (!DATA_MANAGER.getPreferencesManager().isDBNeedsUpdate()) {
             this.mStatus = Status.FINISHED;
             return;
-        } else if (this.mStatus == Status.RUNNING){
-            return;
-        } else if (!DataManager.getInstance().isUserAuthenticated()) {
-            this.mStatus = Status.FINISHED;
-            mCancelled = true;
-            return;
-        }
+        } else if (!isExecutePossible()) return;
 
         onRequestStarted();
 
         Log.d(TAG, "downloadUserListIntoDB: ");
 
-        DataManager.getInstance().getUserListFromNetwork().enqueue(new NetworkCallback<>());
+        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<>());
     }
 
     public void forceRefreshUserListIntoDB() {
-        if (this.mStatus == Status.RUNNING){
+        if (this.mStatus == Status.RUNNING) {
             return;
-        } else if (!DataManager.getInstance().isUserAuthenticated()) {
-            this.mStatus = Status.FINISHED;
-            mCancelled = true;
-            return;
-        }
+        } else if (!isExecutePossible()) return;
 
         onRequestStarted();
 
-        Log.d(TAG, "downloadUserListIntoDB: ");
+        Log.d(TAG, "forceRefreshUserListIntoDB: ");
 
-        DataManager.getInstance().getUserListFromNetwork().enqueue(new NetworkCallback<>());
+        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<>());
     }
 
     @SuppressWarnings("unchecked")

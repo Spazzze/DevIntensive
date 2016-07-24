@@ -27,8 +27,8 @@ public class UserLoginDataOperation extends BaseChronosOperation<String> {
             case SAVE:
                 SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
                 if (mLogin == null) {
-                    editor.putBoolean(Const.SAVE_LOGIN, false);
-                    editor.putString(Const.SAVED_LOGIN_NAME, "");
+                    editor.remove(Const.SAVE_LOGIN);
+                    editor.remove(Const.SAVED_LOGIN_NAME);
                 } else {
                     editor.putBoolean(Const.SAVE_LOGIN, true);
                     editor.putString(Const.SAVED_LOGIN_NAME, mLogin);

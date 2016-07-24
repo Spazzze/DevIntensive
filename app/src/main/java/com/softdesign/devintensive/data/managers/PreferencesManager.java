@@ -11,20 +11,14 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKSdk;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
-import static com.softdesign.devintensive.utils.UiHelper.getJsonFromObject;
 import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
 
 /**
  * saves and loads Shared Preferences of this app
  */
 public class PreferencesManager {
-    private static final String TAG = Const.TAG_PREFIX + "PreferencesManager";
-
     private final SharedPreferences mSharedPreferences;
     private final Context mContext;
 
@@ -32,13 +26,8 @@ public class PreferencesManager {
         mSharedPreferences = DevIntensiveApplication.getSharedPreferences();
         mContext = DevIntensiveApplication.getContext();
     }
-    //region User Data save & load
 
-    public void saveAllUserData(User res) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putString(Const.USER_JSON_OBJ, getJsonFromObject(res, User.class));
-        editor.apply();
-    }
+    //region User Data save & load
 
     public User loadAllUserData() {
         String json = mSharedPreferences.getString(Const.USER_JSON_OBJ, null);
@@ -77,8 +66,6 @@ public class PreferencesManager {
     }
     //endregion
 
-    //endregion
-
     //region Our Primary Auth
     public void saveBuiltInAuthInfo(String id, String token) {
         if (id != null && token != null && !id.isEmpty() && !token.isEmpty()) {
@@ -113,25 +100,6 @@ public class PreferencesManager {
 
     //region General auth methods
 
-    public void softLogout() {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        List<String> exclusionKeys = new ArrayList<>();
-        if (mSharedPreferences.getBoolean(Const.SAVE_LOGIN, false)) {
-            exclusionKeys.add(Const.SAVE_LOGIN);
-            exclusionKeys.add(Const.SAVED_LOGIN_NAME);
-            exclusionKeys.add(Const.BUILTIN_ACCESS_USER_ID);
-            exclusionKeys.add(Const.BUILTIN_ACCESS_TOKEN);
-        }
-
-        Map<String, ?> spMap = mSharedPreferences.getAll();
-        for (String key : spMap.keySet()) {
-            if (!exclusionKeys.contains(key)) {
-                editor.remove(key);
-            }
-        }
-        editor.apply();
-    }
-
     /**
      * totally removes all current users auth data
      */
@@ -145,7 +113,6 @@ public class PreferencesManager {
     //endregion
 
     //region DB
-
     public boolean isDBNeedsUpdate() {
         long updatedTime = mSharedPreferences.getLong(Const.DB_UPDATED_TIME_KEY, 0);
         return (new Date().getTime() - updatedTime) > AppConfig.DB_REFRESH_RATE;

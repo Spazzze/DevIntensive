@@ -3,6 +3,7 @@ package com.softdesign.devintensive.data.operations;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
@@ -11,12 +12,17 @@ import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 import com.softdesign.devintensive.utils.Const;
+import com.softdesign.devintensive.utils.UiHelper;
+
+import org.greenrobot.greendao.Property;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
+    private static final String TAG = Const.TAG_PREFIX + "DatabaseOperation";
 
     public enum Sort {
         RATING,
@@ -24,13 +30,15 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         CUSTOM,
     }
 
+    final DaoSession mDaoSession = DATA_MANAGER.getDaoSession();
+    Sort mSort = Sort.CUSTOM;
+    Action mAction = Action.LOAD;
+
     List<UserListRes> mResponse;
-    DaoSession mDaoSession = DATA_MANAGER.getDaoSession();
-    Sort mSort;
+    String mFirstUserRemoteId, mSecondUserRemoteId;
 
     public DatabaseOperation() {
         this.mAction = Action.LOAD;
-        mSort = Sort.CUSTOM;
     }
 
     public DatabaseOperation(Sort sort) {
@@ -44,7 +52,14 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     }
 
     public DatabaseOperation(Action action) {
+        if (action == Action.SAVE) return; //only CLEAR and LOAD allowed this way
         this.mAction = action;
+    }
+
+    public DatabaseOperation(String firstUserRemoteId, String secondUserRemoteId) {
+        mFirstUserRemoteId = firstUserRemoteId;
+        mSecondUserRemoteId = secondUserRemoteId;
+        this.mAction = Action.SWAP;
     }
 
     @Nullable
@@ -54,119 +69,48 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         switch (this.mAction) {
 
             case CLEAR:
-
                 clearDB();
-
-                return null;
+                break;
 
             case SAVE:
-
                 saveIntoDB();
+                break;
 
-                return null;
+            case SWAP:
+                swapEntityInternalIds(mFirstUserRemoteId, mSecondUserRemoteId);
+                break;
 
             case LOAD:
-
-                List<UserEntity> userList = null;
-
-                switch (mSort) {
-                    case RATING:
-                        userList = sortDBbyRating();
-                        break;
-                    case CODE:
-                        userList = sortDBbyCode();
-                        break;
-                    case CUSTOM:
-                        userList = sortDBbyCustom();
-                        break;
-                }
-
-                return userList;
+                return sortDB(mSort);
         }
         return null;
     }
 
-    private List<UserEntity> sortDBbyCustom() {
-        List<UserEntity> userList = new ArrayList<>();
-
-        try {
-            userList = DATA_MANAGER.getDaoSession()
-                    .queryBuilder(UserEntity.class)
-                    .orderAsc(UserEntityDao.Properties.InternalId)
-                    .build()
-                    .list();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return userList;
-    }
-
-    private List<UserEntity> sortDBbyCode() {
-        List<UserEntity> userList = new ArrayList<>();
-
-        try {
-            userList = DATA_MANAGER.getDaoSession()
-                    .queryBuilder(UserEntity.class)
-                    .orderDesc(UserEntityDao.Properties.CodeLines, UserEntityDao.Properties.InternalId)
-                    .build()
-                    .list();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return userList;
-    }
-
-    private List<UserEntity> sortDBbyRating() {
-        List<UserEntity> userList = new ArrayList<>();
-
-        try {
-            userList = DATA_MANAGER.getDaoSession()
-                    .queryBuilder(UserEntity.class)
-                    .orderDesc(UserEntityDao.Properties.Rating, UserEntityDao.Properties.InternalId)
-                    .build()
-                    .list();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return userList;
-    }
-
-    private void clearDB() {
-        mDaoSession.getRepositoryEntityDao().deleteAll();
-        mDaoSession.getUserEntityDao().deleteAll();
-        mDaoSession.clear();
-    }
+    //region Main methods
 
     private void saveIntoDB() {
         List<RepositoryEntity> allRepositories = new ArrayList<>();
         List<UserEntity> allUsers = new ArrayList<>();
-        List<UserEntity> curDB = getUsersDB();
-        int nextIndex = 0;  //4..0
+        List<UserEntity> curDB = sortDB(Sort.CUSTOM);
+
         if (curDB.size() != 0) {
-            int maxIndex = 0;
-            for (UserEntity u: curDB){
-                if (u.getInternalId() > maxIndex) maxIndex = u.getInternalId();
-            }
+            int maxIndex = findMaxInternalId(curDB);
             for (UserListRes user : mResponse) {
-                int userIndexInDB = maxIndex+1;
-                UserEntity curUser = findUserInDB(user);
-                if (curUser != null) {
-                    userIndexInDB = curUser.getInternalId();
-                } else {
+                int userIndexInDB = findUserInternalId(user.getId(), curDB);
+                if (userIndexInDB == -1) {
+                    userIndexInDB = maxIndex + 1;
                     maxIndex++;
                 }
-                List<RepositoryEntity> l = user.getRepositories()
-                        .getRepoEntitiesList(String.valueOf(user.getId()));
+                List<RepositoryEntity> l = user.getRepositories().getRepoEntitiesList(user.getId());
                 allRepositories.addAll(l);
                 allUsers.add(new UserEntity(user, userIndexInDB));
             }
         } else {
-            for (UserListRes user : mResponse) {
-                List<RepositoryEntity> l = user.getRepositories()
-                        .getRepoEntitiesList(String.valueOf(user.getId()));
+            for (int i = 0; i < mResponse.size(); i++) {
+                UserListRes user = mResponse.get(i);
+                List<RepositoryEntity> l = user.getRepositories().getRepoEntitiesList(user.getId());
                 allRepositories.addAll(l);
-                allUsers.add(new UserEntity(user, nextIndex));
-                nextIndex++;
+                allUsers.add(new UserEntity(user, i));
             }
         }
 
@@ -178,25 +122,102 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         editor.apply();
     }
 
-    private UserEntity findUserInDB(UserListRes user) {
-        return mDaoSession.queryBuilder(UserEntity.class)
-                .where(UserEntityDao.Properties.RemoteId.eq(user.getId()))
+    private List<UserEntity> sortDB(Sort sorting) {
+        List<UserEntity> userList = new ArrayList<>();
+        Property sortProperty = UserEntityDao.Properties.Rating;
+
+        switch (sorting) {
+            case CODE:
+                sortProperty = UserEntityDao.Properties.CodeLines;
+                break;
+            case CUSTOM:
+                sortProperty = UserEntityDao.Properties.InternalId;
+                break;
+        }
+
+        if (sorting == Sort.CUSTOM) {
+            try {
+                userList = mDaoSession
+                        .queryBuilder(UserEntity.class)
+                        .orderAsc(sortProperty)
+                        .build()
+                        .list();
+            } catch (Exception e) {
+                Log.e("DEV", "sortDB: " + e.getMessage());
+            }
+        } else {
+            try {
+                userList = mDaoSession
+                        .queryBuilder(UserEntity.class)
+                        .orderDesc(sortProperty)
+                        .build()
+                        .list();
+            } catch (Exception e) {
+                Log.e("DEV", "sortDB: " + e.getMessage());
+            }
+        }
+
+        return userList;
+    }
+
+    private void clearDB() {
+        mDaoSession.getRepositoryEntityDao().deleteAll();
+        mDaoSession.getUserEntityDao().deleteAll();
+        mDaoSession.clear();
+    }
+
+    private void swapEntityInternalIds(@NonNull String firstUserRemoteId, String secondUserRemoteId) {
+        UserEntity firstEntity = findUserInDB(firstUserRemoteId);
+        if (firstEntity == null) return;
+
+        int oldInternalId = firstEntity.getInternalId();
+
+        //swap place
+        if (secondUserRemoteId != null) {
+            UserEntity secondEntity = findUserInDB(secondUserRemoteId);
+            if (secondEntity != null) {
+                int newInternalId = secondEntity.getInternalId();
+                firstEntity.setInternalId(newInternalId);
+                secondEntity.setInternalId(oldInternalId);
+                mDaoSession.getUserEntityDao().update(firstEntity);
+                mDaoSession.getUserEntityDao().update(secondEntity);
+            }
+        } else { //move card to the lowest place
+            List<UserEntity> curDB = sortDB(Sort.CUSTOM);
+            if (UiHelper.isEmptyOrNull(curDB)) return;
+            int newInternalId = findMaxInternalId(curDB) + 1;
+            firstEntity.setInternalId(newInternalId);
+            mDaoSession.getUserEntityDao().update(firstEntity);
+        }
+    }
+    //endregion
+
+    //region Functional methods
+    private int findMaxInternalId(List<UserEntity> curDB) {
+        int maxInternalId = 0;
+        for (UserEntity u : curDB) {
+            if (u.getInternalId() > maxInternalId) maxInternalId = u.getInternalId();
+        }
+        return maxInternalId;
+    }
+
+    private UserEntity findUserInDB(String userId) {
+        return mDaoSession
+                .queryBuilder(UserEntity.class)
+                .where(UserEntityDao.Properties.RemoteId.eq(userId))
                 .build()
                 .unique();
     }
 
-    public List<UserEntity> getUsersDB() {
-
-        try {
-            return mDaoSession.queryBuilder(UserEntity.class)
-                    .build()
-                    .list();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private int findUserInternalId(String userId, List<UserEntity> DB) {
+        for (UserEntity u : DB) {
+            if (u.getRemoteId().equals(userId)) return u.getInternalId();
         }
-        return null;
+        return -1;
     }
+    //endregion
 
+    //region Result
     @NonNull
     @Override
     public Class<? extends ChronosOperationResult<List<UserEntity>>> getResultClass() {
@@ -205,4 +226,5 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
 
     public final static class Result extends ChronosOperationResult<List<UserEntity>> {
     }
+    //endregion
 }

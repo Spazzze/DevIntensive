@@ -7,7 +7,6 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -85,13 +84,6 @@ public class UserProfileActivity extends BaseActivity {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void logout(int mode) {
-        Log.d(TAG, "logout: ");
-        if (mode == 1)
-            mDataManager.getPreferencesManager().totalLogout();
-        else mDataManager.getPreferencesManager().softLogout();
-        startActivity(new Intent(this, AuthActivity.class));
-    }
 
     private void initProfileData() {
         UserDTO userDTO = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);

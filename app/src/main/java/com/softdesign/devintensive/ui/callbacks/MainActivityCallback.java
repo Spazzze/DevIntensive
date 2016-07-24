@@ -1,6 +1,6 @@
 package com.softdesign.devintensive.ui.callbacks;
 
-public interface MainActivityCallback {
+public interface MainActivityCallback extends BaseActivityCallback {
 
     void loadPhotoFromGallery();
 

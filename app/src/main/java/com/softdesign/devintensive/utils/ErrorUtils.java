@@ -17,18 +17,23 @@ public class ErrorUtils {
     public static class BackendHttpError {
 
         private int statusCode;
-        private String err;
+        private String mErrorMessage;
 
         public BackendHttpError() {
         }
 
-        public BackendHttpError(int statusCode, String message) {
+        public BackendHttpError(String message, int statusCode) {
             this.statusCode = statusCode;
-            this.err = message;
+            this.mErrorMessage = message;
+        }
+
+        public BackendHttpError(BackendHttpError convert, int statusCode) {
+            this.statusCode = statusCode;
+            this.mErrorMessage = convert.getErrorMessage();
         }
 
         public String getErrorMessage() {
-            return this.err;
+            return this.mErrorMessage;
         }
 
         public int getStatusCode() {
@@ -37,18 +42,17 @@ public class ErrorUtils {
     }
 
     public static BackendHttpError parseHttpError(Response<?> response) {
+        int errorCode = 0;
+        if (!UiHelper.isEmptyOrNull(response)) errorCode = response.code();
+
         Converter<ResponseBody, BackendHttpError> converter =
                 ServiceGenerator.getRetrofit()
                         .responseBodyConverter(BackendHttpError.class, new Annotation[0]);
 
-        BackendHttpError error;
-
         try {
-            error = converter.convert(response.errorBody());
+            return new BackendHttpError(converter.convert(response.errorBody()), errorCode);
         } catch (IOException e) {
-            return new BackendHttpError(0, "Cannot convert error");
+            return new BackendHttpError("Cannot convert error", errorCode);
         }
-
-        return error;
     }
 }

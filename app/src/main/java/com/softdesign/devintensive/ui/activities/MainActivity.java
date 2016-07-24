@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -42,14 +41,11 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.BaseChronosOperation;
-import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.ui.events.UpdateDBEvent;
@@ -57,6 +53,7 @@ import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.fragments.UpdateServerDataFragment;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.Const;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UiHelper;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
@@ -72,7 +69,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
-import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
 public class MainActivity extends BaseActivity implements MainActivityCallback, UpdateServerDataFragment.UploadToServerCallbacks {
@@ -98,12 +94,11 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     private Boolean mCurrentEditMode = false;
     private Boolean mNotSavingUserValues = false;
-    private DataManager mDataManager;
     private File mPhotoFile = null;
     private Uri mUri_SelectedProfileImage = null;
     private String mUri_SelectedAvatarImage = null;
     private User mUserData = null;
-    private FragmentManager mFragmentManager = getFragmentManager();
+    private final FragmentManager mFragmentManager = getFragmentManager();
     private LoadUsersIntoDBFragment mDbNetworkFragment;
     private UpdateServerDataFragment mDataFragment;
 
@@ -116,10 +111,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
         attachDataFragment();
         attachLoadIntoDBFragment();
-
-        ButterKnife.bind(this);
-
-        mDataManager = DataManager.getInstance();
 
         if (savedInstanceState != null && mUserData != null) {
             mCurrentEditMode = savedInstanceState.getBoolean(Const.EDIT_MODE_KEY);
@@ -274,284 +265,20 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d(TAG, "onRestart");
-    }
-
-    @Override
     protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume");
+        super.onResume();                //// TODO: 23.07.2016 переделать когда будут фрагменты
         BUS.registerSticky(this);
+        Log.d(TAG, "onResume");
     }
 
     @Override
     protected void onPause() {
         Log.d(TAG, "onPause");
-        BUS.unregister(this);
         saveUserInfoData();
+        BUS.unregister(this);
         super.onPause();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy");
-    }
-    //endregion
-
-    //region Setup Ui Items
-
-    private void initUI() {
-        Log.d(TAG, "initUI");
-        setupTitle();
-        setupEditTexts();
-        setupPhoto();
-        setupProfileValues();
-        setupToolbar();
-        setupUserInfoLayout();
-        setupDrawer();
-    }
-
-    private void setupTitle() {
-        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
-        MainActivity.this.setTitle(userFullName);
-    }
-
-    private void setupProfileValues() {
-        String[] userProfileValuesList = {
-                mUserData.getProfileValues().getRating(),
-                mUserData.getProfileValues().getCodeLines(),
-                mUserData.getProfileValues().getProjects()};
-
-        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
-    }
-
-    private void setupEditTexts() {
-        List<String> userProfileDataList = new ArrayList<>();
-
-        userProfileDataList.add(mUserData.getContacts().getPhone());
-        userProfileDataList.add(mUserData.getContacts().getEmail());
-        userProfileDataList.add(mUserData.getContacts().getVk());
-        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
-        userProfileDataList.add(mUserData.getPublicInfo().getBio());
-
-        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
-    }
-
-    private void setupPhoto() {
-        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
-        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
-        placeProfilePicture(mUri_SelectedProfileImage);
-    }
-
-    private void setupToolbar() {
-        setSupportActionBar(mToolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            mToolbar.inflateMenu(R.menu.toolbar_menu_main);
-        }
-    }
-
-    private void setupDrawer() {
-        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                updateDrawerItems();
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-            }
-        });
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
-            setupDrawerItems(navigationView);
-            navigationView.setNavigationItemSelectedListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.navMenu_team:
-                        startActivity(new Intent(MainActivity.this, UserListActivity.class));
-                        break;
-                    case R.id.navMenu_options:
-                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
-                        break;
-                    case R.id.navMenu_logout:
-                        logout(1);
-                        break;
-                    default:
-                        showToast(item.getTitle().toString());
-                        item.setChecked(true);
-                        break;
-                }
-                mDrawerLayout.closeDrawer(GravityCompat.START);
-                return false;
-            });
-        }
-    }
-
-    private void updateDrawerItems() {  //redraw navigation view items
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
-            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-            TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-            mTextView_menuUserName.setText(this.getTitle());
-
-            mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-            Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-            if (src == null) {
-                loadUserAvatarFromServer();
-            } else {
-                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-                mRoundedAvatar_img.setImageDrawable(dr);
-            }
-        }
-    }
-
-    private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
-
-        TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-        TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-        ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-        mTextView_menuUserName.setText(this.getTitle());
-
-        mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-        Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-        if (src == null) {
-            loadUserAvatarFromServer();
-        } else {
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-            mRoundedAvatar_img.setImageDrawable(dr);
-        }
-    }
-
-    private void setupUserInfoLayout() {
-
-        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
-            if (hasFocus) {
-                if (v instanceof EditText) {
-                    EditText et = (EditText) v;
-                    if (!et.isEnabled() && !et.isFocusable()) return;
-                    et.setSelection(et.getText().length());
-                }
-            } else {
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
-                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
-            }
-        };
-
-        for (int i = 0; i < mEditTexts_userInfoList.size() - 1; i++) {
-            mEditTexts_userInfoList.get(i).addTextChangedListener(
-                    new UserInfoTextWatcher(mEditTexts_userInfoList.get(i), mTextInputLayouts_userInfoList.get(i)));
-            mEditTexts_userInfoList.get(i).setOnFocusChangeListener(focusListener);
-        }
-    }
-
-    private void placeProfilePicture(Uri selectedImage) {
-        Log.d(TAG, "placeProfilePicture: " + selectedImage);
-        CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
-    }
-
-    static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
-
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
-        view.setEnabled(value);
-        view.setFocusable(value);
-        view.setFocusableInTouchMode(value);
-    };
-
-    //endregion
-
-    //region Save and Load preferences and current state
-
-    private void loadFullUserData() {
-        Log.d(TAG, "loadFullUserData: ");
-        runOperation(new FullUserDataOperation());
-    }
-
-    private void saveFullUserData() {
-        Log.d(TAG, "saveFullUserData: ");
-        runOperation(new FullUserDataOperation(mUserData));
-    }
-
-    private void onUserDataChanged(User savedUser) {
-        Log.d(TAG, "onUserDataChanged: ");
-        String jsonSavedUser = UiHelper.getJsonFromObject(savedUser, User.class);
-        String currentData = UiHelper.getJsonFromObject(mUserData, User.class);
-        if (!jsonSavedUser.equals(currentData)) {
-            mDataFragment.uploadUserData(mUserData);
-        }
-    }
-
-    private void saveUserInfoData() {
-
-        if (mNotSavingUserValues) return;
-
-        Log.d(TAG, "saveUserInfoData");
-        saveAvatar();
-        savePhoto();
-        updateUserInfo();
-    }
-
-    private void updateUserInfo() {
-        readUserInfoFromViews();
-        loadFullUserData(); //compare data in SP with current, if data was changed, it will be initiated upload to server
-    }
-
-    private void readUserInfoFromViews() {
-        mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
-        mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
-        mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
-        mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
-        mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
-    }
-
-    private void savePhoto() {
-        if (mUri_SelectedProfileImage != null &&
-                !mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
-            mDataFragment.uploadUserPhoto(mUri_SelectedProfileImage);
-            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
-        }
-    }
-
-    private void saveAvatar() {
-        if (mUri_SelectedAvatarImage != null &&
-                !mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
-            mDataFragment.uploadUserAvatar(mUri_SelectedAvatarImage);
-            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
-        }
-    }
     //endregion
 
     //region Activity Results
@@ -603,6 +330,227 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     }
     //endregion
 
+    //region Setup Ui Items
+
+    private void initUI() {
+        Log.d(TAG, "initUI");
+        setupTitle();
+        setupEditTexts();
+        setupPhoto();
+        setupProfileValues();
+        setupToolbar();
+        setupUserInfoLayout();
+        setupDrawer();
+    }
+
+    private void setupTitle() {
+        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
+        MainActivity.this.setTitle(userFullName);
+    }
+
+    private void setupProfileValues() {
+        String[] userProfileValuesList = {
+                mUserData.getProfileValues().getRating(),
+                mUserData.getProfileValues().getCodeLines(),
+                mUserData.getProfileValues().getProjects()};
+
+        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
+    }
+
+    private void setupEditTexts() {
+        List<String> userProfileDataList = new ArrayList<>();
+
+        userProfileDataList.add(mUserData.getContacts().getPhone());
+        userProfileDataList.add(mUserData.getContacts().getEmail());
+        userProfileDataList.add(mUserData.getContacts().getVk());
+        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
+        userProfileDataList.add(mUserData.getPublicInfo().getBio());
+
+        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+    }
+
+    private void setupPhoto() {
+        mUri_SelectedAvatarImage = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
+        mUri_SelectedProfileImage = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
+        placeProfilePicture(mUri_SelectedProfileImage);
+    }
+
+    private void setupToolbar() {
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            mToolbar.inflateMenu(R.menu.toolbar_menu_main);
+        }
+    }
+
+    private void setupDrawer() {
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                updateDrawerItems();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        if (navigationView != null) {
+            updateDrawerItems();
+            navigationView.setNavigationItemSelectedListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.navMenu_team:
+                        startUserListActivity();
+                        break;
+                    case R.id.navMenu_options:
+                        openAppSettings();
+                        break;
+                    case R.id.navMenu_logout:
+                        logout(1);
+                        break;
+                    default:
+                        showToast(item.getTitle().toString());
+                        item.setChecked(true);
+                        break;
+                }
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return false;
+            });
+        }
+    }
+
+    private void updateDrawerItems() {  //redraw navigation view items
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        if (navigationView != null) {
+            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
+            TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
+            ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
+
+            mTextView_menuUserName.setText(this.getTitle());
+
+            mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
+
+            Bitmap src = BitmapFactory.decodeFile(DATA_MANAGER.getPreferencesManager().loadUserAvatar());
+            if (src == null) {
+                loadUserAvatarFromServer();
+            } else {
+                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
+                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
+                mRoundedAvatar_img.setImageDrawable(dr);
+            }
+        }
+    }
+
+    private void setupUserInfoLayout() {
+
+        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
+            if (hasFocus) {
+                if (v instanceof EditText) {
+                    EditText et = (EditText) v;
+                    if (!et.isEnabled() && !et.isFocusable()) return;
+                    et.setSelection(et.getText().length());
+                }
+            } else {
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
+                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }
+        };
+
+        for (int i = 0; i < mEditTexts_userInfoList.size() - 1; i++) {
+            mEditTexts_userInfoList.get(i).addTextChangedListener(
+                    new UserInfoTextWatcher(mEditTexts_userInfoList.get(i), mTextInputLayouts_userInfoList.get(i)));
+            mEditTexts_userInfoList.get(i).setOnFocusChangeListener(focusListener);
+        }
+    }
+
+    private void placeProfilePicture(Uri selectedImage) {
+        Log.d(TAG, "placeProfilePicture: " + selectedImage);
+        CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
+    }
+
+    private static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
+
+    private static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
+        view.setEnabled(value);
+        view.setFocusable(value);
+        view.setFocusableInTouchMode(value);
+    };
+
+    //endregion
+
+    //region Save and Load preferences and current state
+
+    private void loadFullUserData() {
+        Log.d(TAG, "loadFullUserData: ");
+        runOperation(new FullUserDataOperation());
+    }
+
+    private void saveFullUserData() {
+        Log.d(TAG, "saveFullUserData: ");
+        runOperation(new FullUserDataOperation(mUserData));
+    }
+
+    private void onUserDataChanged() {
+        Log.d(TAG, "onUserDataChanged: ");
+        String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, "");
+        String currentData = UiHelper.getJsonFromObject(mUserData, User.class);
+        if (!jsonSavedUser.equals(currentData)) {
+            if (mDataFragment != null) mDataFragment.uploadUserData(mUserData);
+        }
+    }
+
+    private void saveUserInfoData() {
+
+        if (mNotSavingUserValues) return;     //// TODO: 23.07.2016  
+
+        Log.d(TAG, "saveUserInfoData");
+        saveAvatar();
+        savePhoto();
+        updateUserInfo();
+    }
+
+    private void updateUserInfo() {
+        readUserInfoFromViews();
+        onUserDataChanged();   //compare data in SP with current, if data was changed, it will be initiated upload to server
+    }
+
+    private void readUserInfoFromViews() {
+        mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
+        mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
+        mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
+        mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
+        mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+    }
+
+    private void savePhoto() {
+        if (mUri_SelectedProfileImage != null && mDataFragment != null &&
+                !DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
+            mDataFragment.uploadUserPhoto(mUri_SelectedProfileImage);
+            DATA_MANAGER.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
+        }
+    }
+
+    private void saveAvatar() {
+        if (mUri_SelectedAvatarImage != null && mDataFragment != null &&
+                !DATA_MANAGER.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
+            mDataFragment.uploadUserAvatar(mUri_SelectedAvatarImage);
+            DATA_MANAGER.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
+        }
+    }
+    //endregion
+
     //region Background Operation Results
     @SuppressWarnings("unused")
     public void onOperationFinished(final FullUserDataOperation.Result result) {
@@ -611,8 +559,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 if (mUserData == null) { //init info onCreate
                     mUserData = result.getOutput();
                     initUI();
-                } else {
-                    onUserDataChanged(result.getOutput());
                 }
             }
         } else {
@@ -629,7 +575,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
-        if (!NetworkUtils.isNetworkAvailable(this)) return;
+        if (!NetworkUtils.isNetworkAvailable()) return;
 
         final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 
@@ -639,7 +585,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             @Override
             public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                 super.onResourceReady(bitmap, anim);
-                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
+                DATA_MANAGER.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
                 mUri_SelectedAvatarImage = getFile().getAbsolutePath();
 
                 NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
@@ -712,7 +658,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                     Const.REQUEST_PERMISSIONS_READ_SDCARD);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
                     .setAction(R.string.header_allow, v -> {
-                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
+                        openAppSettingsForResult(Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
                     }).show();
         }
     }
@@ -736,7 +682,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                     Const.REQUEST_PERMISSIONS_CAMERA);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
                     .setAction(R.string.header_allow, v -> {
-                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
+                        openAppSettingsForResult(Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
                     }).show();
         }
     }
@@ -756,16 +702,5 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         }
     }
 
-    private void logout(int mode) {
-        Log.d(TAG, "logout: ");
-        mNotSavingUserValues = true;
-        if (mode == 1) {
-            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
-            mDataManager.getPreferencesManager().totalLogout();
-        }
-        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
     //endregion
 }

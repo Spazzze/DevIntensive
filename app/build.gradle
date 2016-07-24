@@ -6,6 +6,9 @@ apply plugin: 'android-apt'
 
 
 android {
+    dataBinding {
+        enabled = true
+    }
     signingConfigs {
 /*        debug {
             keyAlias signing.keyAlias

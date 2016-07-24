@@ -2,6 +2,7 @@ package com.softdesign.devintensive.ui.fragments;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
@@ -12,11 +13,9 @@ import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.NetworkUtils;
 
 import java.io.File;
 
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Response;
@@ -27,10 +26,24 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
     private static final String TAG = Const.TAG_PREFIX + "UploadInfoToServer";
 
-    public UploadToServerCallbacks mCallbacks;
+    private UploadToServerCallbacks mCallbacks;
+    private BaseModel<?> mResult;
 
     public interface UploadToServerCallbacks extends BaseTaskCallbacks {
         void onRequestFinished(BaseModel<?> result);
+    }
+
+    //region Life cycle
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (mCallbacks != null && mStatus == Status.FINISHED) {
+            if (!mCancelled && mResult != null) {
+                mCallbacks.onRequestFinished(mResult);
+            } else {
+                mCallbacks.onRequestFailed(mError);
+            }
+        }
     }
 
     @Override
@@ -39,77 +52,94 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         if (activity instanceof UploadToServerCallbacks) {
             mCallbacks = (UploadToServerCallbacks) activity;
         } else {
-            throw new IllegalStateException("Parent activity must implement BaseTaskCallbacks");
+            throw new IllegalStateException("Parent activity must implement UploadToServerCallbacks");
         }
     }
+    //endregion
 
+    //region Request status
     @Override
     @SuppressWarnings("unchecked")
     public void onRequestComplete(Response response) {
         mStatus = Status.FINISHED;
         BaseModel bm = (BaseModel) response.body();
-        if (mCallbacks != null) {
-            if (bm.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
+
+        if (bm.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
+            synchronized (this) {
                 BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) response.body();
-                mCallbacks.onRequestFinished(res);
-            } else if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
+                mResult = res;
+                if (mCallbacks != null) mCallbacks.onRequestFinished(res);
+            }
+        } else if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
+            synchronized (this) {
                 BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) response.body();
                 runOperation(new FullUserDataOperation(res.getData().getUser()));
-                mCallbacks.onRequestFinished(res);
+                mResult = res;
+                if (mCallbacks != null) mCallbacks.onRequestFinished(res);
             }
         }
     }
 
+    @Override
+    public void onRequestStarted() {
+        mResult = null;
+        super.onRequestStarted();
+    }
+    //endregion
+
+    //region Requests
     public void uploadUserPhoto(Uri uri_SelectedImage) {
 
-        if (uri_SelectedImage == null ||
-                this.mStatus == Status.RUNNING ||
-                !mDataManager.isUserAuthenticated() ||
-                !NetworkUtils.isNetworkAvailable(sContext)) return;
+        if (uri_SelectedImage == null || !isExecutePossible()) return;
 
-        onRequestStarted();
         Log.d(TAG, "uploadUserPhoto: ");
+        synchronized (this) {
+            onRequestStarted();
 
-        File file = new File(filePathFromUri(uri_SelectedImage));
+            File file = new File(filePathFromUri(uri_SelectedImage));
 
-        final RequestBody requestFile =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            final RequestBody requestFile =
+                    RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
 
-        MultipartBody.Part body =
-                MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+            MultipartBody.Part body =
+                    MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
 
-        mDataManager.uploadUserPhoto(mDataManager.getPreferencesManager().loadBuiltInAuthId(), body)
-                .enqueue(new NetworkCallback<>());
+            DATA_MANAGER.uploadUserPhoto(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body)
+                    .enqueue(new NetworkCallback<>());
+        }
     }
 
     public void uploadUserAvatar(String uri_SelectedImage) {
 
-        if (uri_SelectedImage == null ||
-                this.mStatus == Status.RUNNING ||
-                !mDataManager.isUserAuthenticated() ||
-                !NetworkUtils.isNetworkAvailable(sContext)) return;
+        if (uri_SelectedImage == null || !isExecutePossible()) return;
 
-        File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
+        Log.d(TAG, "uploadUserPhoto: ");
+        synchronized (this) {
+            onRequestStarted();
 
-        final RequestBody requestFile =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
 
-        MultipartBody.Part body =
-                MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+            final RequestBody requestFile =
+                    RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
 
-        mDataManager.uploadUserAvatar(mDataManager.getPreferencesManager().loadBuiltInAuthId(), body)
-                .enqueue(new NetworkCallback<>());
+            MultipartBody.Part body =
+                    MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+
+            DATA_MANAGER.uploadUserAvatar(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body)
+                    .enqueue(new NetworkCallback<>());
+        }
     }
 
     public void uploadUserData(User user) {
 
-        if (user == null ||
-                this.mStatus == Status.RUNNING ||
-                !mDataManager.isUserAuthenticated() ||
-                !NetworkUtils.isNetworkAvailable(sContext)) return;
+        if (user == null || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserData: ");
+        synchronized (this) {
+            onRequestStarted();
 
-        mDataManager.uploadUserInfo(new EditProfileReq(user).createReqBody()).enqueue(new NetworkCallback<>());
+            DATA_MANAGER.uploadUserInfo(new EditProfileReq(user).createReqBody()).enqueue(new NetworkCallback<>());
+        }
     }
+    //endregion
 }

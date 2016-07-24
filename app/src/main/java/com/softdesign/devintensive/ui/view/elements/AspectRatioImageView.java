@@ -11,7 +11,7 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 public class AspectRatioImageView extends ImageView {
 
-    private static final float DEFAULT_ASPECT_RATIO = Const.ASPECT_RATIO_3_2;
+    private static final float DEFAULT_ASPECT_RATIO = Const.ASPECT_RATIO_16_9;
     private final float mAspectRatio;
 
     public AspectRatioImageView(Context context, AttributeSet attrs) {

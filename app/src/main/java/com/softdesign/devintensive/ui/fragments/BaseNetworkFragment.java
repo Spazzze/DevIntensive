@@ -1,15 +1,14 @@
 package com.softdesign.devintensive.ui.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 
 import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
-import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.ErrorUtils;
+import com.softdesign.devintensive.utils.NetworkUtils;
 import com.softdesign.devintensive.utils.UiHelper;
 
 import de.greenrobot.event.EventBus;
@@ -19,15 +18,13 @@ import retrofit2.Response;
 
 public class BaseNetworkFragment extends ChronosFragment {
 
-    public static Context sContext;
-    public BaseTaskCallbacks mCallbacks;
-    public DataManager mDataManager;
-    public EventBus mBus = EventBus.getDefault();
+    public static final EventBus BUS = EventBus.getDefault();
+    public static final DataManager DATA_MANAGER = DataManager.getInstance();
 
+    public BaseTaskCallbacks mCallbacks;
     public String mError = null;
     public volatile boolean mCancelled = false;
     public volatile Status mStatus = Status.PENDING;
-
 
     public enum Status {
         PENDING,
@@ -43,11 +40,23 @@ public class BaseNetworkFragment extends ChronosFragment {
         return mCancelled;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean isExecutePossible() {
+        if (!NetworkUtils.isNetworkAvailable()) {
+            return false;
+        } else if (!DATA_MANAGER.isUserAuthenticated()) {
+            this.mStatus = Status.FINISHED;
+            mCancelled = true;
+            return false;
+        }
+        return true;
+    }
+
     //region Fragment Life Cycle
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (mCallbacks != null && mStatus == Status.FINISHED) {
+        if (mCallbacks != null && !(mCallbacks instanceof UpdateServerDataFragment) && mStatus == Status.FINISHED) {
             if (!mCancelled) {
                 mCallbacks.onRequestFinished();
             } else {
@@ -81,8 +90,6 @@ public class BaseNetworkFragment extends ChronosFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        sContext = DevIntensiveApplication.getContext();
-        mDataManager = DataManager.getInstance();
     }
 
     /**
@@ -149,7 +156,7 @@ public class BaseNetworkFragment extends ChronosFragment {
         @Override
         public void onResponse(Call<T> call, Response<T> response) {
             if (response.isSuccessful()) {
-                if (UiHelper.isEmptyOrNull(response)) {
+                if (UiHelper.isEmptyOrNull(response.body())) {
                     onRequestResponseEmpty();
                 } else {
                     onRequestComplete(response);

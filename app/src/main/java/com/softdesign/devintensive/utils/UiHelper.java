@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.utils;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.View;
@@ -42,7 +40,7 @@ public class UiHelper {
 
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
 
-    //region UI calculations
+    //region UI
 
     /**
      * checks all args if they equals null or empty
@@ -63,25 +61,23 @@ public class UiHelper {
     }
 
     /**
-     * @param context cur context
      * @return StatusBarHeight in current context
      */
-    public static int getStatusBarHeight(Context context) {
+    public static int getStatusBarHeight() {
         int result = 0;
-        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int resourceId = CONTEXT.getResources().getIdentifier("status_bar_height", "dimen", "android");
 
         if (resourceId > 0) {
-            result = context.getResources().getDimensionPixelSize(resourceId);
+            result = CONTEXT.getResources().getDimensionPixelSize(resourceId);
         }
         return result;
     }
 
     /**
-     * @param context cur context
      * @return Action bar height in current context
      */
-    public static float getAppBarSize(Context context) {
-        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
+    public static float getAppBarSize() {
+        final TypedArray styledAttributes = CONTEXT.getTheme().obtainStyledAttributes(
                 new int[]{android.R.attr.actionBarSize});
         float mActionBarSize = styledAttributes.getDimension(0, 0);
         styledAttributes.recycle();
@@ -93,7 +89,7 @@ public class UiHelper {
      * @param v examined view
      * @return minimum view height which this view needs to wrap its content
      */
-    public static int getMinHeight(View v) {
+    public static int getViewMinHeight(View v) {
         int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(getScreenWidth(), View.MeasureSpec.AT_MOST);
         int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         v.measure(widthMeasureSpec, heightMeasureSpec);
@@ -238,11 +234,6 @@ public class UiHelper {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
-    }
-
-    public static void openApplicationSetting(Activity activity, int flag) {
-        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()));
-        activity.startActivityForResult(appSettingsIntent, flag);
     }
 
     //endregion

@@ -136,7 +136,7 @@ public class UserEntity {
 
     @Generated(hash = 1524954784)
     public UserEntity(Long id, @NotNull String remoteId, @NotNull String fullName, @NotNull String searchName, int rating,
-            int codeLines, int projects, String homeTask, String bio, String photo, int internalId) {
+                      int codeLines, int projects, String homeTask, String bio, String photo, int internalId) {
         this.id = id;
         this.remoteId = remoteId;
         this.fullName = fullName;
@@ -235,6 +235,14 @@ public class UserEntity {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public int getInternalId() {
+        return this.internalId;
+    }
+
+    public void setInternalId(int internalId) {
+        this.internalId = internalId;
+    }
     //endregion
 
     public UserEntity(@NotNull UserListRes user, int index) {
@@ -260,13 +268,4 @@ public class UserEntity {
                 }
             }};
     }
-
-    public int getInternalId() {
-        return this.internalId;
-    }
-
-    public void setInternalId(int internalId) {
-        this.internalId = internalId;
-    }
-
 }

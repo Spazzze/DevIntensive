@@ -13,34 +13,30 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceGenerator {
 
-    private static final OkHttpClient.Builder sHttpClient = new OkHttpClient.Builder();
-
-    private static final Retrofit.Builder sBuilder = new Retrofit.Builder()
+    private static final OkHttpClient.Builder HTTP_CLIENT = new OkHttpClient.Builder();
+    private static final Retrofit.Builder RF_BUILDER = new Retrofit.Builder()
             .baseUrl(AppConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create());
 
     private static Retrofit sRetrofit;
 
+    public static <S> S createService(Class<S> serviceClass) {
+
+        HTTP_CLIENT.addInterceptor(new HeaderInterceptor());
+        HTTP_CLIENT.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY));
+        HTTP_CLIENT.connectTimeout(AppConfig.MAX_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+        HTTP_CLIENT.readTimeout(AppConfig.MAX_READ_TIMEOUT, TimeUnit.MILLISECONDS);
+        HTTP_CLIENT.writeTimeout(AppConfig.MAX_WRITE_TIMEOUT, TimeUnit.MILLISECONDS);
+        HTTP_CLIENT.addNetworkInterceptor(new StethoInterceptor());
+
+        sRetrofit = RF_BUILDER
+                .client(HTTP_CLIENT.build())
+                .build();
+
+        return sRetrofit.create(serviceClass);
+    }
+
     public static Retrofit getRetrofit() {
         return sRetrofit;
     }
-
-    public static <S> S createService(Class<S> serviceClass) {
-
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        sHttpClient.addInterceptor(new HeaderInterceptor());
-        sHttpClient.addInterceptor(loggingInterceptor);
-        sHttpClient.connectTimeout(AppConfig.MAX_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
-        sHttpClient.readTimeout(AppConfig.MAX_READ_TIMEOUT, TimeUnit.MILLISECONDS);
-        sHttpClient.writeTimeout(AppConfig.MAX_WRITE_TIMEOUT, TimeUnit.MILLISECONDS);
-        sHttpClient.addNetworkInterceptor(new StethoInterceptor());
-
-        sRetrofit = sBuilder
-                .client(sHttpClient.build())
-                .build();
-        return sRetrofit.create(serviceClass);
-    }
 }
-

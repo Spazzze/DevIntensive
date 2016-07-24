@@ -9,13 +9,11 @@ import com.softdesign.devintensive.utils.UiHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
 public class EditProfileReq {
-    private static final String TAG = Const.TAG_PREFIX + "EditProfileReq";
     @NonNull
-    private Map<String, String> mParamsMap = new HashMap<>();
+    private final Map<String, String> mParamsMap = new HashMap<>();
 
     public EditProfileReq(User user) {
         setFirstName(user.getFirstName());
@@ -58,7 +56,7 @@ public class EditProfileReq {
             String value = pair.getValue();
             if (value == null) continue;
             requestBodyMap.put(pair.getKey(),
-                    RequestBody.create(MediaType.parse("multipart/form-data"), value));
+                    RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, value));
         }
         return requestBodyMap;
     }

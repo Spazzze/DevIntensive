@@ -7,15 +7,14 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
-import com.softdesign.devintensive.ui.callbacks.UserListActivityCallback;
 import com.softdesign.devintensive.utils.Const;
 
 public class DialogsFragment extends DialogFragment {
-    private static final String TAG = Const.TAG_PREFIX + "DialogsFragment";
 
-    private MainActivityCallback mCallback;
-    private UserListActivityCallback mULCallback;
+    private MainActivityCallback mMainActivityCallback;
+    private BaseActivityCallback mBaseActivityCallback;
 
     public static DialogsFragment newInstance(int type) {
         DialogsFragment dialogsFragment = new DialogsFragment();
@@ -39,10 +38,9 @@ public class DialogsFragment extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (activity instanceof MainActivityCallback) {
-            mCallback = (MainActivityCallback) activity;
-        }
-        if (activity instanceof UserListActivityCallback) {
-            mULCallback = (UserListActivityCallback) activity;
+            mMainActivityCallback = (MainActivityCallback) activity;
+        } else if (activity instanceof BaseActivityCallback) {
+            mBaseActivityCallback = (BaseActivityCallback) activity;
         }
     }
 
@@ -51,13 +49,14 @@ public class DialogsFragment extends DialogFragment {
         int type = getArguments().getInt(Const.DIALOG_FRAGMENT_KEY);
         switch (type) {
             case Const.DIALOG_LOAD_PROFILE_PHOTO:
-                if (mCallback != null) return loadPhotoDialog();
-                else
-                    throw new IllegalStateException("Parent activity must implement MainActivityCallback");
+                if (mMainActivityCallback != null) return loadPhotoDialog();
+                else return null;
             case Const.DIALOG_SHOW_ERROR:
                 return errorAlertDialog(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             case Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN:
-                return errorAlertDialogWithAction(getArguments().getString(Const.DIALOG_CONTENT_KEY));
+                return errorAlertExitToMain(getArguments().getString(Const.DIALOG_CONTENT_KEY));
+            case Const.DIALOG_SHOW_ERROR_RETURN_TO_AUTH:
+                return errorAlertExitToAuth(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             default:
                 return errorAlertDialog(getString(R.string.error));
         }
@@ -70,10 +69,10 @@ public class DialogsFragment extends DialogFragment {
                 .setItems(R.array.profile_placeHolder_loadPhotoDialog, (dialog, chosenItem) -> {
                     switch (chosenItem) {
                         case 0:
-                            mCallback.loadPhotoFromCamera();
+                            mMainActivityCallback.loadPhotoFromCamera();
                             break;
                         case 1:
-                            mCallback.loadPhotoFromGallery();
+                            mMainActivityCallback.loadPhotoFromGallery();
                             break;
                         case 2:
                             dialog.cancel();
@@ -82,7 +81,7 @@ public class DialogsFragment extends DialogFragment {
                 }).create();
     }
 
-    public Dialog errorAlertDialog(String error) {
+    private Dialog errorAlertDialog(String error) {
         return new AlertDialog.Builder(getActivity())
                 .setMessage(error)
                 .setCancelable(true)
@@ -92,13 +91,25 @@ public class DialogsFragment extends DialogFragment {
                 }).create();
     }
 
-    public Dialog errorAlertDialogWithAction(String error) {
+    private Dialog errorAlertExitToMain(String error) {      //переделать когда будут фрагменты
         return new AlertDialog.Builder(getActivity())
                 .setMessage(error)
                 .setCancelable(true)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.ok, (dialog, id) -> {
-                    if (mULCallback != null) mULCallback.startMainActivity();
+                    if (mBaseActivityCallback != null) mBaseActivityCallback.startMainActivity();
+                    else dialog.cancel();
+                }).create();
+    }
+
+    private Dialog errorAlertExitToAuth(String error) {      //переделать когда будут фрагменты
+        return new AlertDialog.Builder(getActivity())
+                .setMessage(error)
+                .setCancelable(false)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.ok, (dialog, id) -> {
+                    if (mBaseActivityCallback != null) mBaseActivityCallback.startAuthActivity();
+                    else dialog.cancel();
                 }).create();
     }
     //endregion

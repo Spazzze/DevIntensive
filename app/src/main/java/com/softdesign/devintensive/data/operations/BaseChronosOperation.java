@@ -8,21 +8,16 @@ import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 public abstract class BaseChronosOperation<Output> extends ChronosOperation<Output> {
 
-    public enum Action {
-        CLEAR,
-        SAVE,
-        LOAD,
-    }
-
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final SharedPreferences SHARED_PREFERENCES = DevIntensiveApplication.getSharedPreferences();
 
     public Action mAction;
 
-    public Action getAction() {
-        return mAction;
+    public enum Action {
+        CLEAR,
+        SAVE,
+        LOAD,
+        SWAP,
     }
-
-
 }
 

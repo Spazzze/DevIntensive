@@ -9,7 +9,7 @@ import com.softdesign.devintensive.ui.adapters.ItemTouchHelperViewHolder;
 
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    public static final float ALPHA_FULL = 1.0f;
+    private static final float ALPHA_FULL = 1.0f;
 
     private ItemTouchHelperAdapter mAdapter;
 
