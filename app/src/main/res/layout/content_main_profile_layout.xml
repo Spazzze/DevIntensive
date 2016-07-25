@@ -28,7 +28,7 @@
             <!-- MobilePhone -->
             <LinearLayout
                 style="@style/profileItem"
-                android:visibility="@{profile.isAuthorizedUser}">
+                android:visibility="@{profile.authorizedUser}">
 
                 <ImageView
                     style="@style/profileItem_icon.left"
@@ -40,18 +40,17 @@
                         android:id="@+id/phone_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:errorEnabled="@{profile.isEditMode}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
                             android:id="@+id/phone_EditText"
                             style="@style/profileItem_editText"
-                            android:enabled="@{profile.isEditMode}"
-                            android:focusable="@{profile.isEditMode}"
-                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:enabled="@{profile.editMode}"
+                            android:focusable="@{profile.editMode}"
+                            android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_phone"
                             android:inputType="phone"
-                            android:text="@{profile.phone}" />
+                            android:text="@={profile.phone}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -64,12 +63,12 @@
 
             <View
                 style="@style/profileItem_lineSeparator"
-                android:visibility="@{profile.isAuthorizedUser}" />
+                android:visibility="@{profile.authorizedUser}" />
 
             <!-- Email -->
             <LinearLayout
                 style="@style/profileItem"
-                android:visibility="@{profile.isAuthorizedUser}">
+                android:visibility="@{profile.authorizedUser}">
 
                 <ImageView
                     style="@style/profileItem_icon.left"
@@ -81,18 +80,17 @@
                         android:id="@+id/email_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:errorEnabled="@{profile.isEditMode}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
                             android:id="@+id/email_EditText"
                             style="@style/profileItem_editText"
-                            android:enabled="@{profile.isEditMode}"
-                            android:focusable="@{profile.isEditMode}"
-                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:enabled="@{profile.editMode}"
+                            android:focusable="@{profile.editMode}"
+                            android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_email"
                             android:inputType="textEmailAddress"
-                            android:text="@{profile.email}" />
+                            android:text="@={profile.email}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -104,12 +102,12 @@
 
             <View
                 style="@style/profileItem_lineSeparator"
-                android:visibility="@{profile.isAuthorizedUser}" />
+                android:visibility="@{profile.authorizedUser}" />
 
             <!-- VK -->
             <LinearLayout
                 style="@style/profileItem"
-                android:visibility="@{profile.isAuthorizedUser}">
+                android:visibility="@{profile.authorizedUser}">
 
                 <ImageView
                     style="@style/profileItem_icon.left"
@@ -121,18 +119,17 @@
                         android:id="@+id/vk_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:errorEnabled="@{profile.isEditMode}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
                             android:id="@+id/vk_EditText"
                             style="@style/profileItem_editText"
-                            android:enabled="@{profile.isEditMode}"
-                            android:focusable="@{profile.isEditMode}"
-                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:enabled="@{profile.editMode}"
+                            android:focusable="@{profile.editMode}"
+                            android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_vk"
                             android:inputType="textUri"
-                            android:text="@{profile.vK}" />
+                            android:text="@={profile.vK}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -144,7 +141,7 @@
 
             <View
                 style="@style/profileItem_lineSeparator"
-                android:visibility="@{profile.isAuthorizedUser}" />
+                android:visibility="@{profile.authorizedUser}" />
 
             <!-- GitHub -->
             <LinearLayout style="@style/profileItem">
@@ -159,15 +156,14 @@
                         android:id="@+id/gitHub_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:errorEnabled="@{profile.isEditMode}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
                             android:id="@+id/gitHub_EditText"
                             style="@style/profileItem_editText"
-                            android:enabled="@{profile.isEditMode}"
-                            android:focusable="@{profile.isEditMode}"
-                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:enabled="@{profile.editMode}"
+                            android:focusable="@{profile.editMode}"
+                            android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_gitHubRepo"
                             android:inputType="textUri"                           />
                             <!--android:text="@{profile.mRepositories.get(0)}"-->
@@ -199,11 +195,11 @@
                         <EditText
                             android:id="@+id/about_EditText"
                             style="@style/profileItem_editText"
-                            android:enabled="@{profile.isEditMode}"
-                            android:focusable="@{profile.isEditMode}"
-                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:enabled="@{profile.editMode}"
+                            android:focusable="@{profile.editMode}"
+                            android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_about"
-                            android:text="@{profile.bio}" />
+                            android:text="@={profile.bio}" />
                     </android.support.design.widget.TextInputLayout>
 
                 </LinearLayout>

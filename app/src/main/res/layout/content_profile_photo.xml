@@ -35,7 +35,7 @@
             android:id="@+id/placeholder_profilePhoto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{profile.isEditMode}">
+            android:visibility="@{profile.editMode}">
 
             <!--Change photo text-->
             <com.devspark.robototextview.widget.RobotoTextView

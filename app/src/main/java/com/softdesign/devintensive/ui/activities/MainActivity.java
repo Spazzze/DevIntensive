@@ -3,11 +3,12 @@ package com.softdesign.devintensive.ui.activities;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -39,31 +40,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     private static final String TAG = Const.TAG_PREFIX + "Main Activity";
 
-/*
-    @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
-
-    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText, R.id.about_EditText})
-    List<EditText> mEditTexts_userInfoList;
-
-    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout, R.id.gitHub_TextInputLayout})
-    List<TextInputLayout> mTextInputLayouts_userInfoList;
-*/
-
     /*@BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;*/
-   /* @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.floating_action_button) FloatingActionButton mFloatingActionButton;
-    @BindView(R.id.placeholder_profilePhoto) RelativeLayout mPlaceholder_profilePhoto;
-    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarLayout;
-    @BindView(R.id.appbar_layout) AppBarLayout mAppBarLayout;
-    @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;*/
-
-    /*    private Boolean mCurrentEditMode = false;
-        private Boolean mNotSavingUserValues = false;
-        private File mPhotoFile = null;
-        private Uri mUri_SelectedProfileImage = null;
-
-        private User mUserData = null;*/
 
     private final FragmentManager mFragmentManager = getFragmentManager();
     private LoadUsersIntoDBFragment mDbNetworkFragment;
@@ -159,35 +136,12 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
-        } /*else if (mCurrentEditMode) {   //// TODO: 25.07.2016  
-            changeEditMode(false);
-        }*/ else {
+        } else if (mProfileFragment != null && mProfileFragment.isEditing()) {
+            mProfileFragment.changeEditMode(false);
+        } else {
             super.onBackPressed();
         }
     }
-    //endregion
-
-    //region Activity's LifeCycle
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();                //// TODO: 23.07.2016 переделать когда будут фрагменты
-        /*BUS.registerSticky(this);*/
-        Log.d(TAG, "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause");
-        /*BUS.unregister(this);*/
-        super.onPause();
-    }
-
     //endregion
 
     //region Setup Ui Items
@@ -347,7 +301,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         mProfileFragment = (UserProfileFragment) mFragmentManager.findFragmentByTag(UserProfileFragment.class.getName());
         if (mProfileFragment == null) {
             mProfileFragment = new UserProfileFragment();
-            replaceMainFragment(mProfileFragment, true);
+            replaceMainFragment(mProfileFragment, false);
         }
     }
 
@@ -435,4 +389,21 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     }
 
     //endregion
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Const.REQUEST_PERMISSIONS_CAMERA:
+                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromCamera();
+                }
+                break;
+            case Const.REQUEST_PERMISSIONS_READ_SDCARD:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromGallery();
+                }
+                break;
+        }
+    }
 }

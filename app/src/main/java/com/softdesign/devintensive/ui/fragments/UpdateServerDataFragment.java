@@ -7,11 +7,9 @@ import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
 import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
-import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.io.File;
 
@@ -20,7 +18,6 @@ import okhttp3.RequestBody;
 import retrofit2.Response;
 
 import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
-import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
 
 public class UpdateServerDataFragment extends BaseNetworkFragment {
 
@@ -47,9 +44,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
     //region Requests
     public void uploadUserPhoto(final String uri_SelectedImage) {
 
-        if (uri_SelectedImage == null || !isExecutePossible() ||
-                DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(uri_SelectedImage))
-            return;
+        if (uri_SelectedImage == null || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserPhoto: ");
 
@@ -71,9 +66,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
     public void uploadUserAvatar(final String uri_SelectedImage) {
 
-        if (uri_SelectedImage == null || !isExecutePossible() ||
-                DATA_MANAGER.getPreferencesManager().loadUserAvatar().equals(uri_SelectedImage))
-            return;
+        if (uri_SelectedImage == null || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserPhoto: ");
         synchronized (this) {
@@ -94,7 +87,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
     public void uploadUserData(ProfileViewModel model) {
 
-        if (model == null || !isExecutePossible() || !isUserDataChanged(model)) return;
+        if (model == null || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserData: ");
         synchronized (this) {
@@ -104,14 +97,4 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         }
     }
     //endregion
-
-    private boolean isUserDataChanged(ProfileViewModel model) {
-
-        User savedUser;
-        String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, null);
-        if (jsonSavedUser != null) savedUser = (User) getObjectFromJson(jsonSavedUser, User.class);
-        else return true;
-
-        return model.compareUserData(savedUser);
-    }
 }

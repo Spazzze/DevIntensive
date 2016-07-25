@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
 
     <data>
 
@@ -28,15 +29,16 @@
                 android:id="@+id/collapsing_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:expandedTitleTextAppearance="@{profile.isEditMode ? @android:color/transparent : @android:color/white}"
                 app:contentScrim="@color/color_grey"
-                app:title="@{profile.fullName}"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+                app:expandedTitleTextAppearance="@{profile.editMode ? @android:color/transparent : @android:color/white}"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                app:title="@{profile.fullName}">
 
                 <!-- Photo -->
                 <include
                     android:id="@+id/profile_photo_layout"
-                    layout="@layout/content_profile_photo" />
+                    layout="@layout/content_profile_photo"
+                    bind:profile="@{profile}" />
 
                 <!-- Toolbar -->
                 <android.support.v7.widget.Toolbar
@@ -54,12 +56,14 @@
         <!-- ScoreBox -->
         <include
             android:id="@+id/score_box_layout"
-            layout="@layout/content_score_box_layout" />
+            layout="@layout/content_score_box_layout"
+            bind:profile="@{profile}" />
 
         <!-- NestedScrollView with User Info inside -->
         <include
             android:id="@+id/main_profile_layout"
-            layout="@layout/content_main_profile_layout" />
+            layout="@layout/content_main_profile_layout"
+            bind:profile="@{profile}" />
 
         <!-- FloatingActionButton -->
         <android.support.design.widget.FloatingActionButton
@@ -68,8 +72,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/fab_right_space"
             android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@{profile.isEditMode ? @drawable/ic_done_black_24dp : @drawable/ic_edit_black_24dp}"
-            android:visibility="@{profile.isAuthorizedUser}"
+            android:src="@{profile.editMode ? @drawable/ic_done_black_24dp : @drawable/ic_edit_black_24dp}"
+            android:visibility="@{profile.authorizedUser}"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right" />
 

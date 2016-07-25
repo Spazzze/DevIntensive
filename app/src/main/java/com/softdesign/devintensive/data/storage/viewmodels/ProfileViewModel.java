@@ -3,17 +3,19 @@ package com.softdesign.devintensive.data.storage.viewmodels;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.ObservableArrayList;
-import android.databinding.ObservableBoolean;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
+import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class ProfileViewModel extends BaseObservable implements Parcelable {
 
     private String mUserPhoto;
@@ -29,12 +31,16 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     private String mUserPhotoUri;
 
     public final ObservableArrayList<Repo> mRepositories = new ObservableArrayList<>();
-    public final ObservableBoolean isEditMode = new ObservableBoolean(false);
-    public final ObservableBoolean isAuthorizedUser = new ObservableBoolean(false);
+
+    private boolean isEditMode = false;
+    private boolean isAuthorizedUser = false;
+
+    public ProfileViewModel() {
+    }
 
     public ProfileViewModel(User user, String photoUri, String avatarUri) {
 
-        isAuthorizedUser.set(true);
+        isAuthorizedUser = true;
 
         mUserPhotoUri = photoUri;
         mUserAvatarUri = avatarUri;
@@ -56,7 +62,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
 
     public ProfileViewModel(UserDTO user) {
 
-        isAuthorizedUser.set(false);
+        isAuthorizedUser = false;
 
         mUserPhoto = user.getUserPhoto();
         mFullName = user.getFullName();
@@ -95,6 +101,65 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
                 mFullName.equals(String.format("%s %s", user.getFirstName(), user.getSecondName()));
     }
 
+    public void updateValues(@Nullable ProfileViewModel profileViewModel) {
+        if (profileViewModel == null) return;
+
+        if (!UiHelper.equals(this.mUserPhoto, profileViewModel.getUserPhoto())) {
+            this.mUserPhoto = profileViewModel.getUserPhoto();
+            notifyPropertyChanged(BR.userPhoto);
+        }
+
+        if (!UiHelper.equals(this.mFullName, profileViewModel.getFullName())) {
+            this.mFullName = profileViewModel.getFullName();
+            notifyPropertyChanged(BR.fullName);
+        }
+
+        if (!UiHelper.equals(this.mRating, profileViewModel.getRating())) {
+            this.mRating = profileViewModel.getRating();
+            notifyPropertyChanged(BR.rating);
+        }
+
+        if (!UiHelper.equals(this.mCodeLines, profileViewModel.getCodeLines())) {
+            this.mCodeLines = profileViewModel.getCodeLines();
+            notifyPropertyChanged(BR.codeLines);
+        }
+
+        if (!UiHelper.equals(this.mProjects, profileViewModel.getProjects())) {
+            this.mProjects = profileViewModel.getProjects();
+            notifyPropertyChanged(BR.projects);
+        }
+
+        if (!UiHelper.equals(this.mPhone, profileViewModel.getPhone())) {
+            this.mPhone = profileViewModel.getPhone();
+            notifyPropertyChanged(BR.phone);
+        }
+
+        if (!UiHelper.equals(this.mEmail, profileViewModel.getEmail())) {
+            this.mEmail = profileViewModel.getEmail();
+            notifyPropertyChanged(BR.email);
+        }
+
+        if (!UiHelper.equals(this.mVK, profileViewModel.getVK())) {
+            this.mVK = profileViewModel.getVK();
+            notifyPropertyChanged(BR.vK);
+        }
+
+        if (!UiHelper.equals(this.mBio, profileViewModel.getBio())) {
+            this.mBio = profileViewModel.getBio();
+            notifyPropertyChanged(BR.bio);
+        }
+
+        if (!UiHelper.equals(this.mUserAvatarUri, profileViewModel.getUserAvatarUri())) {
+            this.mUserAvatarUri = profileViewModel.getUserAvatarUri();
+            notifyPropertyChanged(BR.userAvatarUri);
+        }
+
+        if (!UiHelper.equals(this.mUserPhotoUri, profileViewModel.getUserPhotoUri())) {
+            this.mUserPhotoUri = profileViewModel.getUserPhotoUri();
+            notifyPropertyChanged(BR.userPhotoUri);
+        }
+    }
+
     //region Parcel
     protected ProfileViewModel(Parcel in) {
         mUserPhoto = in.readString();
@@ -114,8 +179,8 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         } else {
             mRepositories.clear();
         }
-        isEditMode.set(in.readByte() != 0x00);
-        isAuthorizedUser.set(in.readByte() != 0x00);
+        isEditMode = in.readByte() != 0x00;
+        isAuthorizedUser = in.readByte() != 0x00;
     }
 
     @Override
@@ -142,8 +207,8 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
             dest.writeByte((byte) (0x01));
             dest.writeList(mRepositories);
         }
-        dest.writeByte((byte) (isEditMode.get() ? 0x01 : 0x00));
-        dest.writeByte((byte) (isAuthorizedUser.get() ? 0x01 : 0x00));
+        dest.writeByte((byte) (isEditMode ? 0x01 : 0x00));
+        dest.writeByte((byte) (isAuthorizedUser ? 0x01 : 0x00));
     }
 
     @SuppressWarnings("unused")
@@ -215,6 +280,16 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     public String getUserPhotoUri() {
         return mUserPhotoUri;
     }
+
+    @Bindable
+    public boolean isEditMode() {
+        return isEditMode;
+    }
+
+    @Bindable
+    public boolean isAuthorizedUser() {
+        return isAuthorizedUser;
+    }
     //endregion
 
     //region Setters
@@ -271,6 +346,16 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     public void setUserPhotoUri(String userPhotoUri) {
         mUserPhotoUri = userPhotoUri;
         notifyPropertyChanged(BR.userPhotoUri);
+    }
+
+    public void setEditMode(boolean editMode) {
+        isEditMode = editMode;
+        notifyPropertyChanged(BR.editMode);
+    }
+
+    public void setAuthorizedUser(boolean authorizedUser) {
+        isAuthorizedUser = authorizedUser;
+        notifyPropertyChanged(BR.authorizedUser);
     }
     //endregion
 }

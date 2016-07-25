@@ -22,7 +22,7 @@ import android.view.ViewGroup;
 import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentProfileBinding;
@@ -87,6 +87,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     public void onAttach(Activity activity) {
         Log.d(TAG, "onAttach: "); //проверить срабатывает ли при повороте экрана
         super.onAttach(activity);
+        BUS.registerSticky(this);
         if (activity instanceof MainActivityCallback) {
             mCallbacks = (MainActivityCallback) activity;
         } else {
@@ -95,19 +96,18 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BUS.registerSticky(this);
-        Log.d(TAG, "onResume");
-    }
-
-    @Override
     public void onPause() {
         Log.d(TAG, "onPause");
         saveUserTextData();
-        BUS.unregister(this);
         super.onPause();
     }
+
+    @Override
+    public void onDetach() {
+        BUS.unregister(this);
+        super.onDetach();
+    }
+
     //endregion
 
     //region onClick
@@ -115,7 +115,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.floating_action_button:
-                changeEditMode(!mProfileViewModel.isEditMode.get());
+                changeEditMode(!mProfileViewModel.isEditMode());
                 break;
             case R.id.placeholder_profilePhoto:
                 if (mCallbacks != null)
@@ -148,9 +148,15 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     //endregion
 
     //region UI
+
+    public boolean isEditing() {
+        return mProfileViewModel.isEditMode();
+    }
+
     private void initFields() {
+        Log.d(TAG, "initFields: ");
         if (mProfileBinding != null) {
-            if (mProfileViewModel != null) setProfileView(mProfileViewModel);
+            if (mProfileViewModel != null) mProfileBinding.setProfile(mProfileViewModel);
             else loadFullUserData();
             mProfileBinding.floatingActionButton.setOnClickListener(this);
             mProfileBinding.profilePhotoLayout.placeholderProfilePhoto.setOnClickListener(this);
@@ -164,18 +170,11 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
         }
     }
 
-    private void setProfileView(@NonNull ProfileViewModel profileViewModel) {
-        mProfileViewModel = profileViewModel;
-        mProfileBinding.setProfile(mProfileViewModel);
-    }
-
-    private void placeProfilePicture() {
-        Log.d(TAG, "placeProfilePicture: " + mProfileViewModel.getUserPhotoUri());
-        CustomGlideModule.loadImage(
-                mProfileViewModel.getUserPhotoUri(),
-                R.drawable.user_bg,
-                R.drawable.user_bg,
-                mProfileBinding.profilePhotoLayout.userPhotoImg);
+    private void setProfileView(@NonNull ProfileViewModel model) {
+        if (mProfileViewModel == null) {
+            mProfileViewModel = model;
+            mProfileBinding.setProfile(mProfileViewModel);
+        } else mProfileViewModel.updateValues(model);
     }
 
     public void loadPhotoFromGallery() {
@@ -225,9 +224,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
      * @param mode if true - editing mode will be enabled
      */
     @SuppressWarnings("deprecation")
-    private void changeEditMode(boolean mode) {
+    public void changeEditMode(boolean mode) {
         Log.d(TAG, "changeEditMode: " + mode);
-        mProfileViewModel.isEditMode.set(mode);
+        mProfileViewModel.setEditMode(mode);
         if (mode) {  //editing
             collapseAppBar();     //// TODO: 25.07.2016
             mProfileBinding.mainProfileLayout.phoneEditText.requestFocus();
@@ -248,8 +247,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     //region Save and Load/Update
     @SuppressWarnings("unused")
     public void onEvent(ProfileViewModel event) {
+        Log.d(TAG, "onEvent: ");
         if (event != null) {
-            mProfileViewModel = event;
+            setProfileView(event);
         }
     }
 
@@ -257,7 +257,10 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     public void onOperationFinished(final FullUserDataOperation.Result result) {
         if (result.isSuccessful()) {
             if (result.getOutput() != null) { //only Loading
+                Log.d(TAG, "onOperationFinished: ");
                 setProfileView(result.getOutput());
+            } else {
+                if (mProfileViewModel == null && mCallbacks != null) mCallbacks.logout(0);
             }
         } else {
             Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
@@ -270,16 +273,35 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
 
     private void saveUserData() {
-        saveUserTextData();
+
+        if (!mProfileViewModel.isAuthorizedUser()) return;
+
+        Log.d(TAG, "saveUserData: ");
         if (mCallbacks != null) {
-            mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());
-            mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
-            mCallbacks.uploadUserData(mProfileViewModel);
+            if (!DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(mProfileViewModel.getUserPhotoUri())) {
+                mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());
+            }
+            if (!DATA_MANAGER.getPreferencesManager().loadUserAvatar().equals((mProfileViewModel.getUserAvatarUri()))) {
+                mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
+            }
+            if (isUserDataChanged()) mCallbacks.uploadUserData(mProfileViewModel);
         }
+        saveUserTextData();
     }
 
     private void saveUserTextData() {
         runOperation(new FullUserDataOperation(mProfileViewModel));
+    }
+
+    private boolean isUserDataChanged() {
+
+        User savedUser;
+        String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, null);
+        if (jsonSavedUser != null)
+            savedUser = (User) UiHelper.getObjectFromJson(jsonSavedUser, User.class);
+        else return true;
+
+        return mProfileViewModel.compareUserData(savedUser);
     }
     //endregion
 
@@ -315,22 +337,6 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Const.REQUEST_PERMISSIONS_CAMERA:
-                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
-                }
-                break;
-            case Const.REQUEST_PERMISSIONS_READ_SDCARD:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
-                }
-                break;
-        }
-    }
     //endregion
 
     public Map<String, String> getAuthorizedUserInfo() {

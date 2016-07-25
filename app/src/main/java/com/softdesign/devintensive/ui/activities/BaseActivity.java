@@ -32,7 +32,7 @@ import de.greenrobot.event.EventBus;
 @SuppressWarnings("unused")
 public class BaseActivity extends ChronosAppCompatActivity implements BaseActivityCallback {
 
-    private static final String TAG = Const.TAG_PREFIX + "BaseActivity";
+    public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
 
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final EventBus BUS = EventBus.getDefault();
