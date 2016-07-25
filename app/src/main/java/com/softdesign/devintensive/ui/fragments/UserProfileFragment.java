@@ -57,18 +57,18 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            mProfileViewModel = savedInstanceState.getParcelable(Const.PARCELABLE_KEY_PROFILE);
-        }
-        mProfileBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_profile, container, false);
         setHasOptionsMenu(true);
-        initFields();
-        return mProfileBinding.getRoot();
+        return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState != null) {
+            mProfileViewModel = savedInstanceState.getParcelable(Const.PARCELABLE_KEY_PROFILE);
+        }
+        mProfileBinding = DataBindingUtil.bind(getView());
+        initFields();
         if (mCallbacks != null)
             mCallbacks.setupToolbar(mProfileBinding.toolbar, R.menu.toolbar_menu_main);
     }
@@ -123,11 +123,11 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
                 break;
             case R.id.makeCall_img:
                 startActivity(new Intent(Intent.ACTION_DIAL,
-                        Uri.fromParts("tel", mProfileViewModel.mPhone.get(), null)));
+                        Uri.fromParts("tel", mProfileViewModel.getPhone(), null)));
                 break;
             case R.id.sendEmail_img:
                 Intent sendEmail = new Intent(Intent.ACTION_SENDTO,
-                        Uri.fromParts("mailto", mProfileViewModel.mEmail.get(), null));
+                        Uri.fromParts("mailto", mProfileViewModel.getEmail(), null));
                 if (UiHelper.queryIntentActivities(getActivity(), sendEmail)) {
                     startActivity(sendEmail);
                 } else {
@@ -137,7 +137,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
                 break;
             case R.id.openVK_img:
                 startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("https://" + mProfileViewModel.mVK.get())));
+                        Uri.parse("https://" + mProfileViewModel.getVK())));
                 break;
             case R.id.openGitHub_img:
                 startActivity(new Intent(Intent.ACTION_VIEW,
@@ -170,9 +170,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
 
     private void placeProfilePicture() {
-        Log.d(TAG, "placeProfilePicture: " + mProfileViewModel.mUserPhotoUri.get());
+        Log.d(TAG, "placeProfilePicture: " + mProfileViewModel.getUserPhotoUri());
         CustomGlideModule.loadImage(
-                mProfileViewModel.mUserPhotoUri.get().toString(),
+                mProfileViewModel.getUserPhotoUri(),
                 R.drawable.user_bg,
                 R.drawable.user_bg,
                 mProfileBinding.profilePhotoLayout.userPhotoImg);
@@ -272,8 +272,8 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     private void saveUserData() {
         saveUserTextData();
         if (mCallbacks != null) {
-            mCallbacks.uploadUserPhoto(mProfileViewModel.mUserPhotoUri.get());
-            mCallbacks.uploadUserAvatar((mProfileViewModel.mUserAvatarUri.get()));
+            mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());
+            mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
             mCallbacks.uploadUserData(mProfileViewModel);
         }
     }
@@ -291,13 +291,13 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
             case Const.REQUEST_GALLERY_PICTURE:
                 getActivity();
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    mProfileViewModel.mUserPhotoUri.set(data.getData());
+                    mProfileViewModel.setUserPhotoUri(data.getData().toString());
                     /*placeProfilePicture();*/       //// TODO: 25.07.2016  
                 }
                 break;
             case Const.REQUEST_CAMERA_PICTURE:
                 if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
-                    mProfileViewModel.mUserPhotoUri.set(Uri.fromFile(mPhotoFile));
+                    mProfileViewModel.setUserPhotoUri(Uri.fromFile(mPhotoFile).toString());
                     /*placeProfilePicture();*/
                 }
                 break;
@@ -335,8 +335,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
 
     public Map<String, String> getAuthorizedUserInfo() {
         Map<String, String> map = new HashMap<>();
-        map.put(Const.PARCELABLE_USER_NAME_KEY, mProfileViewModel.mFullName.get());
-        map.put(Const.PARCELABLE_USER_EMAIL_KEY, mProfileViewModel.mEmail.get());
+        if (mProfileViewModel == null) return map;
+        map.put(Const.PARCELABLE_USER_NAME_KEY, mProfileViewModel.getFullName());
+        map.put(Const.PARCELABLE_USER_EMAIL_KEY, mProfileViewModel.getEmail());
         return map;
     }
 }

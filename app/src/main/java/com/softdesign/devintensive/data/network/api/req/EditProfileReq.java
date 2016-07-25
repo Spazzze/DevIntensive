@@ -27,12 +27,12 @@ public class EditProfileReq {
 
     public EditProfileReq(ProfileViewModel model) {
 
-        String[] name = model.mFullName.get().split("\\s");
+        String[] name = model.getFullName().split("\\s");
         setFirstName(name[0]);
         setLastName(name[1]);
-        setPhoneNumber(model.mPhone.get());
-        setVk(model.mVK.get());
-        setBio(model.mBio.get());
+        setPhoneNumber(model.getPhone());
+        setVk(model.getVK());
+        setBio(model.getBio());
         setGithub(UiHelper.repoListIntoJson(model.mRepositories));
     }
 

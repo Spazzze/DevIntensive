@@ -27,7 +27,7 @@
             android:background="@color/color_grey_background"
             android:fitsSystemWindows="true"
             android:scaleType="centerCrop"
-            app:imageUrl="@{profile.mUserPhotoUri}"
+            app:imageUrl="@{profile.userPhotoUri}"
             />
 
         <!--Change Photo Layout-->

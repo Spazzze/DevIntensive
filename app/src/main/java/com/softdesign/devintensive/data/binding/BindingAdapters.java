@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.data.binding;
 
 import android.databinding.BindingAdapter;
-import android.net.Uri;
 import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
@@ -13,8 +12,8 @@ public class BindingAdapters {
     }
 
     @BindingAdapter("imageUrl")
-    public static void loadImage(ImageView view, Uri url) {
-        CustomGlideModule.loadImage(url.toString(), R.drawable.user_bg, R.drawable.user_bg, view);
+    public static void loadImage(ImageView view, String url) {
+        CustomGlideModule.loadImage(url, R.drawable.user_bg, R.drawable.user_bg, view);
     }
 
  /*   @SuppressWarnings("unchecked")

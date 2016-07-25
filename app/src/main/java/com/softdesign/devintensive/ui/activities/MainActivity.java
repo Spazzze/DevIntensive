@@ -177,14 +177,14 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     @Override
     protected void onResume() {
         super.onResume();                //// TODO: 23.07.2016 переделать когда будут фрагменты
-        BUS.registerSticky(this);
+        /*BUS.registerSticky(this);*/
         Log.d(TAG, "onResume");
     }
 
     @Override
     protected void onPause() {
         Log.d(TAG, "onPause");
-        BUS.unregister(this);
+        /*BUS.unregister(this);*/
         super.onPause();
     }
 
@@ -413,7 +413,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     }
 
     @Override
-    public void uploadUserPhoto(Uri uri) {
+    public void uploadUserPhoto(String uri) {
         if (mDataFragment != null) mDataFragment.uploadUserPhoto(uri);
     }
 

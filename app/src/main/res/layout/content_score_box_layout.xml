@@ -31,7 +31,7 @@
             <TextView
                 android:id="@+id/scoreBox_rating"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.mRating}" />
+                android:text="@{profile.rating}" />
 
             <TextView
                 style="@style/scoreBox_text"
@@ -49,7 +49,7 @@
             <TextView
                 android:id="@+id/scoreBox_codeLines"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.mCodeLines}" />
+                android:text="@{profile.codeLines}" />
 
             <TextView
                 style="@style/scoreBox_text"
@@ -67,7 +67,7 @@
             <TextView
                 android:id="@+id/scoreBox_projects"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.mProjects}" />
+                android:text="@{profile.projects}" />
 
             <TextView
                 style="@style/scoreBox_text"

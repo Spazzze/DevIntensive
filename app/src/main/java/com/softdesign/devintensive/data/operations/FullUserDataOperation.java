@@ -27,8 +27,8 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
 
     public FullUserDataOperation(ProfileViewModel model) {
         this.mUser = model.updateUserData(getUser());
-        this.mPhotoUri = model.mUserPhotoUri.get();
-        this.mAvatarUri = model.mUserAvatarUri.get();
+        this.mPhotoUri = Uri.parse(model.getUserPhotoUri());
+        this.mAvatarUri = model.getUserAvatarUri();
         this.mAction = Action.SAVE;
     }
 
@@ -81,7 +81,7 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
             case LOAD:
                 User userData = getUser();
                 if (userData == null) return null;
-                Uri photoUri = Uri.parse(SHARED_PREFERENCES.getString(Const.USER_PROFILE_PHOTO_URI, ""));
+                String photoUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_PHOTO_URI, "");
                 String avatarUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_AVATAR_URI, "");
                 return new ProfileViewModel(userData, photoUri, avatarUri);
         }

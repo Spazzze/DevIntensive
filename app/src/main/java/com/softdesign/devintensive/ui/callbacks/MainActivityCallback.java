@@ -1,7 +1,5 @@
 package com.softdesign.devintensive.ui.callbacks;
 
-import android.net.Uri;
-
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 
 public interface MainActivityCallback extends BaseActivityCallback {
@@ -12,7 +10,7 @@ public interface MainActivityCallback extends BaseActivityCallback {
 
     void uploadUserData(ProfileViewModel model);
 
-    void uploadUserPhoto(Uri uri);
+    void uploadUserPhoto(String uri);
 
     void uploadUserAvatar(String uri);
 

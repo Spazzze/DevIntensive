@@ -2,7 +2,6 @@ package com.softdesign.devintensive.data.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.utils.AppConfig;
@@ -35,9 +34,8 @@ public class PreferencesManager {
         else return null;
     }
 
-    public Uri loadUserPhoto() {
-        return Uri.parse(mSharedPreferences.getString(Const.USER_PROFILE_PHOTO_URI,
-                ""));
+    public String loadUserPhoto() {
+        return mSharedPreferences.getString(Const.USER_PROFILE_PHOTO_URI, "");
     }
 
     public String loadUserAvatar() {

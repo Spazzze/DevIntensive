@@ -351,7 +351,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     }
 
     public void onOperationFinished(final FullUserDataOperation.Result result) {
-        if (result.isSuccessful()) {
+       /* if (result.isSuccessful()) {
             if (result.getOutput() != null) {//only Loading
                 mUserData = result.getOutput();
             } else {
@@ -360,7 +360,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         } else {
             Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
             if (mUserData == null) logout(0);
-        }
+        }*/
     }
 
     //endregion

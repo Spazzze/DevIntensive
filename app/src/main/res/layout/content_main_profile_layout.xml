@@ -51,7 +51,7 @@
                             android:focusableInTouchMode="@{profile.isEditMode}"
                             android:hint="@string/hint.profile_phone"
                             android:inputType="phone"
-                            android:text="@={profile.mPhone}" />
+                            android:text="@{profile.phone}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -92,7 +92,7 @@
                             android:focusableInTouchMode="@{profile.isEditMode}"
                             android:hint="@string/hint.profile_email"
                             android:inputType="textEmailAddress"
-                            android:text="@={profile.mEmail}" />
+                            android:text="@{profile.email}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -132,7 +132,7 @@
                             android:focusableInTouchMode="@{profile.isEditMode}"
                             android:hint="@string/hint.profile_vk"
                             android:inputType="textUri"
-                            android:text="@={profile.mVK}" />
+                            android:text="@{profile.vK}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -169,8 +169,8 @@
                             android:focusable="@{profile.isEditMode}"
                             android:focusableInTouchMode="@{profile.isEditMode}"
                             android:hint="@string/hint.profile_gitHubRepo"
-                            android:inputType="textUri"
-                            android:text="@={profile.mRepositories.get(0)}" />
+                            android:inputType="textUri"                           />
+                            <!--android:text="@{profile.mRepositories.get(0)}"-->
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -203,7 +203,7 @@
                             android:focusable="@{profile.isEditMode}"
                             android:focusableInTouchMode="@{profile.isEditMode}"
                             android:hint="@string/hint.profile_about"
-                            android:text="@={profile.mBio}" />
+                            android:text="@{profile.bio}" />
                     </android.support.design.widget.TextInputLayout>
 
                 </LinearLayout>

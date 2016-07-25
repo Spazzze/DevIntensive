@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.data.binding.fields;
 
 import android.databinding.BaseObservable;
-import android.databinding.BindingConversion;
 
 public class ObservableString extends BaseObservable {
 
@@ -31,12 +30,6 @@ public class ObservableString extends BaseObservable {
 
     public void clear() {
         set(null);
-    }
-
-    @BindingConversion
-    public static String convertToString(
-            ObservableString observableString) {
-        return observableString.get();
     }
 
     public static boolean equals(Object a, Object b) {

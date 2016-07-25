@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 app:expandedTitleTextAppearance="@{profile.isEditMode ? @android:color/transparent : @android:color/white}"
                 app:contentScrim="@color/color_grey"
-                app:title="@{profile.mFullName}"
+                app:title="@{profile.fullName}"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <!-- Photo -->

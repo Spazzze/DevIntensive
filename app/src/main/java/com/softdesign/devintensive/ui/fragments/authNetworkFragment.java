@@ -91,17 +91,17 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     public void onRequestComplete(User user) {
-        Uri photo = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
+        String photo = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
         String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
         BUS.postSticky(new ProfileViewModel(user,
-                !UiHelper.isEmptyOrNull(photo) ? photo : Uri.parse(user.getPublicInfo().getPhoto()),
+                !UiHelper.isEmptyOrNull(photo) ? photo : user.getPublicInfo().getPhoto(),
                 !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }
 
     public void onRequestComplete(User user, Uri photoUri) {
         String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
-        BUS.postSticky(new ProfileViewModel(user, photoUri,
+        BUS.postSticky(new ProfileViewModel(user, photoUri.toString(),
                 !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }

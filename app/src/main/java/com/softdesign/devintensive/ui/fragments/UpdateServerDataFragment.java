@@ -45,7 +45,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
     //endregion
 
     //region Requests
-    public void uploadUserPhoto(final Uri uri_SelectedImage) {
+    public void uploadUserPhoto(final String uri_SelectedImage) {
 
         if (uri_SelectedImage == null || !isExecutePossible() ||
                 DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(uri_SelectedImage))
@@ -56,7 +56,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         synchronized (this) {
             onRequestStarted();
 
-            File file = new File(filePathFromUri(uri_SelectedImage));
+            File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
 
             final RequestBody requestFile =
                     RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
