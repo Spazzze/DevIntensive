@@ -1,17 +1,20 @@
 package com.softdesign.devintensive.data.binding;
 
 import android.databinding.BindingAdapter;
-import android.view.View;
+import android.net.Uri;
 import android.widget.ImageView;
 
+import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 
 public class BindingAdapters {
-    private BindingAdapters() { throw new AssertionError(); }
+    private BindingAdapters() {
+        throw new AssertionError();
+    }
 
-    @BindingAdapter("android:src")
-    public static void loadImage(ImageView view, String url) {
-        CustomGlideModule.loadImage(url, view);
+    @BindingAdapter("imageUrl")
+    public static void loadImage(ImageView view, Uri url) {
+        CustomGlideModule.loadImage(url.toString(), R.drawable.user_bg, R.drawable.user_bg, view);
     }
 
  /*   @SuppressWarnings("unchecked")
@@ -34,8 +37,8 @@ public class BindingAdapters {
             view.setText(newValue);
     }*/
 
-    @BindingAdapter("app:onClick")
+/*    @BindingAdapter("app:onClick")
     public static void bindOnClick(View view, final Runnable runnable) {
         view.setOnClickListener(v -> runnable.run());
-    }
+    }*/
 }

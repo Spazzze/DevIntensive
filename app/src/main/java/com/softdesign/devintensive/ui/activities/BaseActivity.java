@@ -9,7 +9,10 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -179,5 +182,16 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     public void openAppSettingsForResult(int flag) {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, flag);
+    }
+
+    @Override
+    public void setupToolbar(Toolbar toolbar, @MenuRes int id) {
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            toolbar.inflateMenu(id);
+        }
     }
 }

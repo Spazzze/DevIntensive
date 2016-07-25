@@ -1,166 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nested_scroll_view"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior"
-    tools:ignore="contentDescription">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
+    </data>
+
+    <!--Main Profile Layout-->
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior"
+        tools:ignore="contentDescription">
 
-        <!-- MobilePhone -->
-        <LinearLayout style="@style/profileItem">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <ImageView
-                style="@style/profileItem_icon.left"
-                android:src="@drawable/ic_call_black_24dp" />
+            <!-- MobilePhone -->
+            <LinearLayout
+                style="@style/profileItem"
+                android:visibility="@{profile.isAuthorizedUser}">
 
-            <LinearLayout style="@style/profileItem_LL_infoBox">
+                <ImageView
+                    style="@style/profileItem_icon.left"
+                    android:src="@drawable/ic_call_black_24dp" />
 
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/phone_TextInputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:errorTextAppearance="@style/profileItem_textInputLayout_error">
+                <LinearLayout style="@style/profileItem_LL_infoBox">
 
-                    <EditText
-                        android:id="@+id/phone_EditText"
-                        style="@style/profileItem_editText"
-                        android:hint="@string/hint.profile_phone"
-                        android:inputType="phone" />
-                </android.support.design.widget.TextInputLayout>
-            </LinearLayout>
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/phone_TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:errorEnabled="@{profile.isEditMode}"
+                        app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
-            <ImageView
-                android:id="@+id/makeCall_img"
-                style="@style/profileItem_icon.right"
-                android:src="@drawable/ic_phone_in_talk_black_24dp" />
-        </LinearLayout>
+                        <EditText
+                            android:id="@+id/phone_EditText"
+                            style="@style/profileItem_editText"
+                            android:enabled="@{profile.isEditMode}"
+                            android:focusable="@{profile.isEditMode}"
+                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:hint="@string/hint.profile_phone"
+                            android:inputType="phone"
+                            android:text="@={profile.mPhone}" />
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
 
-        <View style="@style/profileItem_lineSeparator" />
-
-        <!-- Email -->
-        <LinearLayout style="@style/profileItem">
-
-            <ImageView
-                style="@style/profileItem_icon.left"
-                android:src="@drawable/ic_email_black_24dp" />
-
-            <LinearLayout style="@style/profileItem_LL_infoBox">
-
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/email_TextInputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:errorTextAppearance="@style/profileItem_textInputLayout_error">
-
-                    <EditText
-                        android:id="@+id/email_EditText"
-                        style="@style/profileItem_editText"
-                        android:hint="@string/hint.profile_email"
-                        android:inputType="textEmailAddress" />
-                </android.support.design.widget.TextInputLayout>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/sendEmail_img"
-                style="@style/profileItem_icon.right"
-                android:src="@drawable/ic_send_black_24dp" />
-        </LinearLayout>
-
-        <View style="@style/profileItem_lineSeparator" />
-
-        <!-- VK -->
-        <LinearLayout style="@style/profileItem">
-
-            <ImageView
-                style="@style/profileItem_icon.left"
-                android:src="@drawable/ic_vk" />
-
-            <LinearLayout style="@style/profileItem_LL_infoBox">
-
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/vk_TextInputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:errorTextAppearance="@style/profileItem_textInputLayout_error">
-
-                    <EditText
-                        android:id="@+id/vk_EditText"
-                        style="@style/profileItem_editText"
-                        android:hint="@string/hint.profile_vk"
-                        android:inputType="textUri" />
-                </android.support.design.widget.TextInputLayout>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/openVK_img"
-                style="@style/profileItem_icon.right"
-                android:src="@drawable/ic_remove_red_eye_black_24dp" />
-        </LinearLayout>
-
-        <View style="@style/profileItem_lineSeparator" />
-
-        <!-- GitHub -->
-        <LinearLayout style="@style/profileItem">
-
-            <ImageView
-                style="@style/profileItem_icon.left"
-                android:src="@drawable/ic_github_circle" />
-
-            <LinearLayout style="@style/profileItem_LL_infoBox">
-
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/gitHub_TextInputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:errorTextAppearance="@style/profileItem_textInputLayout_error">
-
-                    <EditText
-                        android:id="@+id/gitHub_EditText"
-                        style="@style/profileItem_editText"
-                        android:hint="@string/hint.profile_gitHubRepo"
-                        android:inputType="textUri" />
-                </android.support.design.widget.TextInputLayout>
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/openGitHub_img"
-                style="@style/profileItem_icon.right"
-                android:src="@drawable/ic_remove_red_eye_black_24dp" />
-
-        </LinearLayout>
-
-        <View style="@style/profileItem_lineSeparator" />
-
-        <!-- About -->
-        <LinearLayout style="@style/profileItem">
-
-            <ImageView
-                style="@style/profileItem_icon.left"
-                android:src="@drawable/ic_account_circle" />
-
-            <LinearLayout style="@style/profileItem_LL_infoBox">
-
-                <android.support.design.widget.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <EditText
-                        android:id="@+id/about_EditText"
-                        style="@style/profileItem_editText"
-                        android:hint="@string/hint.profile_about" />
-                </android.support.design.widget.TextInputLayout>
+                <ImageView
+                    android:id="@+id/makeCall_img"
+                    style="@style/profileItem_icon.right"
+                    android:src="@drawable/ic_phone_in_talk_black_24dp" />
 
             </LinearLayout>
 
+            <View
+                style="@style/profileItem_lineSeparator"
+                android:visibility="@{profile.isAuthorizedUser}" />
+
+            <!-- Email -->
+            <LinearLayout
+                style="@style/profileItem"
+                android:visibility="@{profile.isAuthorizedUser}">
+
+                <ImageView
+                    style="@style/profileItem_icon.left"
+                    android:src="@drawable/ic_email_black_24dp" />
+
+                <LinearLayout style="@style/profileItem_LL_infoBox">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/email_TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:errorEnabled="@{profile.isEditMode}"
+                        app:errorTextAppearance="@style/profileItem_textInputLayout_error">
+
+                        <EditText
+                            android:id="@+id/email_EditText"
+                            style="@style/profileItem_editText"
+                            android:enabled="@{profile.isEditMode}"
+                            android:focusable="@{profile.isEditMode}"
+                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:hint="@string/hint.profile_email"
+                            android:inputType="textEmailAddress"
+                            android:text="@={profile.mEmail}" />
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/sendEmail_img"
+                    style="@style/profileItem_icon.right"
+                    android:src="@drawable/ic_send_black_24dp" />
+            </LinearLayout>
+
+            <View
+                style="@style/profileItem_lineSeparator"
+                android:visibility="@{profile.isAuthorizedUser}" />
+
+            <!-- VK -->
+            <LinearLayout
+                style="@style/profileItem"
+                android:visibility="@{profile.isAuthorizedUser}">
+
+                <ImageView
+                    style="@style/profileItem_icon.left"
+                    android:src="@drawable/ic_vk" />
+
+                <LinearLayout style="@style/profileItem_LL_infoBox">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/vk_TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:errorEnabled="@{profile.isEditMode}"
+                        app:errorTextAppearance="@style/profileItem_textInputLayout_error">
+
+                        <EditText
+                            android:id="@+id/vk_EditText"
+                            style="@style/profileItem_editText"
+                            android:enabled="@{profile.isEditMode}"
+                            android:focusable="@{profile.isEditMode}"
+                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:hint="@string/hint.profile_vk"
+                            android:inputType="textUri"
+                            android:text="@={profile.mVK}" />
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/openVK_img"
+                    style="@style/profileItem_icon.right"
+                    android:src="@drawable/ic_remove_red_eye_black_24dp" />
+            </LinearLayout>
+
+            <View
+                style="@style/profileItem_lineSeparator"
+                android:visibility="@{profile.isAuthorizedUser}" />
+
+            <!-- GitHub -->
+            <LinearLayout style="@style/profileItem">
+
+                <ImageView
+                    style="@style/profileItem_icon.left"
+                    android:src="@drawable/ic_github_circle" />
+
+                <LinearLayout style="@style/profileItem_LL_infoBox">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/gitHub_TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:errorEnabled="@{profile.isEditMode}"
+                        app:errorTextAppearance="@style/profileItem_textInputLayout_error">
+
+                        <EditText
+                            android:id="@+id/gitHub_EditText"
+                            style="@style/profileItem_editText"
+                            android:enabled="@{profile.isEditMode}"
+                            android:focusable="@{profile.isEditMode}"
+                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:hint="@string/hint.profile_gitHubRepo"
+                            android:inputType="textUri"
+                            android:text="@={profile.mRepositories.get(0)}" />
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/openGitHub_img"
+                    style="@style/profileItem_icon.right"
+                    android:src="@drawable/ic_remove_red_eye_black_24dp" />
+
+            </LinearLayout>
+
+            <View style="@style/profileItem_lineSeparator" />
+
+            <!-- About -->
+            <LinearLayout style="@style/profileItem">
+
+                <ImageView
+                    style="@style/profileItem_icon.left"
+                    android:src="@drawable/ic_account_circle" />
+
+                <LinearLayout style="@style/profileItem_LL_infoBox">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <EditText
+                            android:id="@+id/about_EditText"
+                            style="@style/profileItem_editText"
+                            android:enabled="@{profile.isEditMode}"
+                            android:focusable="@{profile.isEditMode}"
+                            android:focusableInTouchMode="@{profile.isEditMode}"
+                            android:hint="@string/hint.profile_about"
+                            android:text="@={profile.mBio}" />
+                    </android.support.design.widget.TextInputLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
 
-    </LinearLayout>
-
-</android.support.v4.widget.NestedScrollView>
+    </android.support.v4.widget.NestedScrollView>
+</layout>

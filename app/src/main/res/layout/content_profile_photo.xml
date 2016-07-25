@@ -1,47 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/profileImage_size_256"
-    android:fitsSystemWindows="true"
-    tools:ignore="contentDescription">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
-        android:id="@+id/user_photo_img"
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
+    </data>
+
+    <!--ProfilePhoto Layout-->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/profileImage_size_256"
-        android:background="@color/color_grey_background"
         android:fitsSystemWindows="true"
-        android:scaleType="centerCrop" />
+        tools:ignore="contentDescription">
 
-    <RelativeLayout
-        android:id="@+id/placeholder_profilePhoto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
-
-        <com.devspark.robototextview.widget.RobotoTextView
-            style="@style/Placeholder_profilePhoto_OverlayText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/placeholder_profilePhoto_img"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="@dimen/spacing_small_8"
-            android:gravity="center"
-            android:text="@string/header.profile_placeHolder"
-            app:typeface="roboto_medium" />
-
+        <!--Photo Image-->
         <ImageView
-            android:id="@+id/placeholder_profilePhoto_img"
-            android:layout_width="@dimen/change_profile_photo_ic_size_90"
-            android:layout_height="@dimen/change_profile_photo_ic_size_90"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_marginBottom="@dimen/spacing_large_56"
+            android:id="@+id/user_photo_img"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_grey_background"
+            android:fitsSystemWindows="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_add_a_photo_white_24px" />
-    </RelativeLayout>
+            app:imageUrl="@{profile.mUserPhotoUri}"
+            />
 
-</merge>
+        <!--Change Photo Layout-->
+        <RelativeLayout
+            android:id="@+id/placeholder_profilePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="@{profile.isEditMode}">
+
+            <!--Change photo text-->
+            <com.devspark.robototextview.widget.RobotoTextView
+                style="@style/Shadowed_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/changePhoto_icon"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="@dimen/spacing_small_8"
+                android:gravity="center"
+                android:text="@string/header.profile_placeHolder"
+                android:textSize="@dimen/font_medium_20"
+                app:typeface="roboto_medium" />
+
+            <!--Change photo icon-->
+            <ImageView
+                android:id="@+id/changePhoto_icon"
+                android:layout_width="@dimen/change_profile_photo_ic_size_90"
+                android:layout_height="@dimen/change_profile_photo_ic_size_90"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="@dimen/spacing_large_56"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_add_a_photo_white_24px" />
+        </RelativeLayout>
+
+    </FrameLayout>
+
+</layout>

@@ -11,15 +11,15 @@ public class ObservableString extends BaseObservable {
         this.value = value;
     }
 
-    public ObservableString() { }
+    public ObservableString() {
+    }
 
     public String get() {
         return value != null ? value : "";
     }
 
     public void set(String value) {
-        if (value == null) value = "";
-        if (!this.value.contentEquals(value)) {
+        if (!equals(this.value, value)) {
             this.value = value;
             notifyChange();
         }
@@ -37,5 +37,17 @@ public class ObservableString extends BaseObservable {
     public static String convertToString(
             ObservableString observableString) {
         return observableString.get();
+    }
+
+    public static boolean equals(Object a, Object b) {
+        return (a == null) ? (b == null) : a.equals(b);
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

@@ -1,8 +1,6 @@
 package com.softdesign.devintensive.ui.fragments;
 
-import android.app.Activity;
 import android.net.Uri;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
@@ -12,7 +10,6 @@ import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
-import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
@@ -29,73 +26,21 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
     private static final String TAG = Const.TAG_PREFIX + "UploadInfoToServer";
 
-    private UploadToServerCallbacks mCallbacks;
-    private BaseModel<?> mResult;
-
-    public interface UploadToServerCallbacks extends BaseTaskCallbacks {
-        void onRequestFinished(BaseModel<?> result);
-    }
-
-    //region Life cycle
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (mCallbacks != null && mStatus == Status.FINISHED) {
-            if (!mCancelled && mResult != null) {
-                mCallbacks.onRequestFinished(mResult);
-                mResult = null;
-            } else {
-                mCallbacks.onRequestFailed(mError);
-                mError = null;
-            }
-        }
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof UploadToServerCallbacks) {
-            mCallbacks = (UploadToServerCallbacks) activity;
-        } else {
-            throw new IllegalStateException("Parent activity must implement UploadToServerCallbacks");
-        }
-    }
-    //endregion
-
     //region Request status
     @Override
     @SuppressWarnings("unchecked")
     public void onRequestComplete(Response response) {
-        mStatus = Status.FINISHED;
+        super.onRequestComplete(response);
+
         BaseModel bm = (BaseModel) response.body();
 
         if (bm.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
-            synchronized (this) {
-                BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) response.body();
-                runOperation(new FullUserDataOperation(res.getData()));
-                if (mCallbacks != null) {
-                    mCallbacks.onRequestFinished();
-                } else {
-                    mResult = res;
-                }
-            }
+            BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) bm;
+            runOperation(new FullUserDataOperation(res.getData()));
         } else if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
-            synchronized (this) {
-                BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) response.body();
-                runOperation(new FullUserDataOperation(res.getData().getUser()));
-                if (mCallbacks != null) {
-                    mCallbacks.onRequestFinished();
-                } else {
-                    mResult = res;
-                }
-            }
+            BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) bm;
+            runOperation(new FullUserDataOperation(res.getData().getUser()));
         }
-    }
-
-    @Override
-    public void onRequestStarted() {
-        mResult = null;
-        super.onRequestStarted();
     }
     //endregion
 
@@ -158,8 +103,9 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
             DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody()).enqueue(new NetworkCallback<>());
         }
     }
+    //endregion
 
-    private boolean isUserDataChanged(ProfileViewModel model){
+    private boolean isUserDataChanged(ProfileViewModel model) {
 
         User savedUser;
         String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, null);
@@ -168,5 +114,4 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
         return model.compareUserData(savedUser);
     }
-    //endregion
 }

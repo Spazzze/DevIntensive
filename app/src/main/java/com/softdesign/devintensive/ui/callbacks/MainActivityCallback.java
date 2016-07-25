@@ -15,4 +15,6 @@ public interface MainActivityCallback extends BaseActivityCallback {
     void uploadUserPhoto(Uri uri);
 
     void uploadUserAvatar(String uri);
+
+    void updateAuthorizedUserData();
 }

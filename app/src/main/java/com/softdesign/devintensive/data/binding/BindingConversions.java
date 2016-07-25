@@ -10,5 +10,4 @@ public final class BindingConversions {
     public static int convertBooleanToVisibility(boolean visible) {
         return visible ? View.VISIBLE : View.GONE;
     }
-
 }

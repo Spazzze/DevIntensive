@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="android.view.View"/>
+
+        <import type="android.view.View" />
+
         <variable
             name="profile"
             type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
@@ -26,11 +28,15 @@
                 android:id="@+id/collapsing_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:expandedTitleTextAppearance="@{profile.isEditMode ? @android:color/transparent : @android:color/white}"
                 app:contentScrim="@color/color_grey"
+                app:title="@{profile.mFullName}"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <!-- Photo -->
-                <include layout="@layout/content_profile_photo" />
+                <include
+                    android:id="@+id/profile_photo_layout"
+                    layout="@layout/content_profile_photo" />
 
                 <!-- Toolbar -->
                 <android.support.v7.widget.Toolbar
@@ -39,7 +45,6 @@
                     android:layout_height="?attr/actionBarSize"
                     android:layout_marginTop="@dimen/toolbar_top_offset"
                     android:theme="@style/AppTheme.PopupOverlay"
-                    android:title="@{profile.mFullName}"
                     app:layout_collapseMode="pin" />
 
             </android.support.design.widget.CollapsingToolbarLayout>
@@ -47,10 +52,14 @@
         </android.support.design.widget.AppBarLayout>
 
         <!-- ScoreBox -->
-        <include layout="@layout/content_score_box_layout" />
+        <include
+            android:id="@+id/score_box_layout"
+            layout="@layout/content_score_box_layout" />
 
         <!-- NestedScrollView with User Info inside -->
-        <include layout="@layout/content_main_profile_layout" />
+        <include
+            android:id="@+id/main_profile_layout"
+            layout="@layout/content_main_profile_layout" />
 
         <!-- FloatingActionButton -->
         <android.support.design.widget.FloatingActionButton
@@ -59,12 +68,11 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/fab_right_space"
             android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@drawable/ic_edit_black_24dp"
+            android:src="@{profile.isEditMode ? @drawable/ic_done_black_24dp : @drawable/ic_edit_black_24dp}"
             android:visibility="@{profile.isAuthorizedUser}"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right" />
 
     </android.support.design.widget.CoordinatorLayout>
-
 
 </layout>

@@ -252,6 +252,7 @@ public class UserInfoTextWatcher implements TextWatcher {
     private void errorHandler(Boolean isError, final String errorType) {
         if (!mEditText.isEnabled() || !mEditText.isFocusable()) return;
         if (isError) {
+            mTextInputLayout.setError(null);
             mTextInputLayout.setErrorEnabled(true);
             mTextInputLayout.setError(errorType);
 
