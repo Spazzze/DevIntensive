@@ -16,11 +16,13 @@ import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.ErrorUtils;
+import com.softdesign.devintensive.utils.UiHelper;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -89,7 +91,18 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     public void onRequestComplete(User user) {
-        BUS.postSticky(user);
+        Uri photo = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
+        String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
+        BUS.postSticky(new ProfileViewModel(user,
+                !UiHelper.isEmptyOrNull(photo) ? photo : Uri.parse(user.getPublicInfo().getPhoto()),
+                !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
+        super.onRequestComplete(null);
+    }
+
+    public void onRequestComplete(User user, Uri photoUri) {
+        String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
+        BUS.postSticky(new ProfileViewModel(user, photoUri,
+                !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }
 
@@ -182,15 +195,15 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
             public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                 super.onResourceReady(bitmap, anim);
                 Log.d(TAG, "onResourceReady: Success");
-                DATA_MANAGER.getPreferencesManager().saveUserPhoto(Uri.fromFile(getFile()));
-                onRequestComplete(user);
+                runOperation(new FullUserDataOperation(Uri.fromFile(getFile())));
+                onRequestComplete(user, Uri.fromFile(getFile()));
             }
 
             @Override
             public void onLoadFailed(Exception e, Drawable errorDrawable) {
                 Log.e(TAG, "downloadUserPhoto onLoadFailed: " + e.getMessage());
-                DATA_MANAGER.getPreferencesManager().saveUserPhoto(Uri.parse(pathToPhoto));
-                onRequestComplete(user);
+                runOperation(new FullUserDataOperation(Uri.parse(pathToPhoto)));
+                onRequestComplete(user, Uri.parse(pathToPhoto));
             }
         };
         Glide.with(this)

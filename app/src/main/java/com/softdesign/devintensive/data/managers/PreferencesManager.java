@@ -35,30 +35,9 @@ public class PreferencesManager {
         else return null;
     }
 
-    //endregion
-
-    //region User Photo
-    public void saveUserPhoto(Uri uri) {
-        if (uri != null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(Const.USER_PROFILE_PHOTO_URI, uri.toString());
-            editor.apply();
-        }
-    }
-
     public Uri loadUserPhoto() {
         return Uri.parse(mSharedPreferences.getString(Const.USER_PROFILE_PHOTO_URI,
                 ""));
-    }
-    //endregion
-
-    //region User Avatar
-    public void saveUserAvatar(String uri) {
-        if (uri != null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(Const.USER_PROFILE_AVATAR_URI, uri);
-            editor.apply();
-        }
     }
 
     public String loadUserAvatar() {

@@ -23,9 +23,11 @@ public interface Const {
     String DB_UPDATED_TIME_KEY = "DB_UPDATED_TIME";
 
     MediaType MEDIATYPE_MULTIPART_FORM_DATA = MediaType.parse("multipart/form-data");
-    String PARCELABLE_KEY = "PARCELABLE_KEY";
     String DIALOG_FRAGMENT_KEY = "DIALOG_FRAGMENT_KEY";
     String DIALOG_CONTENT_KEY = "DIALOG_CONTENT_KEY";
+
+    String PARCELABLE_KEY = "PARCELABLE_KEY";
+    String PARCELABLE_KEY_PROFILE = "PARCELABLE_KEY_PROFILE";
 
     //Dialog constants
     int DIALOG_LOAD_PROFILE_PHOTO = 1;

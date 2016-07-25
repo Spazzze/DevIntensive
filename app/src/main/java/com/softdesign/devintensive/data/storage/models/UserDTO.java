@@ -26,7 +26,7 @@ public class UserDTO implements Parcelable {
         mRepositories = user.getRepoList();
     }
 
-    //region Generated
+    //region Parcel
     private UserDTO(Parcel in) {
         mUserPhoto = in.readString();
         mFullName = in.readString();
@@ -77,7 +77,7 @@ public class UserDTO implements Parcelable {
     };
     //endregion
 
-    //region Standard Getters And Setters
+    //region Standard Getters & Setters
     public String getUserPhoto() {
         return mUserPhoto;
     }

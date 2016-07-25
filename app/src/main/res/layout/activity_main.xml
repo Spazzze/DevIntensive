@@ -8,60 +8,10 @@
     tools:context=".ui.activities.MainActivity"
     tools:ignore="contentDescription">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_coordinatorLayout"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <!-- AppBar -->
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/color_grey"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <android.support.design.widget.CollapsingToolbarLayout
-                android:id="@+id/collapsing_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:contentScrim="@color/color_grey"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-                <!-- Photo -->
-                <include layout="@layout/content_profile_photo" />
-
-                <!-- Toolbar -->
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:layout_marginTop="@dimen/toolbar_top_offset"
-                    android:theme="@style/AppTheme.PopupOverlay"
-                    app:layout_collapseMode="pin" />
-
-            </android.support.design.widget.CollapsingToolbarLayout>
-
-        </android.support.design.widget.AppBarLayout>
-
-        <!-- ScoreBox -->
-        <include layout="@layout/content_score_box_layout" />
-
-        <!-- NestedScrollView with User Info inside -->
-        <include layout="@layout/content_main_profile_layout" />
-
-        <!-- FloatingActionButton -->
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/floating_action_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/fab_right_space"
-            android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@drawable/ic_edit_black_24dp"
-            app:layout_anchor="@id/appbar_layout"
-            app:layout_anchorGravity="bottom|right" />
-
-    </android.support.design.widget.CoordinatorLayout>
+        android:layout_height="wrap_content"/>
 
     <!-- NavigationView -->
     <android.support.design.widget.NavigationView

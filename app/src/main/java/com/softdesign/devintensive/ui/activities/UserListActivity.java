@@ -402,7 +402,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
             @Override
             public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                 super.onResourceReady(bitmap, anim);
-                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
+                runOperation(new FullUserDataOperation(getFile().getAbsolutePath()));
 
                 NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
                 if (navigationView != null) {

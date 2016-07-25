@@ -42,6 +42,12 @@ public class UiHelper {
 
     //region UI
 
+
+    public static <T> T notNull(T a, T b) {
+        //noinspection unchecked
+        return !isEmptyOrNull(a) ? a : b;
+    }
+
     /**
      * checks all args if they equals null or empty
      *
