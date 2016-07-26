@@ -18,6 +18,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ProfileViewModel extends BaseObservable implements Parcelable {
 
+    public static final String IGNORED_STR = "IGNORED_STR";
+
     private String mUserPhoto;
     private String mFullName;
     private String mRating;

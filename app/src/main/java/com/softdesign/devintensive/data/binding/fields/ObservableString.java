@@ -1,6 +1,9 @@
 package com.softdesign.devintensive.data.binding.fields;
 
 import android.databinding.BaseObservable;
+import android.databinding.BindingConversion;
+
+import com.softdesign.devintensive.utils.UiHelper;
 
 public class ObservableString extends BaseObservable {
 
@@ -18,7 +21,7 @@ public class ObservableString extends BaseObservable {
     }
 
     public void set(String value) {
-        if (!equals(this.value, value)) {
+        if (!UiHelper.equals(this.value, value)) {
             this.value = value;
             notifyChange();
         }
@@ -32,15 +35,9 @@ public class ObservableString extends BaseObservable {
         set(null);
     }
 
-    public static boolean equals(Object a, Object b) {
-        return (a == null) ? (b == null) : a.equals(b);
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    @BindingConversion
+    public static String convertToString(
+            ObservableString observableString) {
+        return observableString.get();
     }
 }

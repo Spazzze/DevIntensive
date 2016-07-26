@@ -91,7 +91,7 @@ public class DialogsFragment extends DialogFragment {
                 }).create();
     }
 
-    private Dialog errorAlertExitToMain(String error) {      //переделать когда будут фрагменты
+    private Dialog errorAlertExitToMain(String error) {
         return new AlertDialog.Builder(getActivity())
                 .setMessage(error)
                 .setCancelable(true)
@@ -102,7 +102,7 @@ public class DialogsFragment extends DialogFragment {
                 }).create();
     }
 
-    private Dialog errorAlertExitToAuth(String error) {      //переделать когда будут фрагменты
+    private Dialog errorAlertExitToAuth(String error) {
         return new AlertDialog.Builder(getActivity())
                 .setMessage(error)
                 .setCancelable(false)

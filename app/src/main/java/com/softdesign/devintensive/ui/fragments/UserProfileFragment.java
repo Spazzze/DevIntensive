@@ -297,11 +297,10 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
 
         User savedUser;
         String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, null);
-        if (jsonSavedUser != null)
-            savedUser = (User) UiHelper.getObjectFromJson(jsonSavedUser, User.class);
-        else return true;
+        if (jsonSavedUser == null) return true;
+        savedUser = (User) UiHelper.getObjectFromJson(jsonSavedUser, User.class);
 
-        return mProfileViewModel.compareUserData(savedUser);
+        return !mProfileViewModel.compareUserData(savedUser);
     }
     //endregion
 

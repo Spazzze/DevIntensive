@@ -18,8 +18,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -148,13 +146,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     private void initUI() {
         Log.d(TAG, "initUI");
-        setupPhoto();
-        setupUserInfoLayout();
         setupDrawer();
-    }
-
-    private void setupPhoto() {
-        /*mUri_SelectedAvatarImage = DATA_MANAGER.getPreferencesManager().loadUserAvatar();       //// TODO: 25.07.2016*/
     }
 
     private void setupDrawer() {
@@ -226,29 +218,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             }
         }
     }
-
-    private void setupUserInfoLayout() {
-
-        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
-            if (hasFocus) {
-                if (v instanceof EditText) {
-                    EditText et = (EditText) v;
-                    if (!et.isEnabled() && !et.isFocusable()) return;
-                    et.setSelection(et.getText().length());
-                }
-            } else {
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
-                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
-            }
-        };
-
-       /* for (int i = 0; i < mEditTexts_userInfoList.size() - 1; i++) {
-            mEditTexts_userInfoList.get(i).addTextChangedListener(
-                    new UserInfoTextWatcher(mEditTexts_userInfoList.get(i), mTextInputLayouts_userInfoList.get(i)));
-            mEditTexts_userInfoList.get(i).setOnFocusChangeListener(focusListener);
-        }*/
-    }
-
     //endregion
 
     //region Network
@@ -292,6 +261,26 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 .load(pathToAvatar)
                 .asBitmap()
                 .into(avatarTarget);*/
+    }
+    //endregion
+
+
+    //region <<<<<<<<<< Activity Results >>>>>>>>>>
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Const.REQUEST_PERMISSIONS_CAMERA:
+                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromCamera();
+                }
+                break;
+            case Const.REQUEST_PERMISSIONS_READ_SDCARD:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadPhotoFromGallery();
+                }
+                break;
+        }
     }
     //endregion
 
@@ -350,7 +339,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     //endregion
 
     //region <<<<<<<<<< Fragments Callbacks >>>>>>>>>>
-
     @Override
     public void loadPhotoFromGallery() {
         if (mProfileFragment != null) mProfileFragment.loadPhotoFromGallery();
@@ -387,23 +375,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mAuthorizedUserData.put(Const.PARCELABLE_USER_EMAIL_KEY, user.getContacts().getEmail());
         }
     }
-
     //endregion
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Const.REQUEST_PERMISSIONS_CAMERA:
-                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
-                }
-                break;
-            case Const.REQUEST_PERMISSIONS_READ_SDCARD:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
-                }
-                break;
-        }
-    }
 }

@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <import type="android.view.View" />
 
         <variable
@@ -50,7 +49,8 @@
                             android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_phone"
                             android:inputType="phone"
-                            android:text="@={profile.phone}" />
+                            android:text="@{profile.phone}"
+                            app:userInfoTextWatcher="@{profile.authorizedUser}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -90,7 +90,8 @@
                             android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_email"
                             android:inputType="textEmailAddress"
-                            android:text="@={profile.email}" />
+                            android:text="@={profile.email}"
+                            app:userInfoTextWatcher="@{profile.authorizedUser}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -129,7 +130,8 @@
                             android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_vk"
                             android:inputType="textUri"
-                            android:text="@={profile.vK}" />
+                            android:text="@={profile.vK}"
+                            app:userInfoTextWatcher="@{profile.authorizedUser}" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
@@ -165,8 +167,9 @@
                             android:focusable="@{profile.editMode}"
                             android:focusableInTouchMode="@{profile.editMode}"
                             android:hint="@string/hint.profile_gitHubRepo"
-                            android:inputType="textUri"                           />
-                            <!--android:text="@{profile.mRepositories.get(0)}"-->
+                            android:inputType="textUri"
+                            app:userInfoTextWatcher="@{profile.authorizedUser}" />
+                        <!--android:text="@{profile.mRepositories.get(0)}"-->
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
 
