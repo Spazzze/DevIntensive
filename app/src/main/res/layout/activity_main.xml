@@ -55,8 +55,8 @@
             android:id="@+id/floating_action_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/fab_right_space"
             android:layout_marginEnd="@dimen/fab_right_space"
+            android:layout_marginRight="@dimen/fab_right_space"
             android:src="@drawable/ic_edit_black_24dp"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right" />
@@ -70,6 +70,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="left"
         app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_menu" />
+        app:menu="@menu/drawer_menu"
+        tools:ignore="RtlHardcoded" />
 
 </android.support.v4.widget.DrawerLayout>

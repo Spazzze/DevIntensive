@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.ui.view.behaviors;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
@@ -8,7 +9,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.R;
 
 import static com.softdesign.devintensive.utils.UiHelper.getAppBarSize;
 import static com.softdesign.devintensive.utils.UiHelper.getMinHeight;
@@ -19,52 +20,54 @@ import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
  *
  * @param <LinearLayout> to link to.
  */
-class CustomLinearLayoutBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
+class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout.ScrollingViewBehavior {
 
-    private final static String TAG = ConstantManager.TAG_PREFIX + "LLBehavior";
     private final Context mContext;
-    private float minLLSize, maxScrollDistance, minDependencyScrollY, maxLLSize, mExpandedPercentageFactor;
+    private float mMinLLSize, mMaxLLSize, mMinAppbarHeight, mMaxAppbarHeight, mExpandedPercentageFactor;
 
+    @SuppressWarnings({"unused"})
     public CustomLinearLayoutBehavior(Context context, AttributeSet attrs) {
         this.mContext = context;
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomLinearLayoutBehavior);
+        mMinLLSize = a.getDimensionPixelSize(R.styleable.CustomLinearLayoutBehavior_min_collapsed_height, 0);
+        a.recycle();
     }
 
     @Override
-    public Parcelable onSaveInstanceState(CoordinatorLayout parent, LinearLayout child) {
+    public Parcelable onSaveInstanceState(CoordinatorLayout parent, View child) {
         Bundle bundle = new Bundle();
+        bundle.putFloat("mMinLLSize", this.mMinLLSize);
+        bundle.putFloat("mMaxLLSize", this.mMaxLLSize);
         bundle.putFloat("mExpandedPercentageFactor", this.mExpandedPercentageFactor);
-        bundle.putFloat("minLLSize", this.minLLSize);
-        bundle.putFloat("maxLLSize", this.maxLLSize);
-        bundle.putFloat("maxScrollDistance", this.maxScrollDistance);
-        bundle.putFloat("minDependencyScrollY", this.minDependencyScrollY);
+        bundle.putFloat("mMaxAppbarHeight", this.mMaxAppbarHeight);
+        bundle.putFloat("mMinAppbarHeight", this.mMinAppbarHeight);
         return bundle;
     }
 
     @Override
-    public void onRestoreInstanceState(CoordinatorLayout parent, LinearLayout child, Parcelable state) {
+    public void onRestoreInstanceState(CoordinatorLayout parent, View child, Parcelable state) {
         if (!(state instanceof Bundle)) return; // implicit null check
 
         Bundle bundle = (Bundle) state;
         this.mExpandedPercentageFactor = bundle.getFloat("mExpandedPercentageFactor");
-        this.minLLSize = bundle.getFloat("minLLSize");
-        this.maxLLSize = bundle.getFloat("maxLLSize");
-        this.minDependencyScrollY = bundle.getFloat("minDependencyScrollY");
-        this.maxScrollDistance = bundle.getFloat("maxScrollDistance");
-        final CoordinatorLayout.LayoutParams lp =
-                (CoordinatorLayout.LayoutParams) child.getLayoutParams();
-        lp.height = (int) Math.max(minLLSize, maxLLSize * mExpandedPercentageFactor);
+        this.mMinLLSize = bundle.getFloat("mMinLLSize");
+        this.mMaxLLSize = bundle.getFloat("mMaxLLSize");
+        this.mMinAppbarHeight = bundle.getFloat("mMinAppbarHeight");
+        this.mMaxAppbarHeight = bundle.getFloat("mMaxAppbarHeight");
+        final CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+        lp.height = (int) (mMinLLSize + (mMaxLLSize - mMinLLSize) * mExpandedPercentageFactor);
         child.setLayoutParams(lp);
     }
 
     @Override
-    public boolean layoutDependsOn(CoordinatorLayout parent, LinearLayout child, View dependency) {
+    public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
         return dependency instanceof AppBarLayout;
     }
 
     @Override
-    public boolean onDependentViewChanged(CoordinatorLayout parent, LinearLayout child, View dependency) {
-        final CoordinatorLayout.LayoutParams lp =
-                (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+    public boolean onDependentViewChanged(CoordinatorLayout parent, View child, View dependency) {
+        final CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+
         AppBarLayout appBarLayout;
         if (dependency instanceof AppBarLayout) {
             appBarLayout = (AppBarLayout) dependency;
@@ -76,24 +79,23 @@ class CustomLinearLayoutBehavior<LinearLayout extends View> extends CoordinatorL
             return false;
         }
 
-        if (minLLSize == 0.0f) {
-            initProperties(parent, child, appBarLayout);
+        if (mMaxLLSize == 0.0f) {
+            initProperties(child, appBarLayout);
         }
 
-        float curDependencyY = appBarLayout.getBottom() - minDependencyScrollY;
-        mExpandedPercentageFactor = curDependencyY / maxScrollDistance;
-        lp.height = (int) (minLLSize + (maxLLSize - minLLSize) * mExpandedPercentageFactor);
+        float curAppBarHeight = appBarLayout.getBottom() - mMinAppbarHeight;
+        mExpandedPercentageFactor = curAppBarHeight / mMaxAppbarHeight;
+        lp.height = (int) (mMinLLSize + (mMaxLLSize - mMinLLSize) * mExpandedPercentageFactor);
 
-        child.setTranslationY(appBarLayout.getBottom());
         child.setLayoutParams(lp);
 
-        return true;
+        return super.onDependentViewChanged(parent, child, dependency);
     }
 
-    private void initProperties(CoordinatorLayout parent, LinearLayout child, AppBarLayout dependency) {  //расчет начальных параметров
-        maxLLSize = child.getHeight();
-        minLLSize = getMinHeight(child);  //найдет минимальную высоту child, которая полностью вместит его контент, т.е. высоту если будет wrap_content
-        minDependencyScrollY = getStatusBarHeight(mContext) + getAppBarSize(mContext);
-        maxScrollDistance = dependency.getHeight() - minDependencyScrollY;
+    private void initProperties(View child, AppBarLayout dependency) {  //расчет начальных параметров
+        mMaxLLSize = child.getHeight();
+        if (mMinLLSize == 0.0f) mMinLLSize = getMinHeight(child);
+        mMinAppbarHeight = getStatusBarHeight(mContext) + getAppBarSize(mContext);
+        mMaxAppbarHeight = dependency.getHeight() - mMinAppbarHeight;
     }
 }

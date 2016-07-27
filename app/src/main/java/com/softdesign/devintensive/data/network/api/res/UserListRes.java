@@ -6,8 +6,8 @@ import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.network.restmodels.PublicInfo;
 import com.softdesign.devintensive.data.network.restmodels.Repositories;
 
-public class UserListRes {
-
+@SuppressWarnings("unused")
+public class UserListRes extends BaseResponse{
 
     @SerializedName("_id")
     @Expose
@@ -73,7 +73,7 @@ public class UserListRes {
         return v;
     }
 
-    public String getFullName(){
+    public String getFullName() {
         return String.format("%s %s", firstName, secondName);
     }
 }

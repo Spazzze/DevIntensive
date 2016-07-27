@@ -1,92 +1,82 @@
 package com.softdesign.devintensive.ui.adapters;
 
-import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.network.api.res.UserListRes;
-import com.softdesign.devintensive.ui.view.behaviors.CustomUserListFilter;
+import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
-import com.softdesign.devintensive.utils.ConstantManager;
-import com.squareup.picasso.Picasso;
+import com.softdesign.devintensive.utils.Const;
+import com.softdesign.devintensive.utils.UiHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static com.softdesign.devintensive.utils.UiHelper.getScreenWidth;
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable {
+    private static final String TAG = Const.TAG_PREFIX + "UsersAdapter";
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "UsersAdapter";
+    private List<UserEntity> mUsers;
+    private final CustomUserListFilter mFilter;
+    private final UserViewHolder.CustomClickListener mCustomClickListener;
+    private final OnStartDragListener mDragStartListener;
 
-    private Context mContext;
-    private List<UserListRes> mUsers;
-    private UserViewHolder.CustomClickListener mCustomClickListener;
-    private int mHeight;
-    private int mWidth;
-    private Drawable mPlaceHolder;
-    private CustomUserListFilter mFilter;
-
-    @SuppressWarnings("deprecation")
+    //region Adapter
     @Override
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-        mContext = parent.getContext();
-        View convertView = LayoutInflater.from(mContext).inflate(R.layout.item_user_list, parent, false);
-
-        mWidth = getScreenWidth();
-        mHeight = (int) (mWidth / ConstantManager.ASPECT_RATIO_16_9);
-        //инициализирую плейсхолдер при создании, заранее избавляясь от возможного NullPointerException
-        // и от ненужной операции загрузки плейсхолдера в onBindViewHolder, стало работать побыстрее
-        mPlaceHolder = mContext.getResources().getDrawable(R.drawable.user_bg);
-        if (mPlaceHolder == null) {
-            mPlaceHolder = mContext.getResources().getDrawable(android.R.drawable.screen_background_dark);
-        }
+        View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
 
         return new UserViewHolder(convertView, mCustomClickListener);
     }
 
-    public UsersAdapter(List<UserListRes> users, UserViewHolder.CustomClickListener customClickListener) {
+    public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, UserViewHolder.CustomClickListener customClickListener) {
         mUsers = users;
+        mDragStartListener = dragStartListener;
         mCustomClickListener = customClickListener;
         mFilter = new CustomUserListFilter(UsersAdapter.this);
     }
 
     @Override
-    public void onBindViewHolder(UsersAdapter.UserViewHolder holder, int position) {
+    public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
 
-        UserListRes user = mUsers.get(position);
+        final UserEntity user = mUsers.get(position);
 
-        if (user.getPublicInfo().getPhoto() != null && !user.getPublicInfo().getPhoto().isEmpty()) {
-            Picasso.with(mContext)
-                    .load(user.getPublicInfo().getPhoto())
-                    .placeholder(mPlaceHolder)
-                    .error(mPlaceHolder)
-                    .resize(mWidth, mHeight)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(holder.mUserPhoto);
-        }
+        CustomGlideModule.loadImage(user.getPhoto(), holder.mPlaceHolder, holder.mPlaceHolder, holder.mUserPhoto);
 
         holder.mFullName.setText(user.getFullName());
-        holder.mRating.setText(user.getProfileValues().getRating());
-        holder.mCodeLines.setText(user.getProfileValues().getLinesCode());
-        holder.mProjects.setText(user.getProfileValues().getProjects());
-        holder.mHomeTask.setText(user.getProfileValues().getHomeTask());
+        holder.mRating.setText(String.valueOf(user.getRating()));
+        holder.mCodeLines.setText(String.valueOf(user.getCodeLines()));
+        holder.mProjects.setText(String.valueOf(user.getProjects()));
+        holder.mHomeTask.setText(user.getHomeTask());
 
-        if (user.getPublicInfo().getBio() == null && user.getPublicInfo().getBio().trim().isEmpty()) {
+        if (UiHelper.isEmptyOrNull(user.getBio())) {
             holder.mBio.setVisibility(View.GONE);
         } else {
             holder.mBio.setVisibility(View.VISIBLE);
-            holder.mBio.setText(user.getPublicInfo().getBio().trim());
+            holder.mBio.setText(user.getBio().trim());
         }
+
+        holder.mHandleView.setOnTouchListener((v, event) -> {
+            if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                mDragStartListener.onStartDrag(holder);
+            }
+            return false;
+        });
     }
 
     @Override
@@ -99,21 +89,53 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return mFilter;
     }
 
-    public List<UserListRes> getUsers() {
+    @Override
+    public void onItemDismiss(int position) {
+        UserEntity u = mUsers.get(position);
+        mFilter.getList().remove(u);
+        mUsers.remove(position);
+        notifyItemRemoved(position);
+        DataManager.getInstance().changeUserInternalId(position, mUsers.size() * 2);      //// TODO: 21.07.2016 в поток
+    }
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        Collections.swap(mUsers, fromPosition, toPosition);
+        notifyItemMoved(fromPosition, toPosition);
+        DataManager.getInstance().changeUserInternalId(fromPosition, toPosition);      //// TODO: 21.07.2016 в поток
+        return true;
+    }
+
+    @Override
+    public void onItemPendToDelete(int position) {
+
+    }
+
+    public List<UserEntity> getUsers() {
         return mUsers;
     }
 
-    public void setUsers(List<UserListRes> users) {
+    public void setUsers(List<UserEntity> users) {
         mUsers = users;
     }
+    //endregion
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    //region ViewHolder
+    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, ItemTouchHelperViewHolder {
 
-        private AspectRatioImageView mUserPhoto;
-        private TextView mFullName, mRating, mCodeLines, mProjects, mBio, mHomeTask;
-        private Button mButton;
-        private CustomClickListener mClickListener;
+        private final AspectRatioImageView mUserPhoto;
+        private final TextView mFullName;
+        private final TextView mRating;
+        private final TextView mCodeLines;
+        private final TextView mProjects;
+        private final TextView mBio;
+        private final TextView mHomeTask;
+        private final Button mButton;
+        private final CustomClickListener mClickListener;
+        private final ImageView mHandleView;
+        private Drawable mPlaceHolder;
 
+        @SuppressWarnings("deprecation")
         public UserViewHolder(View itemView, CustomClickListener customClickListener) {
             super(itemView);
 
@@ -126,6 +148,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             mBio = (TextView) itemView.findViewById(R.id.list_bio_txt);
             mHomeTask = (TextView) itemView.findViewById(R.id.cur_homeTask_txt);
             mButton = (Button) itemView.findViewById(R.id.list_more_info_btn);
+            mHandleView = (ImageView) itemView.findViewById(R.id.handle);
+
+            mPlaceHolder = mUserPhoto.getContext().getResources().getDrawable(R.drawable.user_bg);
+            if (mPlaceHolder == null) {
+                mPlaceHolder = mUserPhoto.getContext().getResources().getDrawable(android.R.drawable.screen_background_dark);
+            }
 
             mButton.setOnClickListener(this);
         }
@@ -143,9 +171,66 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             }
         }
 
+        @Override
+        public void onItemSelected() {
+            itemView.setBackgroundColor(Color.LTGRAY);
+        }
+
+        @Override
+        public void onItemClear() {
+            itemView.setBackgroundColor(0);
+        }
+
         public interface CustomClickListener {
             void onUserItemClickListener(int position);
         }
     }
+    //endregion
+
+    //region Filter
+    public static class CustomUserListFilter extends Filter {
+
+        private final UsersAdapter mAdapter;
+        private final List<UserEntity> mList;
+
+        public List<UserEntity> getList() {
+            return mList;
+        }
+
+        public CustomUserListFilter(UsersAdapter mAdapter) {
+            super();
+            this.mAdapter = mAdapter;
+            mList = mAdapter.getUsers();
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+
+            FilterResults results = new FilterResults();
+            List<UserEntity> tempList = new ArrayList<>();
+
+            if (constraint.length() != 0) {
+                final String filterPattern = constraint.toString().toLowerCase().trim();
+                for (final UserEntity s : mList) {
+                    if (s.getFullName().toLowerCase().contains(filterPattern) ||
+                            s.getHomeTask().contains(filterPattern)) {
+                        tempList.add(s);
+                    }
+                }
+            } else {
+                tempList = mList;
+            }
+            mAdapter.setUsers(tempList);
+            results.values = tempList;
+            results.count = tempList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            this.mAdapter.notifyDataSetChanged();
+        }
+    }
+    //endregion
 }
 

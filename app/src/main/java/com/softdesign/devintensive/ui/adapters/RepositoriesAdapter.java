@@ -13,8 +13,8 @@ import java.util.List;
 
 public class RepositoriesAdapter extends BaseAdapter {
 
-    private List<String> mRepoList;
-    private LayoutInflater mLayoutInflater;
+    private final List<String> mRepoList;
+    private final LayoutInflater mLayoutInflater;
 
     public RepositoriesAdapter(Context context, List<String> repoList) {
         mRepoList = repoList;

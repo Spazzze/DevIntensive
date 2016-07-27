@@ -1,8 +1,7 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.app.Dialog;
-import android.content.DialogInterface;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -28,7 +27,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -41,17 +39,27 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.ui.adapters.PicassoTargetByName;
-import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.ErrorUtils;
+import com.softdesign.devintensive.data.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.operations.DatabaseOperation;
+import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
+import com.softdesign.devintensive.ui.events.UpdateDBEvent;
+import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
+import com.softdesign.devintensive.ui.fragments.UpdateServerDataFragment;
+import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.NetworkUtils;
+import com.softdesign.devintensive.utils.UiHelper;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,21 +70,14 @@ import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
-import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
 import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
 import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements MainActivityCallback, UpdateServerDataFragment.UploadToServerCallbacks {
 
-    private static final String TAG = ConstantManager.TAG_PREFIX + "Main Activity";
+    private static final String TAG = Const.TAG_PREFIX + "Main Activity";
 
     @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
 
@@ -102,6 +103,9 @@ public class MainActivity extends BaseActivity {
     private Uri mUri_SelectedProfileImage = null;
     private String mUri_SelectedAvatarImage = null;
     private User mUserData = null;
+    private FragmentManager mFragmentManager = getFragmentManager();
+    private LoadUsersIntoDBFragment mDbNetworkFragment;
+    private UpdateServerDataFragment mDataFragment;
 
     //region OnCreate
     @Override
@@ -110,17 +114,15 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
 
+        attachDataFragment();
+        attachLoadIntoDBFragment();
+
         ButterKnife.bind(this);
 
         mDataManager = DataManager.getInstance();
 
-        setupUserInfoLayout();
-        initUserProfileInfo();
-        setupDrawer();
-        setupToolbar();
-
-        if (savedInstanceState != null) {
-            mCurrentEditMode = savedInstanceState.getBoolean(ConstantManager.EDIT_MODE_KEY);
+        if (savedInstanceState != null && mUserData != null) {
+            mCurrentEditMode = savedInstanceState.getBoolean(Const.EDIT_MODE_KEY);
             changeEditMode(mCurrentEditMode);
         }
     }
@@ -131,36 +133,75 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case ConstantManager.LOAD_PROFILE_PHOTO:
-                String[] selectedItems = getResources().getStringArray(R.array.profile_placeHolder_loadPhotoDialog);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title));
-                builder.setItems(selectedItems, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int chosenItem) {
-                        switch (chosenItem) {
-                            case 0:
-                                loadPhotoFromCamera();
-                                break;
-                            case 1:
-                                loadPhotoFromGallery();
-                                break;
-                            case 2:
-                                dialog.cancel();
-                                break;
-                        }
-                    }
-                });
-                return builder.create();
-            default:
-                return null;
+    //endregion
+
+    //region Fragments
+    private void attachDataFragment() {
+        mDataFragment = (UpdateServerDataFragment) mFragmentManager.findFragmentByTag(UpdateServerDataFragment.class.getName());
+        if (mDataFragment == null) {
+            mDataFragment = new UpdateServerDataFragment();
+            mFragmentManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
         }
     }
 
+    private void attachLoadIntoDBFragment() {
+        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
+        if (mDbNetworkFragment == null) {
+            mDbNetworkFragment = new LoadUsersIntoDBFragment();
+            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+        }
+    }
+    //endregion
+
+    //region TaskCallbacks
+    @Override
+    public void onRequestStarted() {
+
+    }
+
+    @Override
+    public void onRequestFinished() {
+
+    }
+
+    @Override
+    public void onRequestFailed(String error) {
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onRequestFinished(BaseModel<?> result) {
+        if (result.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
+            BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) result;
+            mUserData.getPublicInfo().setUpdated(res.getData().getUpdated());
+            saveFullUserData();
+        }
+        if (result.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
+            BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) result;
+            mUserData = res.getData().getUser();
+            saveFullUserData();
+        }
+    }
+    //endregion
+
+    //region Events
+    @SuppressWarnings("unused")
+    public void onEvent(User event) {
+        if (event != null) {
+            if (mUserData == null) {
+                mUserData = event;
+                initUI();
+            } else mUserData = event;
+        } else {
+            loadFullUserData();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void onEvent(UpdateDBEvent event) {
+        if (mDbNetworkFragment != null) mDbNetworkFragment.downloadUserListIntoDB();
+    }
     //endregion
 
     //region OnClick
@@ -187,7 +228,7 @@ public class MainActivity extends BaseActivity {
                 changeEditMode(!mCurrentEditMode);
                 break;
             case R.id.placeholder_profilePhoto:
-                showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
+                showDialogFragment(Const.DIALOG_LOAD_PROFILE_PHOTO);
                 break;
             case R.id.makeCall_img:
                 startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mEditTexts_userInfoList.get(0).getText().toString(), null)));
@@ -197,7 +238,7 @@ public class MainActivity extends BaseActivity {
                 if (queryIntentActivities(this, sendEmail)) {
                     startActivity(sendEmail);
                 } else {
-                    showSnackBar(getString(R.string.error_email_client_not_configured));
+                    showError(getString(R.string.error_email_client_not_configured));
                 }
                 break;
             case R.id.openVK_img:
@@ -223,6 +264,15 @@ public class MainActivity extends BaseActivity {
     //endregion
 
     //region Activity's LifeCycle
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState " + mCurrentEditMode);
+
+        outState.putBoolean(Const.EDIT_MODE_KEY, mCurrentEditMode);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -239,13 +289,15 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        BUS.registerSticky(this);
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         Log.d(TAG, "onPause");
+        BUS.unregister(this);
         saveUserInfoData();
+        super.onPause();
     }
 
     @Override
@@ -262,6 +314,50 @@ public class MainActivity extends BaseActivity {
     //endregion
 
     //region Setup Ui Items
+
+    private void initUI() {
+        Log.d(TAG, "initUI");
+        setupTitle();
+        setupEditTexts();
+        setupPhoto();
+        setupProfileValues();
+        setupToolbar();
+        setupUserInfoLayout();
+        setupDrawer();
+    }
+
+    private void setupTitle() {
+        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
+        MainActivity.this.setTitle(userFullName);
+    }
+
+    private void setupProfileValues() {
+        String[] userProfileValuesList = {
+                mUserData.getProfileValues().getRating(),
+                mUserData.getProfileValues().getCodeLines(),
+                mUserData.getProfileValues().getProjects()};
+
+        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
+    }
+
+    private void setupEditTexts() {
+        List<String> userProfileDataList = new ArrayList<>();
+
+        userProfileDataList.add(mUserData.getContacts().getPhone());
+        userProfileDataList.add(mUserData.getContacts().getEmail());
+        userProfileDataList.add(mUserData.getContacts().getVk());
+        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
+        userProfileDataList.add(mUserData.getPublicInfo().getBio());
+
+        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
+    }
+
+    private void setupPhoto() {
+        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
+        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
+        placeProfilePicture(mUri_SelectedProfileImage);
+    }
+
     private void setupToolbar() {
         setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -295,27 +391,24 @@ public class MainActivity extends BaseActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         if (navigationView != null) {
             setupDrawerItems(navigationView);
-            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.navMenu_team:
-                            startActivity(new Intent(MainActivity.this, UserListActivity.class));
-                            break;
-                        case R.id.navMenu_options:
-                            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
-                            break;
-                        case R.id.navMenu_logout:
-                            logout(1);
-                            break;
-                        default:
-                            showToast(item.getTitle().toString());
-                            item.setChecked(true);
-                            break;
-                    }
-                    mDrawerLayout.closeDrawer(GravityCompat.START);
-                    return false;
+            navigationView.setNavigationItemSelectedListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.navMenu_team:
+                        startActivity(new Intent(MainActivity.this, UserListActivity.class));
+                        break;
+                    case R.id.navMenu_options:
+                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+                        break;
+                    case R.id.navMenu_logout:
+                        logout(1);
+                        break;
+                    default:
+                        showToast(item.getTitle().toString());
+                        item.setChecked(true);
+                        break;
                 }
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                return false;
             });
         }
     }
@@ -365,19 +458,16 @@ public class MainActivity extends BaseActivity {
 
     private void setupUserInfoLayout() {
 
-        final View.OnFocusChangeListener focusListener = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    if (v instanceof EditText) {
-                        EditText et = (EditText) v;
-                        if (!et.isEnabled() && !et.isFocusable()) return;
-                        et.setSelection(et.getText().length());
-                    }
-                } else {
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
-                            .hideSoftInputFromWindow(v.getWindowToken(), 0);
+        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
+            if (hasFocus) {
+                if (v instanceof EditText) {
+                    EditText et = (EditText) v;
+                    if (!et.isEnabled() && !et.isFocusable()) return;
+                    et.setSelection(et.getText().length());
                 }
+            } else {
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
+                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
             }
         };
 
@@ -390,76 +480,38 @@ public class MainActivity extends BaseActivity {
 
     private void placeProfilePicture(Uri selectedImage) {
         Log.d(TAG, "placeProfilePicture: " + selectedImage);
-        if (selectedImage == null || selectedImage.toString().isEmpty()) return;
-        Picasso.with(this)
-                .load(selectedImage)
-                .placeholder(R.drawable.user_bg)
-                .error(R.drawable.user_bg)
-                .fit()
-                .centerInside()
-                .into(mImageView_profilePhoto);
+        CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
     }
 
-    private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
-    }
+    static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
 
-    static final ButterKnife.Setter<TextView, String[]> setTextViews = new ButterKnife.Setter<TextView, String[]>() {
-        @Override
-        public void set(@NonNull TextView view, String[] value, int index) {
-            view.setText(value[index]);
-        }
-    };
-
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = new ButterKnife.Setter<View, Boolean>() {
-        @Override
-        public void set(@NonNull View view, Boolean value, int index) {
-            view.setEnabled(value);
-            view.setFocusable(value);
-            view.setFocusableInTouchMode(value);
-        }
+    static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
+        view.setEnabled(value);
+        view.setFocusable(value);
+        view.setFocusableInTouchMode(value);
     };
 
     //endregion
 
     //region Save and Load preferences and current state
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d(TAG, "onSaveInstanceState");
 
-        outState.putBoolean(ConstantManager.EDIT_MODE_KEY, mCurrentEditMode);
+    private void loadFullUserData() {
+        Log.d(TAG, "loadFullUserData: ");
+        runOperation(new FullUserDataOperation());
     }
 
-    private void initUserProfileInfo() {
-        Log.d(TAG, "initUserProfileInfo");
+    private void saveFullUserData() {
+        Log.d(TAG, "saveFullUserData: ");
+        runOperation(new FullUserDataOperation(mUserData));
+    }
 
-        mUserData = mDataManager.getPreferencesManager().loadAllUserData();
-        if (mUserData == null) logout(0);
-
-        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
-        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
-        placeProfilePicture(mUri_SelectedProfileImage);
-
-        List<String> userProfileDataList = new ArrayList<>();
-
-        userProfileDataList.add(mUserData.getContacts().getPhone());
-        userProfileDataList.add(mUserData.getContacts().getEmail());
-        userProfileDataList.add(mUserData.getContacts().getVk());
-        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
-        userProfileDataList.add(mUserData.getPublicInfo().getBio());
-
-        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
-
-        String[] userProfileValuesList = {
-                mUserData.getProfileValues().getRating(),
-                mUserData.getProfileValues().getLinesCode(),
-                mUserData.getProfileValues().getProjects()};
-
-        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
-
-        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
-        MainActivity.this.setTitle(userFullName);
+    private void onUserDataChanged(User savedUser) {
+        Log.d(TAG, "onUserDataChanged: ");
+        String jsonSavedUser = UiHelper.getJsonFromObject(savedUser, User.class);
+        String currentData = UiHelper.getJsonFromObject(mUserData, User.class);
+        if (!jsonSavedUser.equals(currentData)) {
+            mDataFragment.uploadUserData(mUserData);
+        }
     }
 
     private void saveUserInfoData() {
@@ -467,25 +519,38 @@ public class MainActivity extends BaseActivity {
         if (mNotSavingUserValues) return;
 
         Log.d(TAG, "saveUserInfoData");
+        saveAvatar();
+        savePhoto();
+        updateUserInfo();
+    }
 
-        if (!mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
-            uploadUserAvatar(mUri_SelectedAvatarImage);
-            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
-        }
+    private void updateUserInfo() {
+        readUserInfoFromViews();
+        loadFullUserData(); //compare data in SP with current, if data was changed, it will be initiated upload to server
+    }
 
-        if (!mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
-            placeProfilePicture(mUri_SelectedProfileImage);
-            uploadUserPhoto(mUri_SelectedProfileImage);
-            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
-        }
-
+    private void readUserInfoFromViews() {
         mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
         mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
         mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
         mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
         mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
+    }
 
-        mDataManager.getPreferencesManager().saveAllUserData(mUserData);
+    private void savePhoto() {
+        if (mUri_SelectedProfileImage != null &&
+                !mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
+            mDataFragment.uploadUserPhoto(mUri_SelectedProfileImage);
+            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
+        }
+    }
+
+    private void saveAvatar() {
+        if (mUri_SelectedAvatarImage != null &&
+                !mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
+            mDataFragment.uploadUserAvatar(mUri_SelectedAvatarImage);
+            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
+        }
     }
     //endregion
 
@@ -494,25 +559,25 @@ public class MainActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         switch (requestCode) {
-            case ConstantManager.REQUEST_GALLERY_PICTURE:
+            case Const.REQUEST_GALLERY_PICTURE:
                 if (resultCode == RESULT_OK && data != null) {
                     mUri_SelectedProfileImage = data.getData();
                     placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
-            case ConstantManager.REQUEST_CAMERA_PICTURE:
+            case Const.REQUEST_CAMERA_PICTURE:
                 if (resultCode == RESULT_OK && mPhotoFile != null) {
                     mUri_SelectedProfileImage = Uri.fromFile(mPhotoFile);
                     placeProfilePicture(mUri_SelectedProfileImage);
                 }
                 break;
-            case ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
+            case Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     loadPhotoFromCamera();
                 }
                 break;
-            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
+            case Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     loadPhotoFromGallery();
                 }
@@ -523,13 +588,13 @@ public class MainActivity extends BaseActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case ConstantManager.REQUEST_PERMISSIONS_CAMERA:
+            case Const.REQUEST_PERMISSIONS_CAMERA:
                 if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     loadPhotoFromCamera();
                 }
                 break;
-            case ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD:
+            case Const.REQUEST_PERMISSIONS_READ_SDCARD:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     loadPhotoFromGallery();
                 }
@@ -538,90 +603,44 @@ public class MainActivity extends BaseActivity {
     }
     //endregion
 
+    //region Background Operation Results
+    @SuppressWarnings("unused")
+    public void onOperationFinished(final FullUserDataOperation.Result result) {
+        if (result.isSuccessful()) {
+            if (result.getOutput() != null) {//only Loading
+                if (mUserData == null) { //init info onCreate
+                    mUserData = result.getOutput();
+                    initUI();
+                } else {
+                    onUserDataChanged(result.getOutput());
+                }
+            }
+        } else {
+            Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
+            if (mUserData == null) logout(0);
+        }
+    }
+
+    //endregion
+
     //region functional methods
 
     //region Network
-    private void uploadUserPhoto(Uri uri_SelectedImage) {
-
-        if (!NetworkUtils.isNetworkAvailable(this)) return;
-
-        File file = new File(filePathFromUri(uri_SelectedImage));
-
-        final RequestBody requestFile =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file);
-
-        MultipartBody.Part body =
-                MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-
-        Call<BaseModel<UserPhotoRes>> call = mDataManager.uploadUserPhoto(
-                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
-        call.enqueue(new Callback<BaseModel<UserPhotoRes>>() {
-            @Override
-            public void onResponse(Call<BaseModel<UserPhotoRes>> call,
-                                   Response<BaseModel<UserPhotoRes>> response) {
-                if (response.isSuccessful()) {
-                    mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
-                } else {
-                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
-                    showToast(error.getErrMessage());
-                    Log.d(TAG, "onResponse: " + error.getErrMessage());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                logout(0);
-            }
-        });
-    }
-
-    private void uploadUserAvatar(String uri_SelectedImage) {
-
-        if (!NetworkUtils.isNetworkAvailable(this)) return;
-
-        File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
-
-        final RequestBody requestFile =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file);
-
-        MultipartBody.Part body =
-                MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
-
-        Call<BaseModel<UserPhotoRes>> call = mDataManager.uploadUserAvatar(
-                mDataManager.getPreferencesManager().loadBuiltInAuthId(), body);
-        call.enqueue(new Callback<BaseModel<UserPhotoRes>>() {
-            @Override
-            public void onResponse(Call<BaseModel<UserPhotoRes>> call,
-                                   Response<BaseModel<UserPhotoRes>> response) {
-                if (response.isSuccessful()) {
-                    mUserData.getPublicInfo().setUpdated(response.body().getData().getUpdated());
-                } else {
-                    ErrorUtils.BackendHttpError error = ErrorUtils.parseHttpError(response);
-                    showToast(error.getErrMessage());
-                    Log.d(TAG, "onResponse: " + error.getErrMessage());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseModel<UserPhotoRes>> call, Throwable t) {
-                showSnackBar(String.format("%s: %s", getString(R.string.error_unknown_auth_error), t.getMessage()));
-                logout(0);
-            }
-        });
-    }
-
+    @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
         if (!NetworkUtils.isNetworkAvailable(this)) return;
 
-        String pathToAvatar = mUserData.getPublicInfo().getAvatar();
+        final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 
-        PicassoTargetByName avatarTarget = new PicassoTargetByName("avatar") {
+        int photoWidth = getResources().getDimensionPixelSize(R.dimen.size_medium_64);
+
+        final GlideTargetIntoBitmap avatarTarget = new GlideTargetIntoBitmap(photoWidth, photoWidth, "avatar") {
             @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                super.onBitmapLoaded(bitmap, from);
+            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                super.onResourceReady(bitmap, anim);
+                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
+                mUri_SelectedAvatarImage = getFile().getAbsolutePath();
 
                 NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
                 if (navigationView != null) {
@@ -633,22 +652,18 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                hideProgressDialog();
-                showToast(getString(R.string.error_connection_failed));
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
+                mUri_SelectedAvatarImage = null;
             }
         };
+
         mToolbar.setTag(avatarTarget);
 
-        Picasso.with(this)
-                .load(Uri.parse(pathToAvatar))
-                .resize(getResources().getDimensionPixelSize(R.dimen.size_medium_64),
-                        getResources().getDimensionPixelSize(R.dimen.size_medium_64))
-                .centerCrop()
+        Glide.with(this)
+                .load(pathToAvatar)
+                .asBitmap()
                 .into(avatarTarget);
-
-        mUri_SelectedAvatarImage = avatarTarget.getFile().getAbsolutePath();
-        mDataManager.getPreferencesManager().saveUserAvatar(avatarTarget.getFile().getAbsolutePath());
     }
     //endregion
 
@@ -686,48 +701,42 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void loadPhotoFromGallery() {
+    public void loadPhotoFromGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), ConstantManager.REQUEST_GALLERY_PICTURE);
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), Const.REQUEST_GALLERY_PICTURE);
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD);
+                    Const.REQUEST_PERMISSIONS_READ_SDCARD);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
-                        }
+                    .setAction(R.string.header_allow, v -> {
+                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
                     }).show();
         }
     }
 
-    private void loadPhotoFromCamera() {
+    public void loadPhotoFromCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             try {
                 mPhotoFile = createImageFile();
             } catch (IOException e) {
-                showSnackBar(getString(R.string.error_cannot_save_file) + e.getMessage());
+                showError(getString(R.string.error_cannot_save_file) + e.getMessage());
             }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
-                startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
+                startActivityForResult(takeCaptureIntent, Const.REQUEST_CAMERA_PICTURE);
             }
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    ConstantManager.REQUEST_PERMISSIONS_CAMERA);
+                    Const.REQUEST_PERMISSIONS_CAMERA);
             Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            openApplicationSetting(MainActivity.this, ConstantManager.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
-                        }
+                    .setAction(R.string.header_allow, v -> {
+                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
                     }).show();
         }
     }
@@ -750,9 +759,13 @@ public class MainActivity extends BaseActivity {
     private void logout(int mode) {
         Log.d(TAG, "logout: ");
         mNotSavingUserValues = true;
-        if (mode == 1)
+        if (mode == 1) {
+            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             mDataManager.getPreferencesManager().totalLogout();
-        startActivity(new Intent(this, AuthActivity.class));
+        }
+        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
     //endregion
 }

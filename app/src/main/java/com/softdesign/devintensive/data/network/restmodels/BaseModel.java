@@ -2,8 +2,10 @@ package com.softdesign.devintensive.data.network.restmodels;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.network.api.res.BaseResponse;
 
-public class BaseModel<T> {
+@SuppressWarnings("unused")
+public class BaseModel<T extends BaseResponse> {
     @SerializedName("success")
     @Expose
     private boolean success;

@@ -4,7 +4,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.softdesign.devintensive.data.network.restmodels.User;
 
-public class UserAuthRes {
+@SuppressWarnings("unused")
+public class UserAuthRes extends BaseResponse {
 
     @SerializedName("user")
     @Expose

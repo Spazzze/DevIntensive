@@ -24,10 +24,12 @@ import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.softdesign.devintensive.data.network.restmodels.Repo;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,11 +37,30 @@ import java.util.Locale;
 /**
  * Helper class to work with UI
  */
+@SuppressWarnings("unused")
 public class UiHelper {
 
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     //region UI calculations
+
+    /**
+     * checks all args if they equals null or empty
+     *
+     * @param args array of args
+     * @return true if null or empty
+     */
+    public static boolean isEmptyOrNull(Object... args) {
+        for (Object s : args) {
+            if (s == null || s.toString().trim().isEmpty())
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isEmptyOrNull(List<?> list) {
+        return list == null || list.isEmpty();
+    }
 
     /**
      * @param context cur context
@@ -97,6 +118,11 @@ public class UiHelper {
         return deviceWidth;
     }
 
+    /**
+     * sets ListView Height Based On its Children
+     *
+     * @param listView to resize
+     */
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter == null) {
@@ -119,7 +145,7 @@ public class UiHelper {
     //region IO system methods
 
     /**
-     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss.png
+     * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss_1238162378618.png
      *
      * @return file
      */
@@ -138,7 +164,13 @@ public class UiHelper {
         return image;
     }
 
-    public static File createFile(String fileName) throws IOException {
+    /**
+     * creates image file with given name -> name.png  at internal storage
+     *
+     * @param fileName name
+     * @return file
+     */
+    public static File createImageFromName(String fileName) {
         File image = new File(CONTEXT.getFilesDir(), fileName + ".png");
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
@@ -150,6 +182,12 @@ public class UiHelper {
         return image;
     }
 
+    /**
+     * converts internal path like content:// into correct file path
+     *
+     * @param uri uri
+     * @return correct filepath
+     */
     public static String filePathFromUri(@NonNull Uri uri) {
         String filePath = null;
         if ("content".equals(uri.getScheme())) {
@@ -220,6 +258,16 @@ public class UiHelper {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         return gson.fromJson(json, typeClass);
+    }
+
+    public static String repoListIntoJson(List<Repo> list) {
+
+        String[] array = new String[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = getJsonFromObject(list.get(i), Repo.class);
+        }
+
+        return Arrays.toString(array);
     }
     //endregion
 }

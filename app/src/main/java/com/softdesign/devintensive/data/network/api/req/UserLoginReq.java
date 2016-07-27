@@ -1,9 +1,9 @@
 package com.softdesign.devintensive.data.network.api.req;
 
-
+@SuppressWarnings("unused")
 public class UserLoginReq {
-    private String email;
-    private String password;
+    private final String email;
+    private final String password;
 
     public UserLoginReq(String email, String password) {
         this.email = email;

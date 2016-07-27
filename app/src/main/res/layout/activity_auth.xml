@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/color_grey_background"
     android:fitsSystemWindows="true"
-    tools:ignore="contentDescription">
+    tools:ignore="Overdraw,contentDescription">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -43,8 +43,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/spacing_small_8"
+                    android:layout_marginEnd="@dimen/spacing_medial_24"
                     android:layout_marginRight="@dimen/spacing_medial_24"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    tools:ignore="RtlHardcoded">
 
                     <!--Small orange box-->
                     <View
@@ -59,6 +61,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/spacing_medial_24"
+                        android:layout_marginStart="@dimen/spacing_medial_24"
                         android:text="@string/header.login"
                         android:textAllCaps="true"
                         android:textColor="@color/color_accent"
@@ -69,7 +72,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="right">
+                        android:gravity="right"
+                        tools:ignore="RtlHardcoded">
 
                         <!--VK-->
                         <ImageView
@@ -132,8 +136,9 @@
                         android:id="@+id/save_login_checkbox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small_8"
+                        android:layout_marginEnd="@dimen/spacing_small_8"
                         android:layout_marginRight="@dimen/spacing_small_8"
+                        android:layout_marginTop="@dimen/spacing_small_8"
                         android:checked="false"
                         android:fontFamily="sans-serif-condensed"
                         android:text="@string/header.auth_save_email"

@@ -1,11 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
 
     <item
         android:id="@+id/toolbar_logout"
         android:icon="@drawable/ic_logout_white_24dp"
-        app:showAsAction="never"
-        android:title="@string/header.logout" />
+        android:title="@string/header.logout"
+        app:showAsAction="never" />
 </menu>

@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scoreBox_layout"
     android:layout_width="match_parent"
     android:layout_height="@dimen/size_huge_112"
     android:background="@color/color_grey"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior">
+    app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
+    app:min_collapsed_height="@dimen/size_medium_56"
+    tools:ignore="Overdraw">
 
     <!-- Rating -->
     <LinearLayout

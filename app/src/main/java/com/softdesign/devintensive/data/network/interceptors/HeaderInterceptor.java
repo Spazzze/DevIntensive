@@ -20,6 +20,7 @@ public class HeaderInterceptor implements Interceptor {
                 .header("X-Access-Token", pm.loadBuiltInAuthToken())
                 .header("Request-User-Id", pm.loadBuiltInAuthId())
                 .header("User-Agent", "DevIntensiveApp");
+                /*.header("Cache-Control", "max-age=" + (60 * 60 * 24));*/
 
         Request request = requestBuilder.build();
 
