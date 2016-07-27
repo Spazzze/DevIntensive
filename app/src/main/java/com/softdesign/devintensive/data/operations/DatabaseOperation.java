@@ -7,7 +7,9 @@ import android.util.Log;
 
 import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
+import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
+import com.softdesign.devintensive.data.storage.models.LikeEntity;
 import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
@@ -35,6 +37,9 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     Action mAction = Action.LOAD;
 
     List<UserListRes> mResponse;
+    ProfileValues mLikeResponse;
+    String mLikedUserId;
+
     String mFirstUserRemoteId, mSecondUserRemoteId;
 
     public DatabaseOperation() {
@@ -62,6 +67,12 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         this.mAction = Action.SWAP;
     }
 
+    public DatabaseOperation(ProfileValues data, String userId) {
+        this.mAction = Action.SAVE;
+        this.mLikedUserId = userId;
+        this.mLikeResponse = data;
+    }
+
     @Nullable
     @Override
     public List<UserEntity> run() {
@@ -70,53 +81,74 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
 
             case CLEAR:
                 clearDB();
-                break;
+                return null;
 
             case SAVE:
-                saveIntoDB();
-                break;
+                if (mResponse != null) saveIntoDB(mResponse);
+                else if (mLikeResponse != null && mLikedUserId != null)
+                    updateUserInDB(mLikedUserId, mLikeResponse);
+                return null;
 
             case SWAP:
                 swapEntityInternalIds(mFirstUserRemoteId, mSecondUserRemoteId);
-                break;
+                return null;
 
             case LOAD:
                 return sortDB(mSort);
         }
         return null;
     }
-
     //region Main methods
 
-    private void saveIntoDB() {
+    private void updateUserInDB(String likedUserId, ProfileValues values) {
+        UserEntity likedEntity = findUserInDB(likedUserId);
+        if (likedEntity != null) {
+            likedEntity.setRating(values.getIntRating());
+            likedEntity.setLikesBy(values.getLikeEntitiesList(likedUserId));
+            mDaoSession.getUserEntityDao().update(likedEntity);
+        }
+    }
+
+    private void saveIntoDB(List<UserListRes> response) {
         List<RepositoryEntity> allRepositories = new ArrayList<>();
         List<UserEntity> allUsers = new ArrayList<>();
+        List<LikeEntity> allLikes = new ArrayList<>();
         List<UserEntity> curDB = sortDB(Sort.CUSTOM);
 
         if (curDB.size() != 0) {
             int maxIndex = findMaxInternalId(curDB);
-            for (UserListRes user : mResponse) {
+            for (UserListRes user : response) {
                 int userIndexInDB = findUserInternalId(user.getId(), curDB);
                 if (userIndexInDB == -1) {
                     userIndexInDB = maxIndex + 1;
                     maxIndex++;
                 }
-                List<RepositoryEntity> l = user.getRepositories().getRepoEntitiesList(user.getId());
-                allRepositories.addAll(l);
                 allUsers.add(new UserEntity(user, userIndexInDB));
+
+                List<RepositoryEntity> rl = user.getRepositories().getRepoEntitiesList(user.getId());
+                allRepositories.addAll(rl);
+
+                List<LikeEntity> ll = user.getProfileValues().getLikeEntitiesList(user.getId());
+                allLikes.addAll(ll);
             }
         } else {
-            for (int i = 0; i < mResponse.size(); i++) {
-                UserListRes user = mResponse.get(i);
+            for (int i = 0; i < response.size(); i++) {
+                UserListRes user = response.get(i);
+                allUsers.add(new UserEntity(user, i));
+
                 List<RepositoryEntity> l = user.getRepositories().getRepoEntitiesList(user.getId());
                 allRepositories.addAll(l);
-                allUsers.add(new UserEntity(user, i));
+
+                List<LikeEntity> ll = user.getProfileValues().getLikeEntitiesList(user.getId());
+                allLikes.addAll(ll);
             }
         }
         mDaoSession.getRepositoryEntityDao().deleteAll();
         mDaoSession.getRepositoryEntityDao().insertOrReplaceInTx(allRepositories);
         mDaoSession.getUserEntityDao().deleteAll();
         mDaoSession.getUserEntityDao().insertOrReplaceInTx(allUsers);
+        mDaoSession.getLikeEntityDao().deleteAll();
+        mDaoSession.getLikeEntityDao().insertOrReplaceInTx(allLikes);
 
         SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
         editor.putLong(Const.DB_UPDATED_TIME_KEY, new Date().getTime());
@@ -164,6 +196,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     private void clearDB() {
         mDaoSession.getRepositoryEntityDao().deleteAll();
         mDaoSession.getUserEntityDao().deleteAll();
+        mDaoSession.getLikeEntityDao().deleteAll();
         mDaoSession.clear();
     }
 

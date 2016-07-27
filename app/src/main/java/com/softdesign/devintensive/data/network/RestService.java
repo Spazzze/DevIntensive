@@ -9,6 +9,7 @@ import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.network.restmodels.User;
 
 import java.util.Map;
@@ -47,4 +48,10 @@ public interface RestService {
     @Multipart
     @POST("profile/edit")
     Call<BaseModel<EditProfileRes>> uploadUserInfo(@NonNull @PartMap Map<String, RequestBody> map);
+
+    @POST("user/{userId}/like")
+    Call<BaseModel<ProfileValues>> likeUser(@Path("userId") String userId);
+
+    @POST("user/{userId}/unlike")
+    Call<BaseModel<ProfileValues>> unlikeUser(@Path("userId") String userId);
 }

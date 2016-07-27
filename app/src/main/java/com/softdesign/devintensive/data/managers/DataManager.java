@@ -9,6 +9,7 @@ import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -82,6 +83,14 @@ public class DataManager {
 
     public Call<BaseModel<EditProfileRes>> uploadUserInfo(@PartMap() Map<String, RequestBody> map) {
         return mRestService.uploadUserInfo(map);
+    }
+
+    public Call<BaseModel<ProfileValues>> likeUser(@Path("userId") String userId) {
+        return mRestService.likeUser(userId);
+    }
+
+    public Call<BaseModel<ProfileValues>> unlikeUser(@Path("userId") String userId) {
+        return mRestService.unlikeUser(userId);
     }
     //endregion
 }

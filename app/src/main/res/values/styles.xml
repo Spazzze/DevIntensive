@@ -19,7 +19,19 @@
     <style name="AppTheme.Button.Red" parent="Base.Widget.AppCompat.Button">
         <item name="colorButtonNormal">@color/color_accent</item>
         <item name="android:textColor">@color/color_white</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
     </style>
+
+    <style name="AppTheme.Button.White" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@color/color_grey_light</item>
+        <item name="android:textColor">@color/color_accent</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColorPrimary">@color/color_accent</item>
+    </style>
+
 
     <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowBackground">@drawable/background_splash</item>

@@ -43,9 +43,147 @@ public class UserEntity {
     @ToMany(joinProperties = {
             @JoinProperty(name = "remoteId", referencedName = "userRemoteId")
     })
+    private List<LikeEntity> likesBy;
+
+    @ToMany(joinProperties = {
+            @JoinProperty(name = "remoteId", referencedName = "userRemoteId")
+    })
     private List<RepositoryEntity> repositoryEntities;
 
+    public UserEntity(@NotNull UserListRes user, int index) {
+
+        this.remoteId = user.getId();
+        this.photo = user.getPublicInfo().getPhoto();
+        this.fullName = user.getFullName();
+        this.searchName = user.getFullName().toUpperCase();
+        this.homeTask = user.getProfileValues().getHomeTask();
+        this.rating = Integer.parseInt(user.getProfileValues().getRating());
+        this.codeLines = Integer.parseInt(user.getProfileValues().getCodeLines());
+        this.projects = Integer.parseInt(user.getProfileValues().getProjects());
+        this.bio = user.getPublicInfo().getBio();
+        this.internalId = index;
+    }
+
+    public List<String> getRepoList() {
+        if (getRepositoryEntities() == null) return new ArrayList<>();
+        else
+            return new ArrayList<String>() {{
+                for (RepositoryEntity r : getRepositoryEntities()) {
+                    add(r.getRepositoryName());
+                }
+            }};
+    }
+
+    public List<String> getLikesList() {
+        if (getLikesBy() == null) return new ArrayList<>();
+        else
+            return new ArrayList<String>() {{
+                for (LikeEntity l : getLikesBy()) {
+                    add(l.getRemoteId());
+                }
+            }};
+    }
+
     //region Generated
+
+    //region Standard Getters And Setters
+    public String getBio() {
+        return this.bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getHomeTask() {
+        return this.homeTask;
+    }
+
+    public void setHomeTask(String homeTask) {
+        this.homeTask = homeTask;
+    }
+
+    public int getProjects() {
+        return this.projects;
+    }
+
+    public void setProjects(int projects) {
+        this.projects = projects;
+    }
+
+    public int getCodeLines() {
+        return this.codeLines;
+    }
+
+    public void setCodeLines(int codeLines) {
+        this.codeLines = codeLines;
+    }
+
+    public int getRating() {
+        return this.rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public String getSearchName() {
+        return this.searchName;
+    }
+
+    public void setSearchName(String searchName) {
+        this.searchName = searchName;
+    }
+
+    public String getFullName() {
+        return this.fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhoto() {
+        return this.photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
+    public String getRemoteId() {
+        return this.remoteId;
+    }
+
+    public void setRemoteId(String remoteId) {
+        this.remoteId = remoteId;
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public int getInternalId() {
+        return this.internalId;
+    }
+
+    public void setInternalId(int internalId) {
+        this.internalId = internalId;
+    }
+
+    public void setLikesBy(List<LikeEntity> likesBy) {
+        this.likesBy = likesBy;
+    }
+
+    public void setRepositoryEntities(List<RepositoryEntity> repositoryEntities) {
+        this.repositoryEntities = repositoryEntities;
+    }
+
+    //endregion
 
     /**
      * Used for active entity operations.
@@ -153,119 +291,36 @@ public class UserEntity {
     @Generated(hash = 1433178141)
     public UserEntity() {
     }
-    //endregion
 
-    //region Standard Getters And Setters
-    public String getBio() {
-        return this.bio;
+    /**
+     * Resets a to-many relationship, making the next get call to query for a fresh result.
+     */
+    @Generated(hash = 1778225727)
+    public synchronized void resetLikesBy() {
+        likesBy = null;
     }
 
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getHomeTask() {
-        return this.homeTask;
-    }
-
-    public void setHomeTask(String homeTask) {
-        this.homeTask = homeTask;
-    }
-
-    public int getProjects() {
-        return this.projects;
-    }
-
-    public void setProjects(int projects) {
-        this.projects = projects;
-    }
-
-    public int getCodeLines() {
-        return this.codeLines;
-    }
-
-    public void setCodeLines(int codeLines) {
-        this.codeLines = codeLines;
-    }
-
-    public int getRating() {
-        return this.rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public String getSearchName() {
-        return this.searchName;
-    }
-
-    public void setSearchName(String searchName) {
-        this.searchName = searchName;
-    }
-
-    public String getFullName() {
-        return this.fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPhoto() {
-        return this.photo;
-    }
-
-    public void setPhoto(String photo) {
-        this.photo = photo;
-    }
-
-    public String getRemoteId() {
-        return this.remoteId;
-    }
-
-    public void setRemoteId(String remoteId) {
-        this.remoteId = remoteId;
-    }
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getInternalId() {
-        return this.internalId;
-    }
-
-    public void setInternalId(int internalId) {
-        this.internalId = internalId;
-    }
-    //endregion
-
-    public UserEntity(@NotNull UserListRes user, int index) {
-
-        this.remoteId = user.getId();
-        this.photo = user.getPublicInfo().getPhoto();
-        this.fullName = user.getFullName();
-        this.searchName = user.getFullName().toUpperCase();
-        this.homeTask = user.getProfileValues().getHomeTask();
-        this.rating = Integer.parseInt(user.getProfileValues().getRating());
-        this.codeLines = Integer.parseInt(user.getProfileValues().getCodeLines());
-        this.projects = Integer.parseInt(user.getProfileValues().getProjects());
-        this.bio = user.getPublicInfo().getBio();
-        this.internalId = index;
-    }
-
-    public List<String> getRepoList() {
-        if (getRepositoryEntities() == null) return new ArrayList<>();
-        else
-            return new ArrayList<String>() {{
-                for (RepositoryEntity r : getRepositoryEntities()) {
-                    add(r.getRepositoryName());
+    /**
+     * To-many relationship, resolved on first access (and after reset).
+     * Changes to to-many relations are not persisted, make changes to the target entity.
+     */
+    @Generated(hash = 1156693726)
+    public List<LikeEntity> getLikesBy() {
+        if (likesBy == null) {
+            final DaoSession daoSession = this.daoSession;
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LikeEntityDao targetDao = daoSession.getLikeEntityDao();
+            List<LikeEntity> likesByNew = targetDao._queryUserEntity_LikesBy(remoteId);
+            synchronized (this) {
+                if (likesBy == null) {
+                    likesBy = likesByNew;
                 }
-            }};
+            }
+        }
+        return likesBy;
     }
+
+    //endregion
 }

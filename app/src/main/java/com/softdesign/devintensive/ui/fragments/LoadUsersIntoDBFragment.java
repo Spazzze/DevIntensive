@@ -5,9 +5,13 @@ import android.util.Log;
 
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
+import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.operations.DatabaseOperation;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
+import retrofit2.Call;
 import retrofit2.Response;
 
 /**
@@ -22,6 +26,8 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
         super.onCreate(savedInstanceState);
         downloadUserListIntoDB();
     }
+
+    //region Requests
 
     /**
      * The Activity can call this when it wants to start the task
@@ -39,7 +45,7 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
 
         Log.d(TAG, "downloadUserListIntoDB: ");
 
-        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<>());
+        getUserListFromServer();
     }
 
     public void forceRefreshUserListIntoDB() {
@@ -51,15 +57,52 @@ public class LoadUsersIntoDBFragment extends BaseNetworkFragment {
 
         Log.d(TAG, "forceRefreshUserListIntoDB: ");
 
-        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<>());
+        getUserListFromServer();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onRequestComplete(Response response) {
-        super.onRequestComplete(response);
-        Log.d(TAG, "onRequestComplete: ");
-        Response<BaseListModel<UserListRes>> res = (Response<BaseListModel<UserListRes>>) response;
-        runOperation(new DatabaseOperation(res.body().getData()));
+    private void getUserListFromServer() {
+        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<BaseListModel<UserListRes>>() {
+            @Override
+            public void onResponse(Call<BaseListModel<UserListRes>> call, Response<BaseListModel<UserListRes>> response) {
+                if (response.isSuccessful()) {
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty();
+                    } else {
+                        runOperation(new DatabaseOperation(response.body().getData()));
+                        onRequestComplete(response);
+                    }
+                } else {
+                    onRequestHttpError(AppUtils.parseHttpError(response));
+                }
+            }
+        });
     }
+
+    public void likeUser(final String userId, boolean isLiked) {
+
+        if (!isExecutePossible()) return;
+
+        NetworkCallback<BaseModel<ProfileValues>> callback = new NetworkCallback<BaseModel<ProfileValues>>() {
+            @Override
+            public void onResponse(Call<BaseModel<ProfileValues>> call, Response<BaseModel<ProfileValues>> response) {
+                if (response.isSuccessful()) {
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty();
+                    } else {
+                        runOperation(new DatabaseOperation(response.body().getData(), userId));
+                        onRequestComplete(response);
+                    }
+                } else {
+                    onRequestHttpError(AppUtils.parseHttpError(response));
+                }
+            }
+        };
+
+        if (isLiked){
+            DATA_MANAGER.unlikeUser(userId).enqueue(callback);
+        }  else {
+            DATA_MANAGER.likeUser(userId).enqueue(callback);
+        }
+    }
+    //endregion
 }

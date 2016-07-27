@@ -89,7 +89,7 @@ public class BindingAdapters {
                         }
                     }));
             recyclerView.setTag(R.id.repo_recycleView, list.size());
-            recyclerView.swapAdapter(adapter, true);
+            recyclerView.swapAdapter(adapter, false);
         }
     }
 }

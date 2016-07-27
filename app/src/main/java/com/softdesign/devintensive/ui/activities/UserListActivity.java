@@ -16,9 +16,11 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
@@ -35,7 +37,6 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.operations.FullUserDataOperation;
-import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
@@ -333,7 +334,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     //region Background Operation Results
     @SuppressWarnings("unused")
     public void onOperationFinished(final DatabaseOperation.Result result) {
-        Log.d(TAG, "onOperationFinished: ");
         hideProgressDialog();
 
         if (result.isSuccessful()) {
@@ -366,25 +366,32 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
     private void initUserListAdapter(List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
-            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
+            profileUserIntent.putExtra(Const.PARCELABLE_KEY, mUsersAdapter.getUsers().get(position));
             startActivity(profileUserIntent);
-        });
-        mRecyclerView.setAdapter(mUsersAdapter);
+        }, position -> mDbNetworkFragment.likeUser(
+                mUsersAdapter.getUsers().get(position).getRemoteId(),
+                mUsersAdapter.getUsers().get(position).isLiked()));
+        mRecyclerView.swapAdapter(mUsersAdapter, false);
+        RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
         mItemTouchHelperCallback = new ItemTouchHelperCallback(mUsersAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mItemTouchHelper = new ItemTouchHelper(mItemTouchHelperCallback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     private void updateUserListAdapter(List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
-            UserDTO userDTO = new UserDTO(mUsersAdapter.getUsers().get(position));
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
-            profileUserIntent.putExtra(Const.PARCELABLE_KEY, userDTO);
+            profileUserIntent.putExtra(Const.PARCELABLE_KEY, mUsersAdapter.getUsers().get(position));
             startActivity(profileUserIntent);
-        });
-        mRecyclerView.swapAdapter(mUsersAdapter, true);
+        }, position -> mDbNetworkFragment.likeUser(
+                mUsersAdapter.getUsers().get(position).getRemoteId(),
+                mUsersAdapter.getUsers().get(position).isLiked()));
+        mRecyclerView.swapAdapter(mUsersAdapter, false);
         mItemTouchHelperCallback.swapAdapter(mUsersAdapter);
     }
 

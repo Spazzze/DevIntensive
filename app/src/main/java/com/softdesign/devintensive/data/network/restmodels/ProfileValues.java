@@ -5,12 +5,14 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.network.api.res.BaseResponse;
+import com.softdesign.devintensive.data.storage.models.LikeEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class ProfileValues implements Parcelable {
+public class ProfileValues extends BaseResponse implements Parcelable {
 
     @SerializedName("homeTask")
     @Expose
@@ -33,6 +35,18 @@ public class ProfileValues implements Parcelable {
     @SerializedName("updated")
     @Expose
     public String updated;
+
+    public List<LikeEntity> getLikeEntitiesList(final String userId) {
+        return new ArrayList<LikeEntity>() {{
+            for (String l : likesBy) {
+                add(new LikeEntity(l, userId));
+            }
+        }};
+    }
+
+    public int getIntRating() {
+        return rating;
+    }
 
     //region Getters
     public List<String> getLikesBy() {

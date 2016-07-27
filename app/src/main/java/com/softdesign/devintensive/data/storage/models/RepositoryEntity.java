@@ -94,7 +94,6 @@ public class RepositoryEntity {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getRepositoryEntityDao() : null;
     }
-    //endregion
 
     //region Standard Getters And Setters
     public String getUserRemoteId() {
@@ -128,6 +127,7 @@ public class RepositoryEntity {
     public void setId(Long id) {
         this.id = id;
     }
+    //endregion
     //endregion
 
     public RepositoryEntity(Repo repo, String userId) {

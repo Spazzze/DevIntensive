@@ -1,25 +1,22 @@
 package com.softdesign.devintensive.ui.adapters;
 
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
-import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
-import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,48 +26,62 @@ import de.greenrobot.event.EventBus;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
 
-    private List<UserEntity> mUsers;
-    private final CustomUserListFilter mFilter;
-    private final UserViewHolder.CustomClickListener mCustomClickListener;
-    private final OnStartDragListener mDragStartListener;
+    public interface OnItemCLickListener {
+        void onItemClick(int position);
+    }
+
     private static final EventBus BUS = EventBus.getDefault();
+    private final CustomUserListFilter mFilter;
+    private final OnStartDragListener mDragStartListener;
+
+    private List<UserDTO> mUsers;
+    private OnItemCLickListener mViewClickListener;
+    private OnItemCLickListener mLikesClickListener;
 
     //region Adapter
     @Override
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
 
-        return new UserViewHolder(convertView, mCustomClickListener);
+        return new UserViewHolder(convertView, mViewClickListener, mLikesClickListener);
     }
 
-    public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, UserViewHolder.CustomClickListener customClickListener) {
-        mUsers = users;
+    public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener) {
+        mUsers = new ArrayList<UserDTO>() {{
+            for (UserEntity u : users) {
+                add(new UserDTO(u));
+            }
+        }};
         mDragStartListener = dragStartListener;
-        mCustomClickListener = customClickListener;
         mFilter = new CustomUserListFilter(UsersAdapter.this);
+    }
+
+    public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
+        mUsers = new ArrayList<UserDTO>() {{
+            for (UserEntity u : users) {
+                add(new UserDTO(u));
+            }
+        }};
+        mDragStartListener = dragStartListener;
+        mFilter = new CustomUserListFilter(UsersAdapter.this);
+        mViewClickListener = viewClickListener;
+        mLikesClickListener = likesClickListener;
+    }
+
+    public void setOnViewBtnCLickListener(@Nullable OnItemCLickListener itemCLickListener) {
+        mViewClickListener = itemCLickListener;
+    }
+
+    public void setOnLikeBtnCLickListener(@Nullable OnItemCLickListener itemCLickListener) {
+        mLikesClickListener = itemCLickListener;
     }
 
     @Override
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
 
-        final UserEntity user = mUsers.get(position);
+        holder.getBinding().setProfile(mUsers.get(position));
 
-        CustomGlideModule.loadImage(user.getPhoto(), holder.mPlaceHolder, holder.mPlaceHolder, holder.mUserPhoto);
-
-        holder.mFullName.setText(user.getFullName());
-        holder.mRating.setText(String.valueOf(user.getRating()));
-        holder.mCodeLines.setText(String.valueOf(user.getCodeLines()));
-        holder.mProjects.setText(String.valueOf(user.getProjects()));
-        holder.mHomeTask.setText(user.getHomeTask());
-
-        if (AppUtils.isEmptyOrNull(user.getBio())) {
-            holder.mBio.setVisibility(View.GONE);
-        } else {
-            holder.mBio.setVisibility(View.VISIBLE);
-            holder.mBio.setText(user.getBio().trim());
-        }
-
-        holder.mHandleView.setOnTouchListener((v, event) -> {
+        holder.getBinding().handle.setOnTouchListener((v, event) -> {
             if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
                 mDragStartListener.onStartDrag(holder);
             }
@@ -90,7 +101,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onItemDismiss(int position) {
-        UserEntity u = mUsers.get(position);
+        UserDTO u = mUsers.get(position);
         BUS.post(new ChangeUserInternalId(u.getRemoteId(), null));
         mFilter.getList().remove(u);
         mUsers.remove(u);
@@ -105,11 +116,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public List<UserEntity> getUsers() {
+    public List<UserDTO> getUsers() {
         return mUsers;
     }
 
-    private void setUsers(List<UserEntity> users) {
+    private void setUsers(List<UserDTO> users) {
         mUsers = users;
     }
 
@@ -133,68 +144,48 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     //endregion
 
     //region ViewHolder
-    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, ItemTouchHelperViewHolder {
+    public static class UserViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
 
-        private final AspectRatioImageView mUserPhoto;
-        private final TextView mFullName;
-        private final TextView mRating;
-        private final TextView mCodeLines;
-        private final TextView mProjects;
-        private final TextView mBio;
-        private final TextView mHomeTask;
-        private final Button mButton;
-        private final CustomClickListener mClickListener;
-        private final ImageView mHandleView;
-        private Drawable mPlaceHolder;
+        private ItemUserListBinding mBinding;
 
         @SuppressWarnings("deprecation")
-        public UserViewHolder(View itemView, CustomClickListener customClickListener) {
+        public UserViewHolder(View itemView, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
             super(itemView);
+            mBinding = DataBindingUtil.bind(itemView);
 
-            mClickListener = customClickListener;
-            mUserPhoto = (AspectRatioImageView) itemView.findViewById(R.id.list_userPhoto);
-            mFullName = (TextView) itemView.findViewById(R.id.list_user_full_name_text);
-            mRating = (TextView) itemView.findViewById(R.id.list_rating_count);
-            mCodeLines = (TextView) itemView.findViewById(R.id.list_codeLines_count);
-            mProjects = (TextView) itemView.findViewById(R.id.list_projects_count);
-            mBio = (TextView) itemView.findViewById(R.id.list_bio_txt);
-            mHomeTask = (TextView) itemView.findViewById(R.id.cur_homeTask_txt);
-            mButton = (Button) itemView.findViewById(R.id.list_more_info_btn);
-            mHandleView = (ImageView) itemView.findViewById(R.id.handle);
+            mBinding.listMoreInfoBtn.setOnClickListener(v -> {
+                if (viewClickListener != null) {
+                    viewClickListener.onItemClick(getAdapterPosition());
+                }
+            });
 
-            mPlaceHolder = mUserPhoto.getContext().getResources().getDrawable(R.drawable.user_bg);
-            if (mPlaceHolder == null) {
-                mPlaceHolder = mUserPhoto.getContext().getResources().getDrawable(android.R.drawable.screen_background_dark);
-            }
+            mBinding.listLikeBtn.setOnClickListener(v -> {
+                if (likesClickListener != null) {
+                    likesClickListener.onItemClick(getAdapterPosition());
+                }
+            });
 
-            mButton.setOnClickListener(this);
+            mBinding.listUnlikeBtn.setOnClickListener(v -> {
+                if (likesClickListener != null) {
+                    likesClickListener.onItemClick(getAdapterPosition());
+                }
+            });
         }
 
-        @Override
-        public String toString() {
-            return String.format("%s '%s'", super.toString(), mFullName.getText());
-        }
-
-        @Override
-        public void onClick(View v) {
-
-            if (mClickListener != null) {
-                mClickListener.onUserItemClickListener(getAdapterPosition());
-            }
+        public ItemUserListBinding getBinding() {
+            return mBinding;
         }
 
         @Override
         public void onItemSelected() {
+            getBinding().getProfile().setMoving(true);
             itemView.setBackgroundColor(Color.LTGRAY);
         }
 
         @Override
         public void onItemClear() {
+            getBinding().getProfile().setMoving(false);
             itemView.setBackgroundColor(0);
-        }
-
-        public interface CustomClickListener {
-            void onUserItemClickListener(int position);
         }
     }
     //endregion
@@ -203,9 +194,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public static class CustomUserListFilter extends Filter {
 
         private final UsersAdapter mAdapter;
-        private final List<UserEntity> mList;
+        private final List<UserDTO> mList;
 
-        public List<UserEntity> getList() {
+        public List<UserDTO> getList() {
             return mList;
         }
 
@@ -218,13 +209,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
-            List<UserEntity> tempList = new ArrayList<>();
+            List<UserDTO> tempList = new ArrayList<>();
 
             if (constraint.length() != 0) {
                 final String filterPattern = constraint.toString().toLowerCase().trim();
-                for (final UserEntity s : mList) {
+                for (final UserDTO s : mList) {
                     if (s.getFullName().toLowerCase().contains(filterPattern) ||
-                            s.getHomeTask().contains(filterPattern)) {
+                            s.getHometask().contains(filterPattern)) {
                         tempList.add(s);
                     }
                 }

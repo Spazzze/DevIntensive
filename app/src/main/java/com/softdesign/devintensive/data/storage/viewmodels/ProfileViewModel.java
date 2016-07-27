@@ -119,7 +119,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         }
 
         if (isEditMode() != model.isEditMode()) {
-            setEditMode(model.isEditMode);
+            setEditMode(model.isEditMode());
         }
 
         if (isAuthorizedUser() != model.isAuthorizedUser()) {
