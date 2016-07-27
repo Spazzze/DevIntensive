@@ -11,8 +11,8 @@ import com.softdesign.devintensive.data.storage.models.DaoSession;
 import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
-import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.Const;
 
 import org.greenrobot.greendao.Property;
 
@@ -113,8 +113,9 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                 allUsers.add(new UserEntity(user, i));
             }
         }
-
+        mDaoSession.getRepositoryEntityDao().deleteAll();
         mDaoSession.getRepositoryEntityDao().insertOrReplaceInTx(allRepositories);
+        mDaoSession.getUserEntityDao().deleteAll();
         mDaoSession.getUserEntityDao().insertOrReplaceInTx(allUsers);
 
         SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();

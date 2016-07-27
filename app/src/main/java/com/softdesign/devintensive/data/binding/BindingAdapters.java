@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.data.binding;
 
+import android.content.Context;
 import android.databinding.BindingAdapter;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.util.Pair;
@@ -21,6 +22,8 @@ import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 import java.util.List;
 
 public class BindingAdapters {
+    private static final Context CONTEXT = DevIntensiveApplication.getContext();
+
     private BindingAdapters() {
         throw new AssertionError();
     }
@@ -72,7 +75,6 @@ public class BindingAdapters {
     public static void loadRepositories(RecyclerView recyclerView, List<RepoViewModel> list) {
 
         Pair<List<RepoViewModel>, RecyclerBindingAdapter<RepoViewModel>> pair = (Pair) recyclerView.getTag(R.id.repo_recycleView);
-
         if (pair == null || pair.first.size() != list.size()) {
             if (pair == null) {
                 LinearLayoutManager linearLayoutManager = new LinearLayoutManager(recyclerView.getContext());
@@ -86,7 +88,7 @@ public class BindingAdapters {
                     list,
                     (position -> {
                         String uri = list.get(position).getRepoUri();
-                        AppUtils.openWebPage(DevIntensiveApplication.getContext(), "https://" + uri);
+                        AppUtils.openWebPage(CONTEXT, "https://" + uri);
                     }));
             recyclerView.setTag(R.id.repo_recycleView, new Pair<>(list, adapter));
             recyclerView.swapAdapter(adapter, false);

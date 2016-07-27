@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.softdesign.devintensive.data.network.restmodels.User;
 
-public class EditProfileRes extends BaseResponse{
+public class EditProfileRes extends BaseResponse {
 
     @SerializedName("user")
     @Expose

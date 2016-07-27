@@ -338,9 +338,9 @@ public class AppUtils {
 
         String[] array = new String[0];
         for (Repo r : list) {
-            if (!r.getGit().isEmpty()) {
+            if (!isEmptyOrNull(r.getGit())) {
                 array = java.util.Arrays.copyOf(array, array.length + 1);
-                if (r.getId().isEmpty()) {
+                if (isEmptyOrNull(r.getId())) {
                     array[array.length - 1] = getJsonFromObject(new AddRepo(r.getGit()), AddRepo.class);
                 } else {
                     array[array.length - 1] = getJsonFromObject(r, Repo.class);
@@ -354,7 +354,7 @@ public class AppUtils {
     public static ArrayList<String> repoModelIntoString(final List<RepoViewModel> list) {
         return new ArrayList<String>() {{
             for (RepoViewModel r : list) {
-                if (!r.getRepoUri().isEmpty()) add(r.getRepoUri());
+                add(r.getRepoUri());
             }
         }};
     }

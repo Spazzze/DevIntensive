@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <import type="android.view.View" />
 
         <variable
@@ -25,7 +26,7 @@
             android:orientation="vertical">
 
             <!-- MobilePhone -->
-            <LinearLayout
+            <RelativeLayout
                 style="@style/profileItem"
                 android:visibility="@{profile.authorizedUser}">
 
@@ -39,6 +40,7 @@
                         android:id="@+id/phone_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingRight="@{profile.editMode ? @dimen/spacing_medium_32 :@dimen/spacing_larger_72}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
@@ -57,16 +59,17 @@
                 <ImageView
                     android:id="@+id/makeCall_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_phone_in_talk_black_24dp" />
+                    android:src="@drawable/ic_phone_in_talk_black_24dp"
+                    android:visibility="@{!profile.editMode}" />
 
-            </LinearLayout>
+            </RelativeLayout>
 
             <View
                 style="@style/profileItem_lineSeparator"
                 android:visibility="@{profile.authorizedUser}" />
 
             <!-- Email -->
-            <LinearLayout
+            <RelativeLayout
                 style="@style/profileItem"
                 android:visibility="@{profile.authorizedUser}">
 
@@ -80,6 +83,7 @@
                         android:id="@+id/email_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingRight="@{profile.editMode ? @dimen/spacing_medium_32 :@dimen/spacing_larger_72}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
@@ -98,15 +102,16 @@
                 <ImageView
                     android:id="@+id/sendEmail_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_send_black_24dp" />
-            </LinearLayout>
+                    android:src="@drawable/ic_send_black_24dp"
+                    android:visibility="@{!profile.editMode}" />
+            </RelativeLayout>
 
             <View
                 style="@style/profileItem_lineSeparator"
                 android:visibility="@{profile.authorizedUser}" />
 
             <!-- VK -->
-            <LinearLayout
+            <RelativeLayout
                 style="@style/profileItem"
                 android:visibility="@{profile.authorizedUser}">
 
@@ -120,6 +125,7 @@
                         android:id="@+id/vk_TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingRight="@{profile.editMode ? @dimen/spacing_medium_32 :@dimen/spacing_larger_72}"
                         app:errorTextAppearance="@style/profileItem_textInputLayout_error">
 
                         <EditText
@@ -138,8 +144,9 @@
                 <ImageView
                     android:id="@+id/openVK_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_remove_red_eye_black_24dp" />
-            </LinearLayout>
+                    android:src="@drawable/ic_remove_red_eye_black_24dp"
+                    android:visibility="@{!profile.editMode}" />
+            </RelativeLayout>
 
             <View
                 style="@style/profileItem_lineSeparator"
@@ -147,9 +154,7 @@
 
             <!-- GitHub -->
 
-
-
-            <LinearLayout style="@style/profileItem">
+            <RelativeLayout style="@style/profileItem">
 
                 <ImageView
                     style="@style/profileItem_icon.left"
@@ -157,44 +162,18 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/recycler"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/spacing_medium_32"
-                    android:layout_marginStart="@dimen/spacing_medium_32"
-                    app:entries="@{profile.repoViewModels}"/>
+                    android:layout_marginLeft="@dimen/spacing_larger_72"
+                    android:layout_marginStart="@dimen/spacing_larger_72"
+                    app:entries="@{profile.repoViewModels}" />
 
-<!--                <LinearLayout style="@style/profileItem_LL_infoBox">
-
-                    <android.support.design.widget.TextInputLayout
-                        android:id="@+id/gitHub_TextInputLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:errorTextAppearance="@style/profileItem_textInputLayout_error">
-
-                        <EditText
-                            android:id="@+id/gitHub_EditText"
-                            style="@style/profileItem_editText"
-                            android:enabled="@{profile.editMode}"
-                            android:focusable="@{profile.editMode}"
-                            android:focusableInTouchMode="@{profile.editMode}"
-                            android:hint="@string/hint.profile_gitHubRepo"
-                            android:inputType="textUri"
-                            app:userInfoTextWatcher="@{profile.authorizedUser}" />
-                        &lt;!&ndash;android:text="@{profile.mRepositories.get(0)}"&ndash;&gt;
-                    </android.support.design.widget.TextInputLayout>
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/openGitHub_img"
-                    style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_remove_red_eye_black_24dp" /> -->
-
-            </LinearLayout>
+            </RelativeLayout>
 
             <View style="@style/profileItem_lineSeparator" />
 
             <!-- About -->
-            <LinearLayout style="@style/profileItem">
+            <RelativeLayout style="@style/profileItem">
 
                 <ImageView
                     style="@style/profileItem_icon.left"
@@ -218,7 +197,7 @@
 
                 </LinearLayout>
 
-            </LinearLayout>
+            </RelativeLayout>
 
         </LinearLayout>
 

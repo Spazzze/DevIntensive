@@ -199,9 +199,9 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
             Repo r = it.next();
             if (!newRepo.contains(r.getGit())) it.remove();
         }
-
         for (RepoViewModel r : list) {
-            if (!curRepo.contains(r.getRepoUri())) mRepositories.add(new Repo(r.getRepoUri()));
+            if (!r.getRepoUri().isEmpty() && !curRepo.contains(r.getRepoUri()))
+                mRepositories.add(new Repo(r.getRepoUri()));
         }
         notifyPropertyChanged(BR.repositories);
     }
