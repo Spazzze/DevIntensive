@@ -1,11 +1,12 @@
 package com.softdesign.devintensive.data.network.api.req;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class EditProfileReq {
         setPhoneNumber(user.getContacts().getPhone());
         setVk(user.getContacts().getVk());
         setBio(user.getPublicInfo().getBio());
-        setGithub(UiHelper.repoListIntoJson(user.getRepositories().getRepo()));
+        setGithub(AppUtils.repoListIntoJson(user.getRepositories().getRepo()));
     }
 
     public EditProfileReq(ProfileViewModel model) {
@@ -33,7 +34,7 @@ public class EditProfileReq {
         setPhoneNumber(model.getPhone());
         setVk(model.getVK());
         setBio(model.getBio());
-        setGithub(UiHelper.repoListIntoJson(model.mRepositories));
+        setGithub(AppUtils.repoListIntoJson(model.getRepositories()));
     }
 
     //region Setters

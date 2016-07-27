@@ -20,16 +20,15 @@ import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.ErrorUtils;
-import com.softdesign.devintensive.utils.UiHelper;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.softdesign.devintensive.utils.UiHelper.getScreenWidth;
-import static com.softdesign.devintensive.utils.UiHelper.isEmptyOrNull;
+import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
+import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
 public class AuthNetworkFragment extends BaseNetworkFragment {
 
@@ -63,7 +62,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     @Override
-    public void onRequestHttpError(ErrorUtils.BackendHttpError error) {
+    public void onRequestHttpError(AppUtils.BackendHttpError error) {
 
         mStatus = Status.FINISHED;
         mCancelled = true;
@@ -94,15 +93,15 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         String photo = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
         String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
         BUS.postSticky(new ProfileViewModel(user,
-                !UiHelper.isEmptyOrNull(photo) ? photo : user.getPublicInfo().getPhoto(),
-                !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
+                !AppUtils.isEmptyOrNull(photo) ? photo : user.getPublicInfo().getPhoto(),
+                !AppUtils.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }
 
     public void onRequestComplete(User user, Uri photoUri) {
         String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
         BUS.postSticky(new ProfileViewModel(user, photoUri.toString(),
-                !UiHelper.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
+                !AppUtils.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }
 
@@ -129,7 +128,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                         onRequestResponseEmpty();
                     }
                 } else {
-                    onRequestHttpError(ErrorUtils.parseHttpError(response));
+                    onRequestHttpError(AppUtils.parseHttpError(response));
                 }
             }
 

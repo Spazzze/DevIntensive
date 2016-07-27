@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="contentDescription">
 
     <data>
 
         <variable
-            name="url"
-            type="java.lang.String" />
+            name="repoItem"
+            type="com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel" />
     </data>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/size_large_72"
-        tools:ignore="contentDescription">
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/size_large_72">
 
         <android.support.design.widget.TextInputLayout
             android:id="@+id/gitHub_TextInputLayout"
@@ -25,8 +27,13 @@
             <EditText
                 android:id="@+id/gitHub_EditText"
                 style="@style/profileItem_editText"
+                android:enabled="@{repoItem.enabled}"
+                android:focusable="@{repoItem.enabled}"
+                android:focusableInTouchMode="@{repoItem.enabled}"
                 android:hint="@string/hint.profile_gitHubRepo"
-                android:inputType="textUri" />
+                android:inputType="textUri"
+                android:text="@={repoItem.repoUri}"
+                app:userInfoTextWatcher="@{repoItem.canBeEdit}" />
         </android.support.design.widget.TextInputLayout>
 
         <ImageView

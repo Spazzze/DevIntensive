@@ -45,9 +45,8 @@ import com.softdesign.devintensive.ui.events.UpdateDBEvent;
 import com.softdesign.devintensive.ui.fragments.BaseNetworkFragment;
 import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.NetworkUtils;
-import com.softdesign.devintensive.utils.UiHelper;
 
 import java.util.List;
 
@@ -123,7 +122,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (!UiHelper.isEmptyOrNull(newText)) mUsersAdapter.getFilter().filter(newText);
+                if (!AppUtils.isEmptyOrNull(newText)) mUsersAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -320,7 +319,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     //region Events
     @SuppressWarnings("unused")
     public void onEvent(UsersAdapter.ChangeUserInternalId event) {
-        if (event != null && !UiHelper.isEmptyOrNull(event.getFirstUserRemoteId())) {
+        if (event != null && !AppUtils.isEmptyOrNull(event.getFirstUserRemoteId())) {
             runOperation(new DatabaseOperation(event.getFirstUserRemoteId(), event.getSecondUserRemoteId()));
         }
     }
@@ -392,7 +391,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     @SuppressWarnings("all")
     private void loadUserAvatarFromServer() {
 
-        if (!NetworkUtils.isNetworkAvailable()) return;
+        if (!AppUtils.isNetworkAvailable()) return;
 
         final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
 

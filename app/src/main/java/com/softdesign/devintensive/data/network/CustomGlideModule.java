@@ -15,7 +15,7 @@ import com.bumptech.glide.module.GlideModule;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 @SuppressWarnings("unused")
 public class CustomGlideModule implements GlideModule {
@@ -43,7 +43,7 @@ public class CustomGlideModule implements GlideModule {
     }
 
     public static void loadImage(final String path, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(path, target)) {
+        if (AppUtils.isEmptyOrNull(path, target)) {
             Log.e(TAG, "loadImage: path or target is null or empty.");
             return;
         }
@@ -57,13 +57,13 @@ public class CustomGlideModule implements GlideModule {
 
     public static void loadImage(final String path, final Drawable placeholder,
                                  final Drawable error, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
+        if (AppUtils.isEmptyOrNull(placeholder, error, target)) {
             Log.e(TAG, "loadImage: Some of arguments is null or empty.");
             return;
         }
 
         String pathToPhoto = "null";
-        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
         Glide.with(DevIntensiveApplication.getContext())
                 .load(pathToPhoto)
@@ -77,13 +77,13 @@ public class CustomGlideModule implements GlideModule {
 
     public static void loadImage(final String path, final Drawable placeholder,
                                  final Drawable error, int width, int height, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
+        if (AppUtils.isEmptyOrNull(placeholder, error, target)) {
             Log.e(TAG, "loadImage: Some of arguments is null or empty.");
             return;
         }
 
         String pathToPhoto = "null";
-        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
         Glide.with(DevIntensiveApplication.getContext())
                 .load(pathToPhoto)
@@ -99,13 +99,13 @@ public class CustomGlideModule implements GlideModule {
     @SuppressWarnings("SameParameterValue")
     public static void loadImage(final String path, final int placeholder,
                                  final int error, final ImageView target) {
-        if (UiHelper.isEmptyOrNull(placeholder, error, target)) {
+        if (AppUtils.isEmptyOrNull(placeholder, error, target)) {
             Log.e(TAG, "loadImage: Some of arguments is null or empty.");
             return;
         }
 
         String pathToPhoto = "null";
-        if (!UiHelper.isEmptyOrNull(path)) pathToPhoto = path;
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
         Glide.with(DevIntensiveApplication.getContext())
                 .load(pathToPhoto)

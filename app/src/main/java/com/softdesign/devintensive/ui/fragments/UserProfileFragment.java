@@ -27,9 +27,9 @@ import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentProfileBinding;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
-import com.softdesign.devintensive.utils.UiHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import java.util.Map;
 
 import de.greenrobot.event.EventBus;
 
-import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
+import static com.softdesign.devintensive.utils.AppUtils.createImageFile;
 
 public class UserProfileFragment extends ChronosFragment implements View.OnClickListener {
 
@@ -128,7 +128,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
             case R.id.sendEmail_img:
                 Intent sendEmail = new Intent(Intent.ACTION_SENDTO,
                         Uri.fromParts("mailto", mProfileViewModel.getEmail(), null));
-                if (UiHelper.queryIntentActivities(getActivity(), sendEmail)) {
+                if (AppUtils.queryIntentActivities(getActivity(), sendEmail)) {
                     startActivity(sendEmail);
                 } else {
                     if (mCallbacks != null)
@@ -136,22 +136,13 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
                 }
                 break;
             case R.id.openVK_img:
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("https://" + mProfileViewModel.getVK())));
-                break;
-            case R.id.openGitHub_img:
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("https://" + mProfileViewModel.mRepositories.get(0).getGit()))); //// TODO: 25.07.2016
+                AppUtils.openWebPage(getActivity(), "https://" + mProfileViewModel.getVK());
                 break;
         }
     }
     //endregion
 
     //region UI
-
-    public boolean isEditing() {
-        return mProfileViewModel.isEditMode();
-    }
 
     private void initFields() {
         Log.d(TAG, "initFields: ");
@@ -163,7 +154,6 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
             mProfileBinding.mainProfileLayout.makeCallImg.setOnClickListener(this);
             mProfileBinding.mainProfileLayout.sendEmailImg.setOnClickListener(this);
             mProfileBinding.mainProfileLayout.openVKImg.setOnClickListener(this);
-            mProfileBinding.mainProfileLayout.openGitHubImg.setOnClickListener(this);
         } else {
             Log.e(TAG, "initFields: Binding is null");
             if (mCallbacks != null) mCallbacks.logout(1);
@@ -225,7 +215,6 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
      */
     @SuppressWarnings("deprecation")
     public void changeEditMode(boolean mode) {
-        Log.d(TAG, "changeEditMode: " + mode);
         mProfileViewModel.setEditMode(mode);
         if (mode) {  //editing
             collapseAppBar();     //// TODO: 25.07.2016
@@ -248,8 +237,8 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     @SuppressWarnings("unused")
     public void onEvent(ProfileViewModel event) {
         Log.d(TAG, "onEvent: ");
-        if (event != null) {
-            setProfileView(event);
+        if (event != null && mProfileViewModel == null) {
+            mProfileViewModel = event;
         }
     }
 
@@ -298,7 +287,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
         User savedUser;
         String jsonSavedUser = DevIntensiveApplication.getSharedPreferences().getString(Const.USER_JSON_OBJ, null);
         if (jsonSavedUser == null) return true;
-        savedUser = (User) UiHelper.getObjectFromJson(jsonSavedUser, User.class);
+        savedUser = (User) AppUtils.getObjectFromJson(jsonSavedUser, User.class);
 
         return !mProfileViewModel.compareUserData(savedUser);
     }
@@ -313,13 +302,11 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
                 getActivity();
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     mProfileViewModel.setUserPhotoUri(data.getData().toString());
-                    /*placeProfilePicture();*/       //// TODO: 25.07.2016  
                 }
                 break;
             case Const.REQUEST_CAMERA_PICTURE:
                 if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
                     mProfileViewModel.setUserPhotoUri(Uri.fromFile(mPhotoFile).toString());
-                    /*placeProfilePicture();*/
                 }
                 break;
             case Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
@@ -344,5 +331,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
         map.put(Const.PARCELABLE_USER_NAME_KEY, mProfileViewModel.getFullName());
         map.put(Const.PARCELABLE_USER_EMAIL_KEY, mProfileViewModel.getEmail());
         return map;
+    }
+
+    public boolean isEditing() {
+        return mProfileViewModel.isEditMode();
     }
 }

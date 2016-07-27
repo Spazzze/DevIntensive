@@ -7,9 +7,7 @@ import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
-import com.softdesign.devintensive.utils.ErrorUtils;
-import com.softdesign.devintensive.utils.NetworkUtils;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import de.greenrobot.event.EventBus;
 import retrofit2.Call;
@@ -42,7 +40,7 @@ public class BaseNetworkFragment extends ChronosFragment {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isExecutePossible() {
-        if (!NetworkUtils.isNetworkAvailable()) {
+        if (!AppUtils.isNetworkAvailable()) {
             return false;
         } else if (!DATA_MANAGER.isUserAuthenticated()) {
             this.mStatus = Status.FINISHED;
@@ -123,7 +121,7 @@ public class BaseNetworkFragment extends ChronosFragment {
         if (mCallbacks != null) mCallbacks.onRequestFailed(mError);
     }
 
-    public void onRequestHttpError(ErrorUtils.BackendHttpError error) {
+    public void onRequestHttpError(AppUtils.BackendHttpError error) {
         mStatus = Status.FINISHED;
         mCancelled = true;
         synchronized (this) {
@@ -156,13 +154,13 @@ public class BaseNetworkFragment extends ChronosFragment {
         @Override
         public void onResponse(Call<T> call, Response<T> response) {
             if (response.isSuccessful()) {
-                if (UiHelper.isEmptyOrNull(response.body())) {
+                if (AppUtils.isEmptyOrNull(response.body())) {
                     onRequestResponseEmpty();
                 } else {
                     onRequestComplete(response);
                 }
             } else {
-                onRequestHttpError(ErrorUtils.parseHttpError(response));
+                onRequestHttpError(AppUtils.parseHttpError(response));
             }
         }
 

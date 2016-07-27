@@ -12,7 +12,7 @@ import com.vk.sdk.VKSdk;
 
 import java.util.Date;
 
-import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
+import static com.softdesign.devintensive.utils.AppUtils.getObjectFromJson;
 
 /**
  * saves and loads Shared Preferences of this app

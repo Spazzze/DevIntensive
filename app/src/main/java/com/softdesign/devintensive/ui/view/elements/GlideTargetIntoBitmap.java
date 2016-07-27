@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static com.softdesign.devintensive.utils.UiHelper.createImageFromName;
+import static com.softdesign.devintensive.utils.AppUtils.createImageFromName;
 
 /**
  * Target saves received bitmap into given file or creates file from filename and saves into it.

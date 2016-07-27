@@ -11,9 +11,9 @@ import android.view.View;
 
 import com.softdesign.devintensive.R;
 
-import static com.softdesign.devintensive.utils.UiHelper.getAppBarSize;
-import static com.softdesign.devintensive.utils.UiHelper.getViewMinHeight;
-import static com.softdesign.devintensive.utils.UiHelper.getStatusBarHeight;
+import static com.softdesign.devintensive.utils.AppUtils.getAppBarSize;
+import static com.softdesign.devintensive.utils.AppUtils.getViewMinHeight;
+import static com.softdesign.devintensive.utils.AppUtils.getStatusBarHeight;
 
 /**
  * Behavior to link LinearLayout to AppBarLayout's bottom edge

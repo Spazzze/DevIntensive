@@ -19,8 +19,8 @@ public class Repo implements Parcelable {
     @Expose
     private String title;
 
-    public Repo(int id, String git) {
-        this.id = String.valueOf(id);
+    public Repo(String git) {
+        this.id = "";
         this.git = git;
         this.title = "";
     }

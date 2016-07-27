@@ -3,6 +3,7 @@
     <string name="facebook_app_id" tools:ignore="UnusedResources">1741889442760936</string>
     <item name="et_TextWatcher" type="id" />
     <item name="et_errorHandler" type="id" />
+    <item name="repo_recycleView" type="id" />
 
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>

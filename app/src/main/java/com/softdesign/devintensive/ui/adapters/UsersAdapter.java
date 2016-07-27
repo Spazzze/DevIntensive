@@ -19,7 +19,7 @@ import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.view.elements.AspectRatioImageView;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +63,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         holder.mProjects.setText(String.valueOf(user.getProjects()));
         holder.mHomeTask.setText(user.getHomeTask());
 
-        if (UiHelper.isEmptyOrNull(user.getBio())) {
+        if (AppUtils.isEmptyOrNull(user.getBio())) {
             holder.mBio.setVisibility(View.GONE);
         } else {
             holder.mBio.setVisibility(View.VISIBLE);

@@ -17,7 +17,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Response;
 
-import static com.softdesign.devintensive.utils.UiHelper.filePathFromUri;
+import static com.softdesign.devintensive.utils.AppUtils.filePathFromUri;
 
 public class UpdateServerDataFragment extends BaseNetworkFragment {
 

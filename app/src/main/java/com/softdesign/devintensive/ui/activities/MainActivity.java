@@ -30,6 +30,7 @@ import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
 import com.softdesign.devintensive.ui.fragments.UpdateServerDataFragment;
 import com.softdesign.devintensive.ui.fragments.UserProfileFragment;
 import com.softdesign.devintensive.utils.Const;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +67,8 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mAuthorizedUserData.put(Const.PARCELABLE_USER_NAME_KEY, savedInstanceState.getString(Const.PARCELABLE_USER_NAME_KEY));
             mAuthorizedUserData.put(Const.PARCELABLE_USER_EMAIL_KEY, savedInstanceState.getString(Const.PARCELABLE_USER_EMAIL_KEY));
         }
+
+        DevIntensiveApplication.setCurrentActivity(this);
     }
 
     @Override

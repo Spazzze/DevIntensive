@@ -46,4 +46,9 @@
         <item name="android:shadowRadius">20</item>
     </style>
 
+    <style name="AppCompatAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/color_accent</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
+    </style>
+
 </resources>

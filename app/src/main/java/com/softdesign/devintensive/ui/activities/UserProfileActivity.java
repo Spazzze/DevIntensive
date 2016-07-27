@@ -27,7 +27,7 @@ import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 
-import static com.softdesign.devintensive.utils.UiHelper.setListViewHeightBasedOnChildren;
+import static com.softdesign.devintensive.utils.AppUtils.setListViewHeightBasedOnChildren;
 
 public class UserProfileActivity extends BaseActivity {
 

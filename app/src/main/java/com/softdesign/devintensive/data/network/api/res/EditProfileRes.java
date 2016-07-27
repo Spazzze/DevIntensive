@@ -8,7 +8,6 @@ public class EditProfileRes extends BaseResponse{
 
     @SerializedName("user")
     @Expose
-
     private User mUser;
 
     public User getUser() {

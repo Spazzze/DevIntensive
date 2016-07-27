@@ -2,7 +2,6 @@ package com.softdesign.devintensive.data.storage.viewmodels;
 
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
-import android.databinding.ObservableArrayList;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -11,8 +10,10 @@ import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -32,13 +33,11 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     private String mUserAvatarUri;
     private String mUserPhotoUri;
 
-    public final ObservableArrayList<Repo> mRepositories = new ObservableArrayList<>();
+    private List<Repo> mRepositories = new ArrayList<>();
+    private List<RepoViewModel> mRepoViewModels = new ArrayList<>();
 
     private boolean isEditMode = false;
     private boolean isAuthorizedUser = false;
-
-    public ProfileViewModel() {
-    }
 
     public ProfileViewModel(User user, String photoUri, String avatarUri) {
 
@@ -55,11 +54,8 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mEmail = user.getContacts().getEmail();
         mVK = user.getContacts().getVk();
         mBio = user.getPublicInfo().getBio();
-
-        List<Repo> repo = user.getRepositories().getRepo();
-        for (Repo r : repo) {
-            mRepositories.add(r);
-        }
+        mRepositories = user.getRepositories().getRepo();
+        mRepoViewModels = createRepoViewModelList(mRepositories);
     }
 
     public ProfileViewModel(UserDTO user) {
@@ -73,13 +69,79 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mProjects = user.getProjects();
         mBio = user.getBio();
 
-        List<String> repo = user.getRepositories();
-        for (int i = 0; i < repo.size(); i++) {
-            mRepositories.add(new Repo(i, repo.get(i)));
+        for (String s : user.getRepositories()) {
+            if (!s.isEmpty()) mRepositories.add(new Repo(s));
+        }
+
+        mRepoViewModels = createRepoViewModelList(mRepositories);
+    }
+
+    public void updateValues(@Nullable ProfileViewModel model) {
+        if (model == null) return;
+
+        if (!AppUtils.equals(this.mUserPhoto, model.getUserPhoto())) {
+            setUserPhoto(model.getUserPhoto());
+        }
+
+        if (!AppUtils.equals(this.mFullName, model.getFullName())) {
+            setFullName(model.getFullName());
+        }
+
+        if (!AppUtils.equals(this.mRating, model.getRating())) {
+            setRating(model.getRating());
+        }
+
+        if (!AppUtils.equals(this.mCodeLines, model.getCodeLines())) {
+            setCodeLines(model.getCodeLines());
+        }
+
+        if (!AppUtils.equals(this.mProjects, model.getProjects())) {
+            setProjects(model.getProjects());
+        }
+
+        if (!AppUtils.equals(this.mPhone, model.getPhone())) {
+            setPhone(model.getPhone());
+        }
+
+        if (!AppUtils.equals(this.mEmail, model.getEmail())) {
+            setEmail(model.getEmail());
+        }
+
+        if (!AppUtils.equals(this.mVK, model.getVK())) {
+            setVK(model.getVK());
+        }
+
+        if (!AppUtils.equals(this.mBio, model.getBio())) {
+            setBio(model.getBio());
+        }
+
+        if (!AppUtils.equals(this.mUserAvatarUri, model.getUserAvatarUri())) {
+            setUserAvatarUri(model.getUserAvatarUri());
+        }
+
+        if (!AppUtils.equals(this.mUserPhotoUri, model.getUserPhotoUri())) {
+            setUserPhotoUri(model.getUserPhotoUri());
+        }
+
+        if (isEditMode() != model.isEditMode()) {
+            setEditMode(model.isEditMode);
+        }
+
+        if (isAuthorizedUser() != model.isAuthorizedUser()) {
+            setAuthorizedUser(model.isAuthorizedUser());
+        }
+
+        if (!AppUtils.compareRepoLists(this.mRepositories, model.getRepositories())) {
+            setRepositories(model.getRepositories());
+        }
+
+        if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, model.getRepoViewModels())) {
+            setRepoViewModels(model.getRepoViewModels());
         }
     }
 
-    public User updateUserData(User user) {
+    //region Utils
+    public User updateUserFromModel(User user) {
 
         String[] name = mFullName.split("\\s");
         user.setFirstName(name[0]);
@@ -95,72 +157,55 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     }
 
     public Boolean compareUserData(User user) {
-
+        updateLists();
         return user.getContacts().getPhone().equals(mPhone) &&
                 user.getContacts().getVk().equals(mVK) &&
                 user.getPublicInfo().getBio().equals(mBio) &&
-                user.getRepositories().getRepo().equals(mRepositories) &&
+                AppUtils.compareRepoLists(mRepositories, user.getRepositories().getRepo()) &&
                 mFullName.equals(String.format("%s %s", user.getFirstName(), user.getSecondName()));
     }
 
-    public void updateValues(@Nullable ProfileViewModel profileViewModel) {
-        if (profileViewModel == null) return;
+    private void updateLists() {
+        List<RepoViewModel> newList = new ArrayList<RepoViewModel>() {{
+            for (int i = 0; i < mRepoViewModels.size(); i++) {
+                RepoViewModel r = mRepoViewModels.get(i);
+                if ((i != 0 && !r.getRepoUri().isEmpty()) || i == 0) add(r);
+            }
+        }};
+        setRepoViewModels(newList);
+    }
 
-        if (!UiHelper.equals(this.mUserPhoto, profileViewModel.getUserPhoto())) {
-            this.mUserPhoto = profileViewModel.getUserPhoto();
-            notifyPropertyChanged(BR.userPhoto);
-        }
-
-        if (!UiHelper.equals(this.mFullName, profileViewModel.getFullName())) {
-            this.mFullName = profileViewModel.getFullName();
-            notifyPropertyChanged(BR.fullName);
-        }
-
-        if (!UiHelper.equals(this.mRating, profileViewModel.getRating())) {
-            this.mRating = profileViewModel.getRating();
-            notifyPropertyChanged(BR.rating);
-        }
-
-        if (!UiHelper.equals(this.mCodeLines, profileViewModel.getCodeLines())) {
-            this.mCodeLines = profileViewModel.getCodeLines();
-            notifyPropertyChanged(BR.codeLines);
-        }
-
-        if (!UiHelper.equals(this.mProjects, profileViewModel.getProjects())) {
-            this.mProjects = profileViewModel.getProjects();
-            notifyPropertyChanged(BR.projects);
-        }
-
-        if (!UiHelper.equals(this.mPhone, profileViewModel.getPhone())) {
-            this.mPhone = profileViewModel.getPhone();
-            notifyPropertyChanged(BR.phone);
-        }
-
-        if (!UiHelper.equals(this.mEmail, profileViewModel.getEmail())) {
-            this.mEmail = profileViewModel.getEmail();
-            notifyPropertyChanged(BR.email);
-        }
-
-        if (!UiHelper.equals(this.mVK, profileViewModel.getVK())) {
-            this.mVK = profileViewModel.getVK();
-            notifyPropertyChanged(BR.vK);
-        }
-
-        if (!UiHelper.equals(this.mBio, profileViewModel.getBio())) {
-            this.mBio = profileViewModel.getBio();
-            notifyPropertyChanged(BR.bio);
-        }
-
-        if (!UiHelper.equals(this.mUserAvatarUri, profileViewModel.getUserAvatarUri())) {
-            this.mUserAvatarUri = profileViewModel.getUserAvatarUri();
-            notifyPropertyChanged(BR.userAvatarUri);
-        }
-
-        if (!UiHelper.equals(this.mUserPhotoUri, profileViewModel.getUserPhotoUri())) {
-            this.mUserPhotoUri = profileViewModel.getUserPhotoUri();
-            notifyPropertyChanged(BR.userPhotoUri);
+    private List<RepoViewModel> createRepoViewModelList(final List<Repo> list) {
+        if (list.size() > 0) {
+            return new ArrayList<RepoViewModel>() {{
+                for (Repo r : list) {
+                    add(new RepoViewModel(r.getGit(), isEditMode(), isAuthorizedUser()));
+                }
+            }};
+        } else {
+            return new ArrayList<RepoViewModel>() {{
+                add(new RepoViewModel("", isEditMode(), isAuthorizedUser()));
+            }};
         }
     }
+
+    private void updateRepoListFromModel(final List<RepoViewModel> list) {
+        ArrayList<String> curRepo = AppUtils.repoIntoString(mRepositories);
+        ArrayList<String> newRepo = AppUtils.repoModelIntoString(list);
+        if (AppUtils.compareLists(curRepo, newRepo)) return;
+
+        Iterator<Repo> it = mRepositories.iterator();
+        while (it.hasNext()) {
+            Repo r = it.next();
+            if (!newRepo.contains(r.getGit())) it.remove();
+        }
+
+        for (RepoViewModel r : list) {
+            if (!curRepo.contains(r.getRepoUri())) mRepositories.add(new Repo(r.getRepoUri()));
+        }
+        notifyPropertyChanged(BR.repositories);
+    }
+    //endregion
 
     //region Parcel
     protected ProfileViewModel(Parcel in) {
@@ -178,6 +223,12 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         if (in.readByte() == 0x01) {
             mRepositories.clear();
             in.readList(mRepositories, Repo.class.getClassLoader());
+        } else {
+            mRepositories.clear();
+        }
+        if (in.readByte() == 0x01) {
+            mRepoViewModels.clear();
+            in.readList(mRepoViewModels, RepoViewModel.class.getClassLoader());
         } else {
             mRepositories.clear();
         }
@@ -208,6 +259,12 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         } else {
             dest.writeByte((byte) (0x01));
             dest.writeList(mRepositories);
+        }
+        if (mRepoViewModels == null || mRepoViewModels.size() == 0) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeList(mRepoViewModels);
         }
         dest.writeByte((byte) (isEditMode ? 0x01 : 0x00));
         dest.writeByte((byte) (isAuthorizedUser ? 0x01 : 0x00));
@@ -292,6 +349,16 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     public boolean isAuthorizedUser() {
         return isAuthorizedUser;
     }
+
+    @Bindable
+    public List<Repo> getRepositories() {
+        return mRepositories;
+    }
+
+    @Bindable
+    public List<RepoViewModel> getRepoViewModels() {
+        return mRepoViewModels;
+    }
     //endregion
 
     //region Setters
@@ -351,13 +418,45 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     }
 
     public void setEditMode(boolean editMode) {
-        isEditMode = editMode;
-        notifyPropertyChanged(BR.editMode);
+        if (this.isEditMode != editMode) {
+            isEditMode = editMode;
+            if (mRepoViewModels != null && !mRepoViewModels.isEmpty()) {
+                for (RepoViewModel model : mRepoViewModels) {
+                    model.setEnabled(editMode);
+                }
+            }
+            notifyPropertyChanged(BR.repoViewModels);
+            notifyPropertyChanged(BR.editMode);
+        }
     }
 
     public void setAuthorizedUser(boolean authorizedUser) {
-        isAuthorizedUser = authorizedUser;
-        notifyPropertyChanged(BR.authorizedUser);
+        if (this.isAuthorizedUser != authorizedUser) {
+            isAuthorizedUser = authorizedUser;
+            if (mRepoViewModels != null && !mRepoViewModels.isEmpty()) {
+                for (RepoViewModel model : mRepoViewModels) {
+                    model.setCanBeEdit(authorizedUser);
+                }
+            }
+            notifyPropertyChanged(BR.repoViewModels);
+            notifyPropertyChanged(BR.authorizedUser);
+        }
+    }
+
+    public void setRepositories(List<Repo> repositories) {
+        if (!AppUtils.compareRepoLists(this.mRepositories, repositories)) {
+            mRepositories = repositories;
+            mRepoViewModels = createRepoViewModelList(mRepositories);
+            notifyPropertyChanged(BR.repositories);
+        }
+    }
+
+    public void setRepoViewModels(List<RepoViewModel> repoViewModels) {
+        updateRepoListFromModel(repoViewModels);
+        if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, repoViewModels)) {
+            mRepoViewModels = repoViewModels;
+            notifyPropertyChanged(BR.repoViewModels);
+        }
     }
     //endregion
 }

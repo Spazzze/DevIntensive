@@ -19,9 +19,8 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.operations.UserLoginDataOperation;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.NetworkUtils;
-import com.softdesign.devintensive.utils.UiHelper;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
@@ -88,7 +87,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     @Override
     public void onRequestFailed(String error) {
         hideProgressDialog();
-        if (!UiHelper.isEmptyOrNull(error)) {
+        if (!AppUtils.isEmptyOrNull(error)) {
             Log.e(TAG, "onAuthRequestCancelled: " + error);
             errorAnnounce(error);
         }
@@ -113,7 +112,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     @OnClick({R.id.login_button, R.id.forgot_pass_button, R.id.signIn_vk_icon})
     void submitAuthButton(View view) {
-        if (!NetworkUtils.isNetworkAvailable()) {
+        if (!AppUtils.isNetworkAvailable()) {
             showError(R.string.error_no_network_connection);
             return;
         }
@@ -168,8 +167,8 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     private void startSignIn() {
         if (mAuthNetworkFragment != null) mAuthNetworkFragment.signIn(
-                    mEditText_login_email.getText().toString(),
-                    mEditText_login_password.getText().toString());
+                mEditText_login_email.getText().toString(),
+                mEditText_login_password.getText().toString());
         mEditText_login_password.setText("");
     }
 

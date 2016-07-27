@@ -2,13 +2,23 @@ package com.softdesign.devintensive.data.binding;
 
 import android.databinding.BindingAdapter;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.util.Pair;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
+import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
+
+import java.util.List;
 
 public class BindingAdapters {
     private BindingAdapters() {
@@ -25,7 +35,6 @@ public class BindingAdapters {
         view.setOnClickListener(v -> runnable.run());
     }
 
-    @SuppressWarnings("unchecked")
     @BindingAdapter("android:enabled")
     public static void removeError(EditText editText, boolean isEnabled) {
         Boolean tag = (Boolean) editText.getTag(R.id.et_errorHandler);
@@ -55,6 +64,32 @@ public class BindingAdapters {
             } else {
                 throw new IllegalArgumentException("Parent of this editText should be TextInputLayout");
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @BindingAdapter("entries")
+    public static void loadRepositories(RecyclerView recyclerView, List<RepoViewModel> list) {
+
+        Pair<List<RepoViewModel>, RecyclerBindingAdapter<RepoViewModel>> pair = (Pair) recyclerView.getTag(R.id.repo_recycleView);
+
+        if (pair == null || pair.first.size() != list.size()) {
+            if (pair == null) {
+                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(recyclerView.getContext());
+                linearLayoutManager.setAutoMeasureEnabled(true);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+            }
+            RecyclerBindingAdapter<RepoViewModel> adapter = new RecyclerBindingAdapter<>(
+                    R.layout.item_repositories_list,
+                    BR.repoItem,
+                    list,
+                    (position -> {
+                        String uri = list.get(position).getRepoUri();
+                        AppUtils.openWebPage(DevIntensiveApplication.getContext(), "https://" + uri);
+                    }));
+            recyclerView.setTag(R.id.repo_recycleView, new Pair<>(list, adapter));
+            recyclerView.swapAdapter(adapter, false);
         }
     }
 }

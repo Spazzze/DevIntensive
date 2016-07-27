@@ -11,8 +11,8 @@ import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.Const;
 
-import static com.softdesign.devintensive.utils.UiHelper.getJsonFromObject;
-import static com.softdesign.devintensive.utils.UiHelper.getObjectFromJson;
+import static com.softdesign.devintensive.utils.AppUtils.getJsonFromObject;
+import static com.softdesign.devintensive.utils.AppUtils.getObjectFromJson;
 
 public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel> {
 
@@ -26,7 +26,7 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
     }
 
     public FullUserDataOperation(ProfileViewModel model) {
-        this.mUser = model.updateUserData(getUser());
+        this.mUser = model.updateUserFromModel(getUser());
         this.mPhotoUri = Uri.parse(model.getUserPhotoUri());
         this.mAvatarUri = model.getUserAvatarUri();
         this.mAction = Action.SAVE;

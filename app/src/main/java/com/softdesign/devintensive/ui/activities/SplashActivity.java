@@ -11,7 +11,7 @@ import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.NetworkUtils;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.Date;
 
@@ -25,7 +25,7 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!NetworkUtils.isNetworkAvailable() ||
+        if (!AppUtils.isNetworkAvailable() ||
                 !DataManager.getInstance().isUserAuthenticated()) {
             startAuthActivity();
         } else {

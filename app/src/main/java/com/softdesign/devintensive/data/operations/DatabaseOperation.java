@@ -12,7 +12,7 @@ import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import org.greenrobot.greendao.Property;
 
@@ -184,7 +184,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             }
         } else { //move card to the lowest place
             List<UserEntity> curDB = sortDB(Sort.CUSTOM);
-            if (UiHelper.isEmptyOrNull(curDB)) return;
+            if (AppUtils.isEmptyOrNull(curDB)) return;
             int newInternalId = findMaxInternalId(curDB) + 1;
             firstEntity.setInternalId(newInternalId);
             mDaoSession.getUserEntityDao().update(firstEntity);

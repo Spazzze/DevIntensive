@@ -3,7 +3,7 @@ package com.softdesign.devintensive.data.binding.fields;
 import android.databinding.BaseObservable;
 import android.databinding.BindingConversion;
 
-import com.softdesign.devintensive.utils.UiHelper;
+import com.softdesign.devintensive.utils.AppUtils;
 
 public class ObservableString extends BaseObservable {
 
@@ -21,7 +21,7 @@ public class ObservableString extends BaseObservable {
     }
 
     public void set(String value) {
-        if (!UiHelper.equals(this.value, value)) {
+        if (!AppUtils.equals(this.value, value)) {
             this.value = value;
             notifyChange();
         }
