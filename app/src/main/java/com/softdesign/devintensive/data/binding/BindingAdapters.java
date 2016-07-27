@@ -3,7 +3,6 @@ package com.softdesign.devintensive.data.binding;
 import android.content.Context;
 import android.databinding.BindingAdapter;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.util.Pair;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -70,16 +69,14 @@ public class BindingAdapters {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @BindingAdapter("entries")
     public static void loadRepositories(RecyclerView recyclerView, List<RepoViewModel> list) {
-
-        Pair<List<RepoViewModel>, RecyclerBindingAdapter<RepoViewModel>> pair = (Pair) recyclerView.getTag(R.id.repo_recycleView);
-        if (pair == null || pair.first.size() != list.size()) {
-            if (pair == null) {
-                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(recyclerView.getContext());
-                linearLayoutManager.setAutoMeasureEnabled(true);
-                recyclerView.setLayoutManager(linearLayoutManager);
+        Integer savedSize = (Integer) recyclerView.getTag(R.id.repo_recycleView);
+        if (savedSize == null || savedSize != list.size()) {
+            if (savedSize == null) {
+                LinearLayoutManager manager = new LinearLayoutManager(recyclerView.getContext());
+                manager.setAutoMeasureEnabled(true);
+                recyclerView.setLayoutManager(manager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
             }
             RecyclerBindingAdapter<RepoViewModel> adapter = new RecyclerBindingAdapter<>(
@@ -87,11 +84,12 @@ public class BindingAdapters {
                     BR.repoItem,
                     list,
                     (position -> {
-                        String uri = list.get(position).getRepoUri();
-                        AppUtils.openWebPage(CONTEXT, "https://" + uri);
+                        if (!list.get(position).isEnabled()) {
+                            AppUtils.openWebPage(CONTEXT, "https://" + list.get(position).getRepoUri());
+                        }
                     }));
-            recyclerView.setTag(R.id.repo_recycleView, new Pair<>(list, adapter));
-            recyclerView.swapAdapter(adapter, false);
+            recyclerView.setTag(R.id.repo_recycleView, list.size());
+            recyclerView.swapAdapter(adapter, true);
         }
     }
 }

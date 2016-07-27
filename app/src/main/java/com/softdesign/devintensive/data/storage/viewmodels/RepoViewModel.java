@@ -9,12 +9,14 @@ import com.softdesign.devintensive.BR;
 
 public class RepoViewModel extends BaseObservable implements Parcelable {
 
+    private String mId;
     private String mRepoUri;
     private boolean isEnabled;
     private boolean isCanBeEdit;
 
     //region Parcel
     protected RepoViewModel(Parcel in) {
+        mId = in.readString();
         mRepoUri = in.readString();
         isEnabled = in.readByte() != 0x00;
         isCanBeEdit = in.readByte() != 0x00;
@@ -27,6 +29,7 @@ public class RepoViewModel extends BaseObservable implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mId);
         dest.writeString(mRepoUri);
         dest.writeByte((byte) (isEnabled ? 0x01 : 0x00));
         dest.writeByte((byte) (isCanBeEdit ? 0x01 : 0x00));
@@ -47,9 +50,23 @@ public class RepoViewModel extends BaseObservable implements Parcelable {
     //endregion
 
     public RepoViewModel(String repoUri, boolean isEnabled, boolean isCanBeEdit) {
+        this.mId = "";
         this.mRepoUri = repoUri;
         this.isEnabled = isEnabled;
         this.isCanBeEdit = isCanBeEdit;
+    }
+
+    public RepoViewModel(String id, String repoUri, boolean isEnabled, boolean isCanBeEdit) {
+        this.mId = id;
+        this.mRepoUri = repoUri;
+        this.isEnabled = isEnabled;
+        this.isCanBeEdit = isCanBeEdit;
+    }
+
+    //region ---------- Getters ----------
+    @Bindable
+    public String getId() {
+        return mId;
     }
 
     @Bindable
@@ -66,8 +83,14 @@ public class RepoViewModel extends BaseObservable implements Parcelable {
     public String getRepoUri() {
         return mRepoUri;
     }
+    //endregion
 
-    // ---------- SETTERS ----------
+    //region ---------- Setters ----------
+    public void setId(String id) {
+        this.mId = id;
+        notifyPropertyChanged(BR.id);
+    }
+
     public void setRepoUri(String repoUri) {
         mRepoUri = repoUri;
         notifyPropertyChanged(BR.repoUri);
@@ -82,5 +105,6 @@ public class RepoViewModel extends BaseObservable implements Parcelable {
         isCanBeEdit = canBeEdit;
         notifyPropertyChanged(BR.canBeEdit);
     }
+    //endregion
 }
 

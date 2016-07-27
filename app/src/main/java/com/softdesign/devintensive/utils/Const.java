@@ -11,6 +11,8 @@ public interface Const {
     String TAG_PREFIX = "DEV ";
 
     //Shared preferences constants
+    String MAP_KEY_GEN = "_KEY_";
+
     String USER_JSON_OBJ = "USER_JSON_OBJ";
     String EDIT_MODE_KEY = "EDIT_MODE_KEY";
     String USER_PROFILE_PHOTO_URI = "USER_PROFILE_PHOTO_URI";

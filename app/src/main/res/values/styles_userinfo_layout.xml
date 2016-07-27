@@ -12,17 +12,18 @@
     <style name="profileItem_icon">
         <item name="android:layout_width">@dimen/size_small_24</item>
         <item name="android:layout_height">@dimen/size_small_24</item>
-        <item name="android:layout_centerVertical">true</item>
     </style>
 
     <style name="profileItem_icon.left" parent="profileItem_icon">
         <item name="android:layout_marginLeft">@dimen/spacing_normal_16</item>
         <item name="android:layout_alignParentLeft">true</item>
+        <item name="android:layout_alignParentTop">true</item>
         <item name="android:layout_marginTop">@dimen/spacing_medial_24</item>
     </style>
 
     <style name="profileItem_icon.right" parent="profileItem_icon">
         <item name="android:layout_marginRight">@dimen/spacing_medium_32</item>
+        <item name="android:layout_centerVertical">true</item>
         <item name="android:layout_alignParentRight">true</item>
         <item name="android:layout_marginTop">@dimen/spacing_medial_24</item>
     </style>

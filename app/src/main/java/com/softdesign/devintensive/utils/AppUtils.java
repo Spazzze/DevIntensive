@@ -47,9 +47,12 @@ import java.lang.annotation.Annotation;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
@@ -359,6 +362,14 @@ public class AppUtils {
         }};
     }
 
+    public static HashMap<String, String> repoModelIntoMap(final List<RepoViewModel> list) {
+        return new HashMap<String, String>() {{
+            for (RepoViewModel r : list) {
+                put(r.getId() + Const.MAP_KEY_GEN + r.getRepoUri(), r.getRepoUri());
+            }
+        }};
+    }
+
     public static ArrayList<String> repoIntoString(final List<Repo> list) {
         return new ArrayList<String>() {{
             for (Repo r : list) {
@@ -366,17 +377,21 @@ public class AppUtils {
             }
         }};
     }
+
+    public static HashMap<String, String> repoIntoMap(final List<Repo> list) {
+        return new HashMap<String, String>() {{
+            for (Repo r : list) {
+                put(r.getId() + Const.MAP_KEY_GEN + r.getGit(), r.getGit());
+            }
+        }};
+    }
     //endregion
 
     //region Comparison
     public static boolean compareRepoModelLists(List<RepoViewModel> list1, List<RepoViewModel> list2) {
-        ArrayList<String> tempList1 = repoModelIntoString(list1);
-        for (RepoViewModel r : list2) {
-            if (!tempList1.remove(r.getRepoUri())) {
-                return false;
-            }
-        }
-        return tempList1.isEmpty();
+        HashMap<String, String> map1 = repoModelIntoMap(list1);
+        HashMap<String, String> map2 = repoModelIntoMap(list2);
+        return compareMaps(map1, map2);
     }
 
     public static boolean compareRepoLists(List<Repo> list1, List<Repo> list2) {
@@ -389,9 +404,13 @@ public class AppUtils {
         return tempList1.isEmpty();
     }
 
-    public static boolean compareLists(final List<?> list1, final List<?> list2) {
-        ArrayList<?> tempList1 = new ArrayList<>(list1);
-        for (Object o : list2) {
+    public static <K, V> boolean compareMaps(final Map<K, V> map1, final Map<K, V> map2) {
+        return compareLists(map1.keySet(), map2.keySet()) && compareLists(map1.values(), map2.values());
+    }
+
+    public static <T> boolean compareLists(final Collection<T> list1, final Collection<T> list2) {
+        ArrayList<T> tempList1 = new ArrayList<>(list1);
+        for (T o : list2) {
             if (!tempList1.remove(o)) {
                 return false;
             }

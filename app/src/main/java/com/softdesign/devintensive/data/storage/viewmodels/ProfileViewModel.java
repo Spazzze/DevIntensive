@@ -13,7 +13,6 @@ import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -33,7 +32,6 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     private String mUserAvatarUri;
     private String mUserPhotoUri;
 
-    private List<Repo> mRepositories = new ArrayList<>();
     private List<RepoViewModel> mRepoViewModels = new ArrayList<>();
 
     private boolean isEditMode = false;
@@ -54,8 +52,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mEmail = user.getContacts().getEmail();
         mVK = user.getContacts().getVk();
         mBio = user.getPublicInfo().getBio();
-        mRepositories = user.getRepositories().getRepo();
-        mRepoViewModels = createRepoViewModelList(mRepositories);
+        mRepoViewModels = createRepoViewModelList(user.getRepositories().getRepo());
     }
 
     public ProfileViewModel(UserDTO user) {
@@ -70,10 +67,8 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mBio = user.getBio();
 
         for (String s : user.getRepositories()) {
-            if (!s.isEmpty()) mRepositories.add(new Repo(s));
+            if (!s.isEmpty()) mRepoViewModels.add(new RepoViewModel(s, false, false));
         }
-
-        mRepoViewModels = createRepoViewModelList(mRepositories);
     }
 
     public void updateValues(@Nullable ProfileViewModel model) {
@@ -131,16 +126,19 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
             setAuthorizedUser(model.isAuthorizedUser());
         }
 
-        if (!AppUtils.compareRepoLists(this.mRepositories, model.getRepositories())) {
-            setRepositories(model.getRepositories());
-        }
-
         if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, model.getRepoViewModels())) {
             setRepoViewModels(model.getRepoViewModels());
         }
     }
 
     //region Utils
+    public void addEmptyRepo() {
+        if (isEditMode()) {
+            mRepoViewModels.add(new RepoViewModel("", isEditMode(), isAuthorizedUser()));
+            notifyPropertyChanged(BR.repoViewModels);
+        }
+    }
+
     public User updateUserFromModel(User user) {
 
         String[] name = mFullName.split("\\s");
@@ -151,7 +149,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         user.getContacts().setEmail(mEmail);
         user.getContacts().setVk(mVK);
         user.getPublicInfo().setBio(mBio);
-        user.getRepositories().setRepo(mRepositories);
+        user.getRepositories().setRepo(repoListFromModel());
 
         return user;
     }
@@ -161,7 +159,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         return user.getContacts().getPhone().equals(mPhone) &&
                 user.getContacts().getVk().equals(mVK) &&
                 user.getPublicInfo().getBio().equals(mBio) &&
-                AppUtils.compareRepoLists(mRepositories, user.getRepositories().getRepo()) &&
+                AppUtils.compareRepoModelLists(mRepoViewModels, createRepoViewModelList(user.getRepositories().getRepo())) &&
                 mFullName.equals(String.format("%s %s", user.getFirstName(), user.getSecondName()));
     }
 
@@ -179,7 +177,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         if (list.size() > 0) {
             return new ArrayList<RepoViewModel>() {{
                 for (Repo r : list) {
-                    add(new RepoViewModel(r.getGit(), isEditMode(), isAuthorizedUser()));
+                    add(new RepoViewModel(r.getId(), r.getGit(), isEditMode(), isAuthorizedUser()));
                 }
             }};
         } else {
@@ -189,21 +187,12 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         }
     }
 
-    private void updateRepoListFromModel(final List<RepoViewModel> list) {
-        ArrayList<String> curRepo = AppUtils.repoIntoString(mRepositories);
-        ArrayList<String> newRepo = AppUtils.repoModelIntoString(list);
-        if (AppUtils.compareLists(curRepo, newRepo)) return;
-
-        Iterator<Repo> it = mRepositories.iterator();
-        while (it.hasNext()) {
-            Repo r = it.next();
-            if (!newRepo.contains(r.getGit())) it.remove();
-        }
-        for (RepoViewModel r : list) {
-            if (!r.getRepoUri().isEmpty() && !curRepo.contains(r.getRepoUri()))
-                mRepositories.add(new Repo(r.getRepoUri()));
-        }
-        notifyPropertyChanged(BR.repositories);
+    public List<Repo> repoListFromModel() {
+        return new ArrayList<Repo>() {{
+            for (RepoViewModel r : mRepoViewModels) {
+                add(new Repo(r.getId(), r.getRepoUri()));
+            }
+        }};
     }
     //endregion
 
@@ -221,16 +210,10 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mUserAvatarUri = in.readString();
         mUserPhotoUri = in.readString();
         if (in.readByte() == 0x01) {
-            mRepositories.clear();
-            in.readList(mRepositories, Repo.class.getClassLoader());
-        } else {
-            mRepositories.clear();
-        }
-        if (in.readByte() == 0x01) {
             mRepoViewModels.clear();
             in.readList(mRepoViewModels, RepoViewModel.class.getClassLoader());
         } else {
-            mRepositories.clear();
+            mRepoViewModels.clear();
         }
         isEditMode = in.readByte() != 0x00;
         isAuthorizedUser = in.readByte() != 0x00;
@@ -254,12 +237,6 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         dest.writeString(mBio);
         dest.writeString(mUserAvatarUri);
         dest.writeString(mUserPhotoUri);
-        if (mRepositories == null || mRepositories.size() == 0) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mRepositories);
-        }
         if (mRepoViewModels == null || mRepoViewModels.size() == 0) {
             dest.writeByte((byte) (0x00));
         } else {
@@ -351,11 +328,6 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public List<Repo> getRepositories() {
-        return mRepositories;
-    }
-
-    @Bindable
     public List<RepoViewModel> getRepoViewModels() {
         return mRepoViewModels;
     }
@@ -443,16 +415,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         }
     }
 
-    public void setRepositories(List<Repo> repositories) {
-        if (!AppUtils.compareRepoLists(this.mRepositories, repositories)) {
-            mRepositories = repositories;
-            mRepoViewModels = createRepoViewModelList(mRepositories);
-            notifyPropertyChanged(BR.repositories);
-        }
-    }
-
     public void setRepoViewModels(List<RepoViewModel> repoViewModels) {
-        updateRepoListFromModel(repoViewModels);
         if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, repoViewModels)) {
             mRepoViewModels = repoViewModels;
             notifyPropertyChanged(BR.repoViewModels);

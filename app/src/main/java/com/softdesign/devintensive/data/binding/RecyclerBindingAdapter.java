@@ -47,8 +47,9 @@ public class RecyclerBindingAdapter<T> extends RecyclerView.Adapter<RecyclerBind
             super(view);
             binding = DataBindingUtil.bind(view);
             binding.getRoot().setOnClickListener(v -> {
-                if (clickListener != null)
+                if (clickListener != null) {
                     clickListener.onItemClick(getAdapterPosition());
+                }
             });
         }
 
