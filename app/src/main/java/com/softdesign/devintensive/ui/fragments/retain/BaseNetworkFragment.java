@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.fragments;
+package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.Const;
 
 import de.greenrobot.event.EventBus;
 import retrofit2.Call;
@@ -15,6 +16,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class BaseNetworkFragment extends ChronosFragment {
+
+    public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
 
     public static final EventBus BUS = EventBus.getDefault();
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
@@ -54,7 +57,7 @@ public class BaseNetworkFragment extends ChronosFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (mCallbacks != null && !(mCallbacks instanceof UpdateServerDataFragment) && mStatus == Status.FINISHED) {
+        if (mCallbacks != null && mStatus == Status.FINISHED) {
             if (!mCancelled) {
                 mCallbacks.onRequestFinished();
             } else {

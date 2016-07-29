@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.fragments;
+package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -15,10 +15,10 @@ import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
-import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.data.network.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
@@ -31,8 +31,6 @@ import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
 import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
 public class AuthNetworkFragment extends BaseNetworkFragment {
-
-    private static final String TAG = Const.TAG_PREFIX + "AuthNetworkFragment";
 
     private AuthTaskCallbacks mCallbacks;
     private volatile int mWrongPasswordCount;

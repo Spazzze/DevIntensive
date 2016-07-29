@@ -3,21 +3,21 @@ package com.softdesign.devintensive.ui.activities;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.operations.UserLoginDataOperation;
-import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
+import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
+import com.softdesign.devintensive.data.storage.viewmodels.AuthViewModel;
+import com.softdesign.devintensive.databinding.ActivityAuthBinding;
+import com.softdesign.devintensive.ui.fragments.retain.AuthNetworkFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
@@ -29,37 +29,47 @@ import com.vk.sdk.api.VKError;
 
 import java.text.MessageFormat;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+public class AuthActivity extends BaseActivity implements AuthNetworkFragment.AuthTaskCallbacks, View.OnClickListener {
 
-public class AuthActivity extends BaseActivity implements AuthNetworkFragment.AuthTaskCallbacks {
+    private static final Handler ERROR_STOP_HANDLER = new Handler();
 
-    private static final String TAG = Const.TAG_PREFIX + "Auth Activity";
-
-    @BindView(R.id.auth_CoordinatorL) CoordinatorLayout mCoordinatorLayout;
-    @BindView(R.id.auth_email_editText) EditText mEditText_login_email;
-    @BindView(R.id.auth_password_editText) EditText mEditText_login_password;
-    @BindView(R.id.save_login_checkbox) CheckBox mCheckBox_saveLogin;
-    @BindView(R.id.signIn_vk_icon) ImageView mImageView_vk;
-
-    private DataManager mDataManager;
     private final FragmentManager mFragmentManager = getFragmentManager();
+    private ActivityAuthBinding mAuthBinding;
     private AuthNetworkFragment mAuthNetworkFragment;
+    private final AuthViewModel mAuthViewModel = new AuthViewModel(AuthActivity.this);
 
     //region onCreate
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_auth);
-        ButterKnife.bind(this);
+        if (savedInstanceState != null) {
+            mAuthViewModel.updateValues(savedInstanceState.getParcelable(Const.PARCELABLE_KEY_AUTH));
+        } else {
+            runOperation(new UserLoginDataOperation());
+        }
 
         attachAuthFragment();
 
-        mDataManager = DataManager.getInstance();
-        runOperation(new UserLoginDataOperation());
-        mCheckBox_saveLogin.setOnClickListener(this::saveLoginName);
+        init();
     }
+
+    private void init() {
+        mAuthBinding = DataBindingUtil.setContentView(this, R.layout.activity_auth);
+        if (mAuthBinding != null) {
+            mAuthBinding.setAuth(mAuthViewModel);
+            mAuthBinding.signInVkIcon.setOnClickListener(this);
+            mAuthBinding.loginButton.setOnClickListener(this);
+            mAuthBinding.forgotPassButton.setOnClickListener(this);
+        } else throw new IllegalArgumentException("View binging is null");
+    }
+
+    @Override
+    protected void onSaveInstanceState(@Nullable Bundle outState) {
+        if (outState == null) outState = new Bundle();
+        outState.putParcelable(Const.PARCELABLE_KEY_AUTH, mAuthViewModel);
+        super.onSaveInstanceState(outState);
+    }
+
     //endregion
 
     //region Fragments
@@ -101,17 +111,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //endregion
 
     //region onClick
-    private void saveLoginName(View v) {
-        CheckBox checkBox = (CheckBox) v;
-        String s = null;
-        if (checkBox.isChecked()) {
-            s = mEditText_login_email.getText().toString();
-        }
-        runOperation(new UserLoginDataOperation(s));
-    }
 
-    @OnClick({R.id.login_button, R.id.forgot_pass_button, R.id.signIn_vk_icon})
-    void submitAuthButton(View view) {
+    @Override
+    public void onClick(View view) {
         if (!AppUtils.isNetworkAvailable()) {
             showError(R.string.error_no_network_connection);
             return;
@@ -138,7 +140,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
             @Override
             public void onResult(VKAccessToken res) {
                 showToast(getString(R.string.notify_auth_by_VK));
-                mDataManager.getPreferencesManager().saveVKAuthorizationInfo(res);
+                DATA_MANAGER.getPreferencesManager().saveVKAuthorizationInfo(res);
             }
 
             @Override
@@ -156,9 +158,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     @SuppressWarnings("unused")
     public void onOperationFinished(final UserLoginDataOperation.Result result) {
         if (result.isSuccessful() && result.getOutput() != null) {
-            mCheckBox_saveLogin.setChecked(true);
-            mEditText_login_email.setText(result.getOutput());
-            mEditText_login_email.setSelection(mEditText_login_email.length());
+            mAuthViewModel.setSavingLogin(true);
+            mAuthViewModel.setLoginName(result.getOutput());
+            mAuthBinding.authEmail.setSelection(mAuthViewModel.getLoginName().length());
         }
     }
     //endregion
@@ -166,10 +168,10 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //region Login methods
 
     private void startSignIn() {
-        if (mAuthNetworkFragment != null) mAuthNetworkFragment.signIn(
-                mEditText_login_email.getText().toString(),
-                mEditText_login_password.getText().toString());
-        mEditText_login_password.setText("");
+        if (mAuthNetworkFragment != null)
+            mAuthNetworkFragment.signIn(mAuthViewModel.getLoginName(), mAuthViewModel.getPassword());
+        mAuthViewModel.saveLoginName();
+        mAuthViewModel.setPassword("");
     }
 
     private void forgotPassword() {
@@ -188,12 +190,12 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //region Ui methods
 
     private void showSnackBar(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(mAuthBinding.coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
     private void actionDependsOnFailTriesCount(int failsCount) {
         if (failsCount == AppConfig.MAX_LOGIN_TRIES) {
-            mEditText_login_email.setText("");
+            mAuthViewModel.clearData();
             showError(R.string.error_current_user_data_erased);
         } else if (failsCount < AppConfig.MAX_LOGIN_TRIES) {
             String s = MessageFormat.format("{0}: {1}",
@@ -204,10 +206,12 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     }
 
     private void errorAnnounce(String error) {
-        mEditText_login_password.setText("");
+        mAuthViewModel.setWrongPassword(true);
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(AppConfig.ERROR_VIBRATE_TIME);
         showToast(error);
+        ERROR_STOP_HANDLER.removeCallbacksAndMessages(null);
+        ERROR_STOP_HANDLER.postDelayed(() -> mAuthViewModel.setWrongPassword(false), AppConfig.ERROR_FADE_TIME);
     }
     //endregion
 }

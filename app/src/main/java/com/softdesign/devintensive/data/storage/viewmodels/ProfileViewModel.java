@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.data.storage.viewmodels;
 
-import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -9,16 +8,13 @@ import android.support.annotation.Nullable;
 import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class ProfileViewModel extends BaseObservable implements Parcelable {
-
-    public static final String IGNORED_STR = "IGNORED_STR";
+public class ProfileViewModel extends BaseViewModel implements Parcelable {
 
     private String mUserPhoto;
     private String mFullName;
@@ -55,7 +51,7 @@ public class ProfileViewModel extends BaseObservable implements Parcelable {
         mRepoViewModels = createRepoViewModelList(user.getRepositories().getRepo());
     }
 
-    public ProfileViewModel(UserDTO user) {
+    public ProfileViewModel(UserListViewModel user) {
 
         isAuthorizedUser = false;
 

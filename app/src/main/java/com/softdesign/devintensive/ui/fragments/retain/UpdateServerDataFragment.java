@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.fragments;
+package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.net.Uri;
 import android.util.Log;
@@ -7,7 +7,7 @@ import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
 import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
-import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.Const;
 
@@ -20,8 +20,6 @@ import retrofit2.Response;
 import static com.softdesign.devintensive.utils.AppUtils.filePathFromUri;
 
 public class UpdateServerDataFragment extends BaseNetworkFragment {
-
-    private static final String TAG = Const.TAG_PREFIX + "UploadInfoToServer";
 
     //region Request status
     @Override

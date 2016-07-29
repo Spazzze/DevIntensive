@@ -213,6 +213,14 @@ public class AppUtils {
         builder.setView(dialogBinding.getRoot(), margin, margin, margin, margin);
         builder.show();
     }
+
+    public static void showSnackbar(View layout, @StringRes int stringRes, boolean isLong,
+                                    @StringRes int actionButtonText, View.OnClickListener listener) {
+        Snackbar.make(layout, R.string.error_access_permissions_needed,
+                isLong ? Snackbar.LENGTH_LONG : Snackbar.LENGTH_SHORT)
+                .setAction(actionButtonText, listener)
+                .show();
+    }
     //endregion
 
     //region IO system methods

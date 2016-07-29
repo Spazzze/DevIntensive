@@ -3,14 +3,11 @@ package com.softdesign.devintensive.ui.activities;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -27,25 +24,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.DatabaseOperation;
-import com.softdesign.devintensive.data.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperCallback;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.events.UpdateDBEvent;
-import com.softdesign.devintensive.ui.fragments.BaseNetworkFragment;
-import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
-import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.ui.fragments.retain.BaseNetworkFragment;
+import com.softdesign.devintensive.ui.fragments.retain.LoadUsersInfoFragment;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
@@ -55,10 +50,8 @@ import butterknife.BindView;
 
 public class UserListActivity extends BaseActivity implements BaseTaskCallbacks, OnStartDragListener {
 
-    private static final String TAG = Const.TAG_PREFIX + "UserListActivity";
-
     @BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;
-    @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.coordinator_layout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.appbar_layout) AppBarLayout mAppBarLayout;
     @BindView(R.id.user_list) RecyclerView mRecyclerView;
@@ -66,7 +59,7 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
-    private LoadUsersIntoDBFragment mDbNetworkFragment;
+    private LoadUsersInfoFragment mDbNetworkFragment;
     private final FragmentManager mFragmentManager = getFragmentManager();
     private User mUserData;
     private ItemTouchHelper mItemTouchHelper;
@@ -133,10 +126,10 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
 
     //region Fragments
     private void attachLoadIntoDBFragment() {
-        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
+        mDbNetworkFragment = (LoadUsersInfoFragment) mFragmentManager.findFragmentByTag(LoadUsersInfoFragment.class.getName());
         if (mDbNetworkFragment == null) {
-            mDbNetworkFragment = new LoadUsersIntoDBFragment();
-            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
+            mDbNetworkFragment = new LoadUsersInfoFragment();
+            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersInfoFragment.class.getName()).commit();
         }
     }
     //endregion
@@ -223,26 +216,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
     }
 
     private void updateDrawerItems() {  //redraw navigation view items
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null && mUserData != null) {
-            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-            TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-            mTextView_menuUserName.setText(this.getTitle());
-
-            mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-            Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-            if (src == null) {
-                loadUserAvatarFromServer();
-            } else {
-                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-                mRoundedAvatar_img.setImageDrawable(dr);
-            }
-        }
     }
 
     @Override
@@ -377,22 +350,27 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        itemAnimator.setAddDuration(0);
+        itemAnimator.setRemoveDuration(0);
+        mRecyclerView.setItemAnimator(itemAnimator);
+
         mItemTouchHelperCallback = new ItemTouchHelperCallback(mUsersAdapter);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mItemTouchHelper = new ItemTouchHelper(mItemTouchHelperCallback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     private void updateUserListAdapter(List<UserEntity> userEntities) {
-        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
+        mUsersAdapter.setUsersFromDB(userEntities);
+/*        mUsersAdapter = new UsersAdapter(userEntities, this, position -> {
             Intent profileUserIntent = new Intent(UserListActivity.this, UserProfileActivity.class);
             profileUserIntent.putExtra(Const.PARCELABLE_KEY, mUsersAdapter.getUsers().get(position));
             startActivity(profileUserIntent);
         }, position -> mDbNetworkFragment.likeUser(
                 mUsersAdapter.getUsers().get(position).getRemoteId(),
-                mUsersAdapter.getUsers().get(position).isLiked()));
-        mRecyclerView.swapAdapter(mUsersAdapter, false);
-        mItemTouchHelperCallback.swapAdapter(mUsersAdapter);
+                mUsersAdapter.getUsers().get(position).isLiked()));*/
+/*        mRecyclerView.swapAdapter(mUsersAdapter, false);
+        mItemTouchHelperCallback.swapAdapter(mUsersAdapter);*/
     }
 
     @SuppressWarnings("all")
@@ -410,13 +388,6 @@ public class UserListActivity extends BaseActivity implements BaseTaskCallbacks,
                 super.onResourceReady(bitmap, anim);
                 runOperation(new FullUserDataOperation(getFile().getAbsolutePath()));
 
-                NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-                if (navigationView != null) {
-                    RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-                    dr.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
-                    ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-                    mRoundedAvatar_img.setImageDrawable(dr);
-                }
             }
 
             @Override

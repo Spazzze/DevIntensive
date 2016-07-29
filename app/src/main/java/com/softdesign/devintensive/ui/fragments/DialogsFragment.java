@@ -3,6 +3,7 @@ package com.softdesign.devintensive.ui.fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
@@ -33,6 +34,7 @@ public class DialogsFragment extends DialogFragment {
         return dialogsFragment;
     }
 
+    //region <<<<<<<<<<<<<<<<<<<Life cycle>>>>>>>>>>>>>>>>>>>
     @SuppressWarnings("deprecation")
     @Override
     public void onAttach(Activity activity) {
@@ -51,6 +53,9 @@ public class DialogsFragment extends DialogFragment {
             case Const.DIALOG_LOAD_PROFILE_PHOTO:
                 if (mMainActivityCallback != null) return loadPhotoDialog();
                 else return null;
+            case Const.DIALOG_LOAD_PROFILE_AVATAR:
+                if (mMainActivityCallback != null) return loadAvatarDialog();
+                else return null;
             case Const.DIALOG_SHOW_ERROR:
                 return errorAlertDialog(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             case Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN:
@@ -61,24 +66,19 @@ public class DialogsFragment extends DialogFragment {
                 return errorAlertDialog(getString(R.string.error));
         }
     }
+    //endregion
 
-    //region Dialogs
+    //region <<<<<<<<<<<<<<<<<<<<<Dialogs>>>>>>>>>>>>>>>>>>>>>
     private Dialog loadPhotoDialog() {
         return new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.header_profile_placeHolder_loadPhotoDialog_title))
-                .setItems(R.array.profile_placeHolder_loadPhotoDialog, (dialog, chosenItem) -> {
-                    switch (chosenItem) {
-                        case 0:
-                            mMainActivityCallback.loadPhotoFromCamera();
-                            break;
-                        case 1:
-                            mMainActivityCallback.loadPhotoFromGallery();
-                            break;
-                        case 2:
-                            dialog.cancel();
-                            break;
-                    }
-                }).create();
+                .setTitle(getString(R.string.header_profile_loadPhotoDialog_title))
+                .setItems(R.array.profile_placeHolder_loadPhotoDialog, this::choosePhoto).create();
+    }
+
+    private Dialog loadAvatarDialog() {
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(getString(R.string.header_profile_loadAvatarDialog_title))
+                .setItems(R.array.profile_placeHolder_loadPhotoDialog, this::chooseAvatar).create();
     }
 
     private Dialog errorAlertDialog(String error) {
@@ -111,6 +111,36 @@ public class DialogsFragment extends DialogFragment {
                     if (mBaseActivityCallback != null) mBaseActivityCallback.startAuthActivity();
                     else dialog.cancel();
                 }).create();
+    }
+    //endregion
+
+    //region <<<<<<<<<<<<<<<<<<UTILS>>>>>>>>>>>>>>>>>>
+    private void choosePhoto(DialogInterface dialogInterface, int i) {
+        switch (i) {
+            case 0:
+                mMainActivityCallback.loadPhotoFromCamera();
+                break;
+            case 1:
+                mMainActivityCallback.loadPhotoFromGallery();
+                break;
+            case 2:
+                dialogInterface.cancel();
+                break;
+        }
+    }
+
+    private void chooseAvatar(DialogInterface dialogInterface, int i) {
+        switch (i) {
+            case 0:
+                mMainActivityCallback.loadAvatarFromCamera();
+                break;
+            case 1:
+                mMainActivityCallback.loadAvatarFromGallery();
+                break;
+            case 2:
+                dialogInterface.cancel();
+                break;
+        }
     }
     //endregion
 }

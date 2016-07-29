@@ -29,7 +29,9 @@ public interface Const {
     String DIALOG_CONTENT_KEY = "DIALOG_CONTENT_KEY";
 
     String PARCELABLE_KEY = "PARCELABLE_KEY";
+    String PARCELABLE_KEY_NAV_VIEW = "PARCELABLE_KEY_NAV_VIEW";
     String PARCELABLE_KEY_PROFILE = "PARCELABLE_KEY_PROFILE";
+    String PARCELABLE_KEY_AUTH = "PARCELABLE_KEY_AUTH";
     String PARCELABLE_USER_NAME_KEY = "PARCELABLE_USER_NAME_KEY";
     String PARCELABLE_USER_EMAIL_KEY = "PARCELABLE_USER_EMAIL_KEY";
 
@@ -38,6 +40,7 @@ public interface Const {
     int DIALOG_SHOW_ERROR = 2;
     int DIALOG_SHOW_ERROR_RETURN_TO_MAIN = 3;
     int DIALOG_SHOW_ERROR_RETURN_TO_AUTH = 4;
+    int DIALOG_LOAD_PROFILE_AVATAR = 5;
 
     //Request permission constants
     int REQUEST_PERMISSIONS_CAMERA = 1000;
@@ -46,8 +49,10 @@ public interface Const {
     int REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS = 1003;
 
     //Other request constants
-    int REQUEST_CAMERA_PICTURE = 999;
-    int REQUEST_GALLERY_PICTURE = 998;
+    int REQUEST_PHOTO_FROM_CAMERA = 999;
+    int REQUEST_PHOTO_FROM_GALLERY = 998;
+    int REQUEST_AVATAR_FROM_CAMERA = 997;
+    int REQUEST_AVATAR_FROM_GALLERY = 996;
 
     //Some of http response constants
     int HTTP_RESPONSE_NOT_FOUND = 404;
@@ -63,5 +68,4 @@ public interface Const {
     String PATTERN_EMAIL = "^[\\w\\+\\.\\%\\-]{3,}\\@[a-zA-Z0-9][a-zA-Z0-9\\-]{1,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{1,25})+$";
     String PATTERN_VK_LINK = "^vk.com\\/\\w{3,}$";
     String PATTERN_GITHUB_LINK = "^github.com\\/\\w{3,}([\\/]\\w*)*$";
-
 }

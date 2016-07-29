@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -20,11 +21,12 @@ import android.widget.Toast;
 import com.redmadrobot.chronos.gui.activity.ChronosAppCompatActivity;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.operations.BaseChronosOperation;
-import com.softdesign.devintensive.data.operations.DatabaseOperation;
+import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
 import com.softdesign.devintensive.utils.Const;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -39,6 +41,13 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     private ProgressDialog mProgressDialog;
 
     //region Activity's LifeCycle
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
+        DevIntensiveApplication.setCurrentActivity(this);
+    }
 
     @Override
     protected void onStart() {
@@ -75,6 +84,13 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         super.onDestroy();
         Log.d(TAG, "onDestroy");
     }
+
+    @Override
+    protected void onSaveInstanceState(@Nullable Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState: ");
+    }
+
     //endregion
 
     //region Announce
@@ -85,7 +101,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
             mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
         mProgressDialog.show();
-        mProgressDialog.setContentView(R.layout.progress_splash);
+        mProgressDialog.setContentView(R.layout.item_progress_splash);
     }
 
     public void hideProgressDialog() {
@@ -97,7 +113,6 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     public void showError(int messageId) {
         try {
             showDialogFragment(Const.DIALOG_SHOW_ERROR, getString(messageId));
-            Log.e(TAG, getString(messageId));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,7 +121,6 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     public void showError(int dialogId, int messageId) {
         try {
             showDialogFragment(dialogId, getString(messageId));
-            Log.e(TAG, getString(messageId));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,7 +128,6 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     public void showError(String message) {
         showDialogFragment(Const.DIALOG_SHOW_ERROR, message);
-        Log.e(TAG, String.valueOf(message));
     }
 
     public void showToast(String message) {
@@ -132,7 +145,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     }
     //endregion
 
-    //region UTIL (стырила у Сереги Куприна, на память)
+    //region UTIL (штырила у Сереги Куприна, на память)
     public <T extends View> T $(@IdRes int id) {
         //noinspection unchecked
         return (T) findViewById(id);

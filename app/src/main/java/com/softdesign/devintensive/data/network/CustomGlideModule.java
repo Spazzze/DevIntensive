@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.data.network;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.widget.ImageView;
@@ -12,14 +13,16 @@ import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
 import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
 import com.bumptech.glide.module.GlideModule;
+import com.softdesign.devintensive.ui.view.elements.CropCircleTransformation;
 import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
-import com.softdesign.devintensive.utils.AppUtils;
 
 @SuppressWarnings("unused")
 public class CustomGlideModule implements GlideModule {
 
+    private static final Context CONTEXT = DevIntensiveApplication.getContext();
     private static final String TAG = Const.TAG_PREFIX + "CustomGlideModule";
 
     @Override
@@ -42,12 +45,24 @@ public class CustomGlideModule implements GlideModule {
     public void registerComponents(Context context, Glide glide) {
     }
 
+    public static void loadImage(final Drawable path, final ImageView target) {
+        if (AppUtils.isEmptyOrNull(path, target)) {
+            Log.e(TAG, "loadImage: path or target is null or empty.");
+            return;
+        }
+        Glide.with(CONTEXT)
+                .load(path)
+                .centerCrop()
+                .skipMemoryCache(true)
+                .into(target);
+    }
+
     public static void loadImage(final String path, final ImageView target) {
         if (AppUtils.isEmptyOrNull(path, target)) {
             Log.e(TAG, "loadImage: path or target is null or empty.");
             return;
         }
-        Glide.with(DevIntensiveApplication.getContext())
+        Glide.with(CONTEXT)
                 .load(path)
                 .centerCrop()
                 .skipMemoryCache(true)
@@ -65,7 +80,7 @@ public class CustomGlideModule implements GlideModule {
         String pathToPhoto = "null";
         if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
-        Glide.with(DevIntensiveApplication.getContext())
+        Glide.with(CONTEXT)
                 .load(pathToPhoto)
                 .error(error)
                 .placeholder(placeholder)
@@ -85,7 +100,7 @@ public class CustomGlideModule implements GlideModule {
         String pathToPhoto = "null";
         if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
-        Glide.with(DevIntensiveApplication.getContext())
+        Glide.with(CONTEXT)
                 .load(pathToPhoto)
                 .error(error)
                 .placeholder(placeholder)
@@ -107,7 +122,7 @@ public class CustomGlideModule implements GlideModule {
         String pathToPhoto = "null";
         if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
 
-        Glide.with(DevIntensiveApplication.getContext())
+        Glide.with(CONTEXT)
                 .load(pathToPhoto)
                 .error(error)
                 .placeholder(placeholder)
@@ -115,5 +130,44 @@ public class CustomGlideModule implements GlideModule {
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(target);
+    }
+
+    public static void loadRoundedImage(final String path, final int placeholder,
+                                    final int error, final ImageView target){
+
+        if (AppUtils.isEmptyOrNull(placeholder, error, target)) {
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
+        }
+
+        String pathToPhoto = "null";
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
+
+        Glide.with(CONTEXT)
+                .load(pathToPhoto)
+                .error(error)
+                .placeholder(placeholder)
+                .centerCrop()
+                .bitmapTransform(new CropCircleTransformation(CONTEXT))
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(target);
+    }
+
+    public static Bitmap downloadBitmap(String path, int width, int height) {
+        if (AppUtils.isEmptyOrNull(path)) {
+            Log.e(TAG, "downloadBitmap: path is null or empty.");
+            return null;
+        }
+
+        try {
+            return Glide.with(CONTEXT).
+                    load(path).
+                    asBitmap().
+                    into(width, height).
+                    get();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

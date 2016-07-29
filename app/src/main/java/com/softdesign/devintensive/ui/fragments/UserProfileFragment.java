@@ -2,7 +2,6 @@ package com.softdesign.devintensive.ui.fragments;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -19,41 +18,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentProfileBinding;
-import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import de.greenrobot.event.EventBus;
 
 import static com.softdesign.devintensive.utils.AppUtils.createImageFile;
 
-public class UserProfileFragment extends ChronosFragment implements View.OnClickListener {
-
-    private static final String TAG = Const.TAG_PREFIX + "UserProfileFragment";
-    private static final Context APPCONTEXT = DevIntensiveApplication.getContext();
-    private static final DataManager DATA_MANAGER = DataManager.getInstance();
-    private static final EventBus BUS = EventBus.getDefault();
+public class UserProfileFragment extends BaseViewFragment implements View.OnClickListener {
 
     private ProfileViewModel mProfileViewModel;
     private FragmentProfileBinding mProfileBinding;
-    private MainActivityCallback mCallbacks;
-
     private File mPhotoFile = null;
 
-    //region onCreate
+    //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -74,30 +59,16 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
     //endregion
 
-    //region Life Cycle
+    //region :::::::::::::::::::::::::::::::::::::::::: Life Cycle
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState ");
+        if (outState == null) outState = new Bundle();
         outState.putParcelable(Const.PARCELABLE_KEY_PROFILE, mProfileViewModel);
         super.onSaveInstanceState(outState);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onAttach(Activity activity) {
-        Log.d(TAG, "onAttach: "); //проверить срабатывает ли при повороте экрана
-        super.onAttach(activity);
-        BUS.registerSticky(this);
-        if (activity instanceof MainActivityCallback) {
-            mCallbacks = (MainActivityCallback) activity;
-        } else {
-            throw new IllegalStateException("Parent activity must implement MainActivityCallback");
-        }
-    }
-
     @Override
     public void onPause() {
-        Log.d(TAG, "onPause");
         saveUserTextData();
         super.onPause();
     }
@@ -110,7 +81,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
 
     //endregion
 
-    //region onClick
+    //region :::::::::::::::::::::::::::::::::::::::::: onClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -142,7 +113,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
     //endregion
 
-    //region UI
+    //region :::::::::::::::::::::::::::::::::::::::::: UI
 
     private void initFields() {
         Log.d(TAG, "initFields: ");
@@ -167,23 +138,19 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
         } else mProfileViewModel.updateValues(model);
     }
 
-    public void loadPhotoFromGallery() {
+    public void loadImageFromGallery(int intentId) {
         if (ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), Const.REQUEST_GALLERY_PICTURE);
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), intentId);
         } else {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     Const.REQUEST_PERMISSIONS_READ_SDCARD);
-           /* Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, v -> {
-                        openAppSettingsForResult(Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
-                    }).show();*/
         }
     }
 
-    public void loadPhotoFromCamera() {
+    public void takeSnapshotFromCamera(int intentId) {
         if (ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -195,17 +162,17 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
             }
             if (mPhotoFile != null) {
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
-                startActivityForResult(takeCaptureIntent, Const.REQUEST_CAMERA_PICTURE);
+                startActivityForResult(takeCaptureIntent, intentId);
             }
         } else {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     Const.REQUEST_PERMISSIONS_CAMERA);
-           /* Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)   //// TODO: 25.07.2016
-                    .setAction(R.string.header_allow, v -> {
-                        openAppSettingsForResult(Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
-                    }).show();*/
         }
+    }
+
+    public boolean isEditing() {
+        return mProfileViewModel.isEditMode();
     }
 
     /**
@@ -216,8 +183,9 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     @SuppressWarnings("deprecation")
     public void changeEditMode(boolean mode) {
         mProfileViewModel.setEditMode(mode);
+        mCallbacks.updateNavViewModel(mProfileViewModel);
         if (mode) {  //editing
-            collapseAppBar();     //// TODO: 25.07.2016
+            collapseAppBar();
             mProfileBinding.mainProfileLayout.phoneEditText.requestFocus();
         } else {    //stop edit mode
             saveUserData();
@@ -233,7 +201,7 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
 
     //endregion
 
-    //region Save and Load/Update
+    //region :::::::::::::::::::::::::::::::::::::::::: Save && Load/Update
     @SuppressWarnings("unused")
     public void onEvent(ProfileViewModel event) {
         Log.d(TAG, "onEvent: ");
@@ -293,47 +261,35 @@ public class UserProfileFragment extends ChronosFragment implements View.OnClick
     }
     //endregion
 
-    //region Activity Results
+    //region :::::::::::::::::::::::::::::::::::::::::: Activity Results
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         switch (requestCode) {
-            case Const.REQUEST_GALLERY_PICTURE:
-                getActivity();
+            case Const.REQUEST_PHOTO_FROM_GALLERY:
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     mProfileViewModel.setUserPhotoUri(data.getData().toString());
                 }
                 break;
-            case Const.REQUEST_CAMERA_PICTURE:
+            case Const.REQUEST_PHOTO_FROM_CAMERA:
                 if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
                     mProfileViewModel.setUserPhotoUri(Uri.fromFile(mPhotoFile).toString());
                 }
                 break;
-            case Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
-                if (ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
+            case Const.REQUEST_AVATAR_FROM_GALLERY:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    mProfileViewModel.setUserAvatarUri(data.getData().toString());
+                    mCallbacks.updateNavViewModel(mProfileViewModel);
                 }
                 break;
-            case Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
-                if (ContextCompat.checkSelfPermission(APPCONTEXT, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
+            case Const.REQUEST_AVATAR_FROM_CAMERA:
+                if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
+                    mProfileViewModel.setUserAvatarUri(Uri.fromFile(mPhotoFile).toString());
+                    mCallbacks.updateNavViewModel(mProfileViewModel);
                 }
                 break;
         }
     }
 
     //endregion
-
-    public Map<String, String> getAuthorizedUserInfo() {
-        Map<String, String> map = new HashMap<>();
-        if (mProfileViewModel == null) return map;
-        map.put(Const.PARCELABLE_USER_NAME_KEY, mProfileViewModel.getFullName());
-        map.put(Const.PARCELABLE_USER_EMAIL_KEY, mProfileViewModel.getEmail());
-        return map;
-    }
-
-    public boolean isEditing() {
-        return mProfileViewModel.isEditMode();
-    }
 }

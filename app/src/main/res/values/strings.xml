@@ -1,9 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <integer name="com_vk_sdk_AppId" tools:ignore="UnusedResources">5535661</integer>
     <string name="facebook_app_id" tools:ignore="UnusedResources">1741889442760936</string>
-    <item name="et_TextWatcher" type="id" />
-    <item name="et_errorHandler" type="id" />
-    <item name="repo_recycleView" type="id" />
+    <item name="et_TextWatcher_tag" type="id" />
+    <item name="et_errorHandler_tag" type="id" />
+    <item name="repo_recycleView_tag" type="id" />
+    <item name="imageUrl_tag" type="id" />
+    <item name="avatar_tag" type="id" />
+    <item name="avatarEdit_tag" type="id" />
 
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
@@ -31,8 +34,8 @@
     <string name="header.menu_myTasks">Задачи</string>
     <string name="header.menu_myNotifications">Уведомления</string>
     <string name="header.menu_myBookmarks">Закладки</string>
-    <string name="header.profile_placeHolder">Изменить фотографию профиля</string>
-    <string name="header.profile_placeHolder_loadPhotoDialog_title">Изменить фотографию профиля</string>
+    <string name="header.profile_loadPhotoDialog_title">Изменить фотографию профиля</string>
+    <string name="header.profile_loadAvatarDialog_title">Изменить аватар</string>
     <string name="header.choosePhotoFromGallery">Выберите фотографию</string>
     <string name="header.allow">Разрешить</string>
     <string name="header.login">Войти</string>
@@ -43,9 +46,10 @@
     <string name="header.sortByCustom">Своя сортировка</string>
     <string name="header.auth_forgot_password">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
-    <string name="header.auth_save_email">Сохранять e-mail</string>
+    <string name="header.auth_save_email">Запомнить e-mail</string>
     <string name="header.view">Просмотр</string>
     <string name="header.current_homeTask">Hometask</string>
+    <string name="header.like">Любо</string>
 
     <!--Errors-->
     <string name="error">Ошибка</string>
@@ -66,6 +70,10 @@
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
+    <string name="error.data_from_db_is_not_loaded">Данные из БД не были загружены</string>
+    <string name="error.permission_denied_camera">Приложению необходимо разрешение на пользование камерой, чтобы делать снимки.</string>
+    <string name="error.permission_denied_write_storage">Приложению необходимо разрешение на возможность записи на SDCARD, чтобы сохранять снимки.</string>
+    <string name="error.permission_denied_read_storage">Приложению необходимо разрешение на возможность чтения с SDCARD, чтобы загружать снимки.</string>
 
     <!--Notify-->
     <string name="notify.auth_successful">Авторизация прошла успешно</string>
@@ -100,7 +108,4 @@
     </string>
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
-    <string name="error.data_from_db_is_not_loaded">Данные из БД не были загружены</string>
-    <string name="header.like">Любо</string>
-
 </resources>

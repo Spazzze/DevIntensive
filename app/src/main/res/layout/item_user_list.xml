@@ -8,7 +8,7 @@
 
         <variable
             name="profile"
-            type="com.softdesign.devintensive.data.storage.models.UserDTO" />
+            type="com.softdesign.devintensive.data.storage.viewmodels.UserListViewModel" />
     </data>
 
     <android.support.v7.widget.CardView
@@ -33,7 +33,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/user_bg"
                     app:aspect_ratio="1.78"
                     app:imageUrl="@{profile.userPhoto}" />
 

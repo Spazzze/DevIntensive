@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.data.operations;
+package com.softdesign.devintensive.data.storage.operations;
 
 import android.content.SharedPreferences;
 

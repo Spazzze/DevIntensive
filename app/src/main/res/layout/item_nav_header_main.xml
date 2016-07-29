@@ -1,0 +1,70 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="Overdraw,contentDescription">
+
+    <data>
+
+        <variable
+            name="nav_profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.NavHeaderViewModel" />
+    </data>
+
+    <!--Header-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/nav_header_bg"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/size_small_8"
+        android:paddingLeft="@dimen/spacing_normal_16"
+        android:paddingRight="@dimen/spacing_normal_16"
+        android:paddingTop="@dimen/spacing_medial_24">
+
+        <!--Avatar-->
+        <RelativeLayout
+            android:id="@+id/avatar_edit"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:layout_marginTop="@dimen/spacing_normal_16">
+
+            <ImageView
+                android:layout_width="@dimen/size_medium_64"
+                android:layout_height="@dimen/size_medium_64"
+                app:roundedImage="@{nav_profile.userAvatarUri}" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_avatar_edit"
+                android:visibility="@{nav_profile.editing}" />
+        </RelativeLayout>
+
+        <!--Layout with Name & Email-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_medium_56"
+            android:layout_alignParentBottom="true"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <!--Name-->
+            <com.devspark.robototextview.widget.RobotoTextView
+                android:id="@+id/menu_userName"
+                style="@style/navView_Text.header_Name"
+                android:text="@{nav_profile.navFullName}"
+                app:typeface="roboto_medium" />
+
+            <!--Email-->
+            <TextView
+                android:id="@+id/menu_userEmail"
+                style="@style/navView_Text.header_Email"
+                android:text="@{nav_profile.navEmail}" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</layout>

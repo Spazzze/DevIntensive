@@ -8,11 +8,15 @@ public interface MainActivityCallback extends BaseActivityCallback {
 
     void loadPhotoFromCamera();
 
+    void loadAvatarFromCamera();
+
+    void loadAvatarFromGallery();
+
     void uploadUserData(ProfileViewModel model);
 
     void uploadUserPhoto(String uri);
 
     void uploadUserAvatar(String uri);
 
-    void updateAuthorizedUserData();
+    void updateNavViewModel(ProfileViewModel model);
 }

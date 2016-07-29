@@ -10,7 +10,7 @@
     tools:ignore="contentDescription">
 
     <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_coordinatorLayout"
+        android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -44,8 +44,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="left"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/item_nav_header_main"
+        app:menu="@menu/nav_menu_main"
         tools:ignore="RtlHardcoded" />
 
 </android.support.v4.widget.DrawerLayout>

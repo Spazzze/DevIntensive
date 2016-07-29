@@ -5,15 +5,13 @@
 
     <data>
 
-        <import type="android.view.View" />
-
         <variable
             name="profile"
             type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
     </data>
 
     <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_coordinatorLayout"
+        android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

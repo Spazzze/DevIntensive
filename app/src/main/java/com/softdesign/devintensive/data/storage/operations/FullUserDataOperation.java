@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.data.operations;
+package com.softdesign.devintensive.data.storage.operations;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -9,6 +9,7 @@ import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
 import static com.softdesign.devintensive.utils.AppUtils.getJsonFromObject;
@@ -26,9 +27,12 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
     }
 
     public FullUserDataOperation(ProfileViewModel model) {
-        this.mUser = model.updateUserFromModel(getUser());
-        this.mPhotoUri = Uri.parse(model.getUserPhotoUri());
-        this.mAvatarUri = model.getUserAvatarUri();
+        User savedUser = getUser();
+        if (savedUser != null) this.mUser = model.updateUserFromModel(savedUser);
+        String photoUri = model.getUserPhotoUri();
+        if (!AppUtils.isEmptyOrNull(photoUri)) this.mPhotoUri = Uri.parse(photoUri);
+        String avatarUri = model.getUserAvatarUri();
+        if (!AppUtils.isEmptyOrNull(avatarUri)) this.mAvatarUri = avatarUri;
         this.mAction = Action.SAVE;
     }
 
@@ -91,7 +95,7 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
     @Nullable
     private User getUser() {
         String json = SHARED_PREFERENCES.getString(Const.USER_JSON_OBJ, null);
-        if (json != null) return  (User) getObjectFromJson(json, User.class);
+        if (json != null) return (User) getObjectFromJson(json, User.class);
         else return null;
     }
 

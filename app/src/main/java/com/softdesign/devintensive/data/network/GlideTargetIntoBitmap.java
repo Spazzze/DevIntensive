@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.view.elements;
+package com.softdesign.devintensive.data.network;
 
 import android.graphics.Bitmap;
 

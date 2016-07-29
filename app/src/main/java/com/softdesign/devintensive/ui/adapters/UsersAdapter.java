@@ -13,7 +13,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.storage.models.UserDTO;
+import com.softdesign.devintensive.data.storage.viewmodels.UserListViewModel;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
@@ -34,7 +34,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private final CustomUserListFilter mFilter;
     private final OnStartDragListener mDragStartListener;
 
-    private List<UserDTO> mUsers;
+    private List<UserListViewModel> mUsers;
     private OnItemCLickListener mViewClickListener;
     private OnItemCLickListener mLikesClickListener;
 
@@ -43,13 +43,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
 
-        return new UserViewHolder(convertView, mViewClickListener, mLikesClickListener);
+        return new UserViewHolder(convertView, mViewClickListener, mLikesClickListener, mDragStartListener);
     }
 
     public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener) {
-        mUsers = new ArrayList<UserDTO>() {{
+        mUsers = new ArrayList<UserListViewModel>() {{
             for (UserEntity u : users) {
-                add(new UserDTO(u));
+                add(new UserListViewModel(u));
             }
         }};
         mDragStartListener = dragStartListener;
@@ -57,9 +57,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
-        mUsers = new ArrayList<UserDTO>() {{
+        mUsers = new ArrayList<UserListViewModel>() {{
             for (UserEntity u : users) {
-                add(new UserDTO(u));
+                add(new UserListViewModel(u));
             }
         }};
         mDragStartListener = dragStartListener;
@@ -81,12 +81,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
         holder.getBinding().setProfile(mUsers.get(position));
 
-        holder.getBinding().handle.setOnTouchListener((v, event) -> {
-            if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
-                mDragStartListener.onStartDrag(holder);
-            }
-            return false;
-        });
     }
 
     @Override
@@ -101,7 +95,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onItemDismiss(int position) {
-        UserDTO u = mUsers.get(position);
+        UserListViewModel u = mUsers.get(position);
         BUS.post(new ChangeUserInternalId(u.getRemoteId(), null));
         mFilter.getList().remove(u);
         mUsers.remove(u);
@@ -116,12 +110,25 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public List<UserDTO> getUsers() {
+    public List<UserListViewModel> getUsers() {
         return mUsers;
     }
 
-    private void setUsers(List<UserDTO> users) {
-        mUsers = users;
+    private void setUsers(List<UserListViewModel> users) {
+        synchronized (this) {
+            mUsers = users;
+        }
+    }
+
+    public void setUsersFromDB(final List<UserEntity> users) {
+        synchronized (this) {
+            mUsers = new ArrayList<UserListViewModel>() {{
+                for (UserEntity u : users) {
+                    add(new UserListViewModel(u));
+                }
+            }};
+        }
+        notifyDataSetChanged();
     }
 
     public class ChangeUserInternalId {
@@ -149,9 +156,16 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         private ItemUserListBinding mBinding;
 
         @SuppressWarnings("deprecation")
-        public UserViewHolder(View itemView, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
+        public UserViewHolder(View itemView, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener, OnStartDragListener dragListener) {
             super(itemView);
             mBinding = DataBindingUtil.bind(itemView);
+
+            mBinding.handle.setOnTouchListener((v, event) -> {
+                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                    dragListener.onStartDrag(this);
+                }
+                return false;
+            });
 
             mBinding.listMoreInfoBtn.setOnClickListener(v -> {
                 if (viewClickListener != null) {
@@ -194,9 +208,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public static class CustomUserListFilter extends Filter {
 
         private final UsersAdapter mAdapter;
-        private final List<UserDTO> mList;
+        private final List<UserListViewModel> mList;
 
-        public List<UserDTO> getList() {
+        public List<UserListViewModel> getList() {
             return mList;
         }
 
@@ -209,11 +223,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
-            List<UserDTO> tempList = new ArrayList<>();
+            List<UserListViewModel> tempList = new ArrayList<>();
 
             if (constraint.length() != 0) {
                 final String filterPattern = constraint.toString().toLowerCase().trim();
-                for (final UserDTO s : mList) {
+                for (final UserListViewModel s : mList) {
                     if (s.getFullName().toLowerCase().contains(filterPattern) ||
                             s.getHometask().contains(filterPattern)) {
                         tempList.add(s);

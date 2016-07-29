@@ -1,13 +1,12 @@
 package com.softdesign.devintensive.data.storage.viewmodels;
 
-import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.softdesign.devintensive.BR;
 
-public class RepoViewModel extends BaseObservable implements Parcelable {
+public class RepoViewModel extends BaseViewModel implements Parcelable {
 
     private String mId;
     private String mRepoUri;

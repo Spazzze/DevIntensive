@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.data.operations;
+package com.softdesign.devintensive.data.storage.operations;
 
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
@@ -36,7 +36,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     Sort mSort = Sort.CUSTOM;
     Action mAction = Action.LOAD;
 
-    List<UserListRes> mResponse;
+    List<UserListRes> mUserListRes;
     ProfileValues mLikeResponse;
     String mLikedUserId;
 
@@ -51,8 +51,8 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         mSort = sort;
     }
 
-    public DatabaseOperation(List<UserListRes> response) {
-        this.mResponse = response;
+    public DatabaseOperation(List<UserListRes> userListRes) {
+        this.mUserListRes = userListRes;
         this.mAction = Action.SAVE;
     }
 
@@ -67,7 +67,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         this.mAction = Action.SWAP;
     }
 
-    public DatabaseOperation(ProfileValues data, String userId) {
+    public DatabaseOperation(String userId, ProfileValues data) {
         this.mAction = Action.SAVE;
         this.mLikedUserId = userId;
         this.mLikeResponse = data;
@@ -84,9 +84,11 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                 return null;
 
             case SAVE:
-                if (mResponse != null) saveIntoDB(mResponse);
-                else if (mLikeResponse != null && mLikedUserId != null)
+                if (mUserListRes != null) {
+                    saveIntoDB(mUserListRes);
+                } else if (mLikeResponse != null && mLikedUserId != null) {
                     updateUserInDB(mLikedUserId, mLikeResponse);
+                }
                 return null;
 
             case SWAP:
@@ -144,11 +146,11 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             }
         }
         mDaoSession.getRepositoryEntityDao().deleteAll();
-        mDaoSession.getRepositoryEntityDao().insertOrReplaceInTx(allRepositories);
+        mDaoSession.getRepositoryEntityDao().insertInTx(allRepositories);
         mDaoSession.getUserEntityDao().deleteAll();
-        mDaoSession.getUserEntityDao().insertOrReplaceInTx(allUsers);
+        mDaoSession.getUserEntityDao().insertInTx(allUsers);
         mDaoSession.getLikeEntityDao().deleteAll();
-        mDaoSession.getLikeEntityDao().insertOrReplaceInTx(allLikes);
+        mDaoSession.getLikeEntityDao().insertInTx(allLikes);
 
         SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
         editor.putLong(Const.DB_UPDATED_TIME_KEY, new Date().getTime());

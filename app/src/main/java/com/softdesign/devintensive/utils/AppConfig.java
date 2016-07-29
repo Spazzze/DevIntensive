@@ -14,11 +14,11 @@ public interface AppConfig {
 
     //Sign-in errors
     int MAX_LOGIN_TRIES = 3;
+    int ERROR_FADE_TIME = 1000;
     int ERROR_VIBRATE_TIME = 500;
 
     //Splash screen fade-in delay
     int SPLASH_FADE_DELAY = 2000;
-
     //Network timeouts
     long MAX_CONNECTION_TIMEOUT = 10000;
     long MAX_READ_TIMEOUT = 10000;

@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.ui.fragments.AuthNetworkFragment;
+import com.softdesign.devintensive.ui.fragments.retain.AuthNetworkFragment;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.AppUtils;

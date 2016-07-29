@@ -15,9 +15,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
-import com.softdesign.devintensive.data.storage.models.UserDTO;
+import com.softdesign.devintensive.data.storage.viewmodels.UserListViewModel;
 import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
 import com.softdesign.devintensive.utils.Const;
 
@@ -31,18 +30,15 @@ import static com.softdesign.devintensive.utils.AppUtils.setListViewHeightBasedO
 
 public class UserProfileActivity extends BaseActivity {
 
-    private static final String TAG = Const.TAG_PREFIX + "UserProfActivity";
-
     @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
 
     @BindView(R.id.about_EditText) EditText mEditText_about;
-    @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.coordinator_layout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarLayout;
     @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;
     @BindView(R.id.repo_list) ListView mListView_repo;
 
-    private DataManager mDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +46,6 @@ public class UserProfileActivity extends BaseActivity {
         setContentView(R.layout.activity_user_profile);
 
         ButterKnife.bind(this);
-
-        mDataManager = DataManager.getInstance();
 
         initProfileData();
 
@@ -86,9 +80,9 @@ public class UserProfileActivity extends BaseActivity {
     @SuppressWarnings("SameParameterValue")
 
     private void initProfileData() {
-        UserDTO userDTO = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);
+        UserListViewModel userListViewModel = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);
 
-        final List<String> repositories = userDTO.getRepositories();
+        final List<String> repositories = userListViewModel.getRepositories();
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
 
         mListView_repo.setAdapter(repositoriesAdapter);
@@ -96,13 +90,13 @@ public class UserProfileActivity extends BaseActivity {
 
         if (repositories.size() > 0) setListViewHeightBasedOnChildren(mListView_repo);
 
-        mTextViews_userProfileValues.get(0).setText(userDTO.getRating());
-        mTextViews_userProfileValues.get(1).setText(userDTO.getCodeLines());
-        mTextViews_userProfileValues.get(2).setText(userDTO.getProjects());
-        mEditText_about.setText(userDTO.getBio());
+        mTextViews_userProfileValues.get(0).setText(userListViewModel.getRating());
+        mTextViews_userProfileValues.get(1).setText(userListViewModel.getCodeLines());
+        mTextViews_userProfileValues.get(2).setText(userListViewModel.getProjects());
+        mEditText_about.setText(userListViewModel.getBio());
 
-        mCollapsingToolbarLayout.setTitle(userDTO.getFullName());
+        mCollapsingToolbarLayout.setTitle(userListViewModel.getFullName());
 
-        CustomGlideModule.loadImage(userDTO.getUserPhoto(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
+        CustomGlideModule.loadImage(userListViewModel.getUserPhoto(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
     }
 }
