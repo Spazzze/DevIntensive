@@ -18,9 +18,9 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
 
     private String mUserPhoto;
     private String mFullName;
-    private String mRating;
-    private String mCodeLines;
-    private String mProjects;
+    private String mRating = "0";
+    private int mCodeLines = 0;
+    private int mProjects = 0;
     private String mPhone;
     private String mEmail;
     private String mVK;
@@ -41,9 +41,9 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mUserAvatarUri = avatarUri;
 
         mFullName = String.format("%s %s", user.getFirstName(), user.getSecondName());
-        mRating = String.valueOf(user.getProfileValues().getRating());
-        mCodeLines = String.valueOf(user.getProfileValues().getCodeLines());
-        mProjects = String.valueOf(user.getProfileValues().getProjects());
+        mRating = user.getProfileValues().getRating();
+        mCodeLines = user.getProfileValues().getIntСodeLines();
+        mProjects = user.getProfileValues().getIntProjects();
         mPhone = user.getContacts().getPhone();
         mEmail = user.getContacts().getEmail();
         mVK = user.getContacts().getVk();
@@ -58,8 +58,10 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mUserPhoto = user.getUserPhoto();
         mFullName = user.getFullName();
         mRating = user.getRating();
-        mCodeLines = user.getCodeLines();
-        mProjects = user.getProjects();
+        String codeLines = user.getProjects();
+        mCodeLines = AppUtils.isEmptyOrNull(codeLines) ? 0 : Integer.parseInt(codeLines);
+        String projects = user.getProjects();
+        mProjects = AppUtils.isEmptyOrNull(projects) ? 0 : Integer.parseInt(projects);
         mBio = user.getBio();
 
         for (String s : user.getRepositories()) {
@@ -190,71 +192,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             }
         }};
     }
-    //endregion
 
-    //region Parcel
-    protected ProfileViewModel(Parcel in) {
-        mUserPhoto = in.readString();
-        mFullName = in.readString();
-        mRating = in.readString();
-        mCodeLines = in.readString();
-        mProjects = in.readString();
-        mPhone = in.readString();
-        mEmail = in.readString();
-        mVK = in.readString();
-        mBio = in.readString();
-        mUserAvatarUri = in.readString();
-        mUserPhotoUri = in.readString();
-        if (in.readByte() == 0x01) {
-            mRepoViewModels.clear();
-            in.readList(mRepoViewModels, RepoViewModel.class.getClassLoader());
-        } else {
-            mRepoViewModels.clear();
-        }
-        isEditMode = in.readByte() != 0x00;
-        isAuthorizedUser = in.readByte() != 0x00;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mUserPhoto);
-        dest.writeString(mFullName);
-        dest.writeString(mRating);
-        dest.writeString(mCodeLines);
-        dest.writeString(mProjects);
-        dest.writeString(mPhone);
-        dest.writeString(mEmail);
-        dest.writeString(mVK);
-        dest.writeString(mBio);
-        dest.writeString(mUserAvatarUri);
-        dest.writeString(mUserPhotoUri);
-        if (mRepoViewModels == null || mRepoViewModels.size() == 0) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mRepoViewModels);
-        }
-        dest.writeByte((byte) (isEditMode ? 0x01 : 0x00));
-        dest.writeByte((byte) (isAuthorizedUser ? 0x01 : 0x00));
-    }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<ProfileViewModel> CREATOR = new Parcelable.Creator<ProfileViewModel>() {
-        @Override
-        public ProfileViewModel createFromParcel(Parcel in) {
-            return new ProfileViewModel(in);
-        }
-
-        @Override
-        public ProfileViewModel[] newArray(int size) {
-            return new ProfileViewModel[size];
-        }
-    };
     //endregion
 
     //region Getters
@@ -274,12 +212,12 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     }
 
     @Bindable
-    public String getCodeLines() {
+    public int getCodeLines() {
         return mCodeLines;
     }
 
     @Bindable
-    public String getProjects() {
+    public int getProjects() {
         return mProjects;
     }
 
@@ -345,12 +283,12 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         notifyPropertyChanged(BR.rating);
     }
 
-    public void setCodeLines(String codeLines) {
+    public void setCodeLines(int codeLines) {
         mCodeLines = codeLines;
         notifyPropertyChanged(BR.codeLines);
     }
 
-    public void setProjects(String projects) {
+    public void setProjects(int projects) {
         mProjects = projects;
         notifyPropertyChanged(BR.projects);
     }
@@ -417,5 +355,70 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             notifyPropertyChanged(BR.repoViewModels);
         }
     }
+    //endregion
+
+    //region Parcel
+    protected ProfileViewModel(Parcel in) {
+        mUserPhoto = in.readString();
+        mFullName = in.readString();
+        mRating = in.readString();
+        mCodeLines = in.readInt();
+        mProjects = in.readInt();
+        mPhone = in.readString();
+        mEmail = in.readString();
+        mVK = in.readString();
+        mBio = in.readString();
+        mUserAvatarUri = in.readString();
+        mUserPhotoUri = in.readString();
+        if (in.readByte() == 0x01) {
+            mRepoViewModels.clear();
+            in.readList(mRepoViewModels, RepoViewModel.class.getClassLoader());
+        } else {
+            mRepoViewModels.clear();
+        }
+        isEditMode = in.readByte() != 0x00;
+        isAuthorizedUser = in.readByte() != 0x00;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mUserPhoto);
+        dest.writeString(mFullName);
+        dest.writeString(mRating);
+        dest.writeInt(mCodeLines);
+        dest.writeInt(mProjects);
+        dest.writeString(mPhone);
+        dest.writeString(mEmail);
+        dest.writeString(mVK);
+        dest.writeString(mBio);
+        dest.writeString(mUserAvatarUri);
+        dest.writeString(mUserPhotoUri);
+        if (mRepoViewModels == null || mRepoViewModels.size() == 0) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeList(mRepoViewModels);
+        }
+        dest.writeByte((byte) (isEditMode ? 0x01 : 0x00));
+        dest.writeByte((byte) (isAuthorizedUser ? 0x01 : 0x00));
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<ProfileViewModel> CREATOR = new Parcelable.Creator<ProfileViewModel>() {
+        @Override
+        public ProfileViewModel createFromParcel(Parcel in) {
+            return new ProfileViewModel(in);
+        }
+
+        @Override
+        public ProfileViewModel[] newArray(int size) {
+            return new ProfileViewModel[size];
+        }
+    };
     //endregion
 }

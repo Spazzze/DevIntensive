@@ -49,11 +49,11 @@
             <TextView
                 android:id="@+id/scoreBox_codeLines"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.codeLines}" />
+                android:text="@{String.valueOf(profile.codeLines)}" />
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@string/header.scoreBox_codeText" />
+                android:text="@{@plurals/codeLines(profile.codeLines)}" />
 
         </LinearLayout>
 
@@ -67,11 +67,11 @@
             <TextView
                 android:id="@+id/scoreBox_projects"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.projects}" />
+                android:text="@{String.valueOf(profile.projects)}" />
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@string/header.scoreBox_projectsText" />
+                android:text="@{@plurals/projects(profile.projects)}" />
 
         </LinearLayout>
 

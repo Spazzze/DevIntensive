@@ -48,6 +48,14 @@ public class ProfileValues extends BaseResponse implements Parcelable {
         return rating;
     }
 
+    public int getIntСodeLines() {
+        return codeLines;
+    }
+
+    public int getIntProjects() {
+        return projects;
+    }
+
     //region Getters
     public List<String> getLikesBy() {
         return likesBy;

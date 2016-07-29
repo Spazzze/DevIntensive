@@ -26,7 +26,7 @@
 
     <!--Headers-->
     <string name="header.scoreBox_ratingText">Рейтинг</string>
-    <string name="header.scoreBox_codeText">Написано строк кода</string>
+    <string name="header.scoreBox_codeText">строк кода написано</string>
     <string name="header.scoreBox_projectsText">Проектов</string>
     <string name="header.menu_myProfile">Мой профиль</string>
     <string name="header.menu_myContacts">Контакты</string>
@@ -108,4 +108,16 @@
     </string>
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
+
+    <plurals name="projects">
+        <item quantity="one">проект</item>
+        <item quantity="few">проекта</item>
+        <item quantity="many">проектов</item>
+    </plurals>
+
+    <plurals name="codeLines">
+        <item quantity="one">строка кода написана</item>
+        <item quantity="few">строки кода написаны</item>
+        <item quantity="many">строк кода написано</item>
+    </plurals>
 </resources>
