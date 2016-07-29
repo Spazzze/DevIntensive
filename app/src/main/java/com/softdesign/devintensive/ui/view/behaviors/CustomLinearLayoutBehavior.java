@@ -12,8 +12,8 @@ import android.view.View;
 import com.softdesign.devintensive.R;
 
 import static com.softdesign.devintensive.utils.AppUtils.getAppBarSize;
-import static com.softdesign.devintensive.utils.AppUtils.getViewMinHeight;
 import static com.softdesign.devintensive.utils.AppUtils.getStatusBarHeight;
+import static com.softdesign.devintensive.utils.AppUtils.getViewMinHeight;
 
 /**
  * Behavior to link LinearLayout to AppBarLayout's bottom edge
@@ -21,7 +21,7 @@ import static com.softdesign.devintensive.utils.AppUtils.getStatusBarHeight;
  * @param <LinearLayout> to link to.
  */
 @SuppressWarnings("unused")
-class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout.ScrollingViewBehavior {
+public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout.ScrollingViewBehavior {
 
     private float mMinLLSize, mMaxLLSize, mMinAppbarHeight, mMaxAppbarHeight, mExpandedPercentageFactor;
 

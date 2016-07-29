@@ -2,11 +2,13 @@ package com.softdesign.devintensive.data.binding;
 
 import android.content.Context;
 import android.databinding.BindingAdapter;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -25,6 +27,26 @@ public class BindingAdapters {
 
     private BindingAdapters() {
         throw new AssertionError();
+    }
+
+    @BindingAdapter("layout_behavior")
+    public static void setLayoutBehavior(View view, CoordinatorLayout.Behavior behavior) {
+        if (behavior == null) return;
+        CoordinatorLayout.Behavior tag = (CoordinatorLayout.Behavior) view.getTag(R.id.behavior_tag);
+        if (tag == null || !AppUtils.equals(behavior, tag)) {
+            CoordinatorLayout.LayoutParams cl = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+            if (cl == null) return;
+            cl.setBehavior(behavior);
+            view.setLayoutParams(cl);
+            view.setTag(R.id.behavior_tag, behavior);
+        }
+    }
+
+    @BindingAdapter("android:layout_height")
+    public static void setLayoutHeight(View view, float height) {
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.height = (int) height;
+        view.setLayoutParams(layoutParams);
     }
 
     @BindingAdapter("roundedImage")

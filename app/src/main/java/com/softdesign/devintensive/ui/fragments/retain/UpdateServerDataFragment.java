@@ -66,7 +66,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
         if (uri_SelectedImage == null || !isExecutePossible()) return;
 
-        Log.d(TAG, "uploadUserPhoto: ");
+        Log.d(TAG, "uploadUserAvatar: ");
         synchronized (this) {
             onRequestStarted();
 

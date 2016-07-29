@@ -7,6 +7,8 @@
     <item name="imageUrl_tag" type="id" />
     <item name="avatar_tag" type="id" />
     <item name="avatarEdit_tag" type="id" />
+    <item name="height_tag" type="id" />
+    <item name="behavior_tag" type="id" />
 
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
@@ -49,7 +51,7 @@
     <string name="header.auth_save_email">Запомнить e-mail</string>
     <string name="header.view">Просмотр</string>
     <string name="header.current_homeTask">Hometask</string>
-    <string name="header.like">Любо</string>
+    <string name="header.like">Любо \u0020</string>
 
     <!--Errors-->
     <string name="error">Ошибка</string>

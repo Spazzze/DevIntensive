@@ -5,15 +5,20 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
+import com.vk.sdk.VKSdk;
+
+import java.io.File;
 
 import static com.softdesign.devintensive.utils.AppUtils.getJsonFromObject;
 import static com.softdesign.devintensive.utils.AppUtils.getObjectFromJson;
+import static com.softdesign.devintensive.utils.DevIntensiveApplication.getContext;
 
 public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel> {
 
@@ -24,6 +29,11 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
 
     public FullUserDataOperation() {
         this.mAction = Action.LOAD;
+    }
+
+    public FullUserDataOperation(Action action) {
+        if (action == Action.SAVE) return; //only CLEAR and LOAD allowed this way
+        this.mAction = action;
     }
 
     public FullUserDataOperation(ProfileViewModel model) {
@@ -56,10 +66,24 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
         this.mAction = Action.SAVE;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Nullable
     @Override
     public ProfileViewModel run() {
         switch (this.mAction) {
+            case CLEAR:
+                SharedPreferences.Editor editor1 = SHARED_PREFERENCES.edit();
+                editor1.clear().apply();
+                VKSdk.logout();
+                File dir = getContext().getFilesDir();
+                try {
+                    new File(dir, "photo.png").delete();
+                    new File(dir, "avatar.png").delete();
+                } catch (Exception ignored) {
+                }
+                Glide.get(getContext()).clearDiskCache();
+                Glide.get(getContext()).clearMemory();
+                break;
             case SAVE:
                 SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
 
@@ -88,6 +112,8 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
                 String photoUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_PHOTO_URI, "");
                 String avatarUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_AVATAR_URI, "");
                 return new ProfileViewModel(userData, photoUri, avatarUri);
+            case SWAP:
+                break;
         }
         return null;
     }

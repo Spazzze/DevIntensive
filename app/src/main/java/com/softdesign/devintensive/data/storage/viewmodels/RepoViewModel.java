@@ -10,43 +10,10 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
 
     private String mId;
     private String mRepoUri;
-    private boolean isEnabled;
-    private boolean isCanBeEdit;
+    private boolean isEnabled = false;
+    private boolean isCanBeEdit = false;
 
-    //region Parcel
-    protected RepoViewModel(Parcel in) {
-        mId = in.readString();
-        mRepoUri = in.readString();
-        isEnabled = in.readByte() != 0x00;
-        isCanBeEdit = in.readByte() != 0x00;
-    }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mId);
-        dest.writeString(mRepoUri);
-        dest.writeByte((byte) (isEnabled ? 0x01 : 0x00));
-        dest.writeByte((byte) (isCanBeEdit ? 0x01 : 0x00));
-    }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<RepoViewModel> CREATOR = new Parcelable.Creator<RepoViewModel>() {
-        @Override
-        public RepoViewModel createFromParcel(Parcel in) {
-            return new RepoViewModel(in);
-        }
-
-        @Override
-        public RepoViewModel[] newArray(int size) {
-            return new RepoViewModel[size];
-        }
-    };
-    //endregion
 
     public RepoViewModel(String repoUri, boolean isEnabled, boolean isCanBeEdit) {
         this.mId = "";
@@ -60,6 +27,11 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
         this.mRepoUri = repoUri;
         this.isEnabled = isEnabled;
         this.isCanBeEdit = isCanBeEdit;
+    }
+
+    public RepoViewModel(String id, String repoUri) {
+        this.mId = id;
+        this.mRepoUri = repoUri;
     }
 
     //region ---------- Getters ----------
@@ -104,6 +76,41 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
         isCanBeEdit = canBeEdit;
         notifyPropertyChanged(BR.canBeEdit);
     }
+    //endregion
+
+    //region ---------- Parcel -----------
+    protected RepoViewModel(Parcel in) {
+        mId = in.readString();
+        mRepoUri = in.readString();
+        isEnabled = in.readByte() != 0x00;
+        isCanBeEdit = in.readByte() != 0x00;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mId);
+        dest.writeString(mRepoUri);
+        dest.writeByte((byte) (isEnabled ? 0x01 : 0x00));
+        dest.writeByte((byte) (isCanBeEdit ? 0x01 : 0x00));
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<RepoViewModel> CREATOR = new Parcelable.Creator<RepoViewModel>() {
+        @Override
+        public RepoViewModel createFromParcel(Parcel in) {
+            return new RepoViewModel(in);
+        }
+
+        @Override
+        public RepoViewModel[] newArray(int size) {
+            return new RepoViewModel[size];
+        }
+    };
     //endregion
 }
 

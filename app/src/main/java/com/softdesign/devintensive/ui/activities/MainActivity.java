@@ -282,6 +282,13 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         }
         transaction.commit();
     }
+
+    @Override
+    public void logout(int mode) {
+        if (mode == 1 && mProfileFragment != null) mProfileFragment.denySaving();
+        super.logout(mode);
+    }
+
     //endregion
 
     //region :::::::::::::::::::::::::::::::::: Task Callbacks

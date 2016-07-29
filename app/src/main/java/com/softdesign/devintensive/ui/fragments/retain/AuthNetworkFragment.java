@@ -11,14 +11,16 @@ import android.util.Log;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.network.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
-import com.softdesign.devintensive.data.network.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
@@ -72,8 +74,10 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                     mWrongPasswordCount++;
                 }
                 if (mUser != null) {
-                    if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES)
-                        DATA_MANAGER.getPreferencesManager().totalLogout();
+                    if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
+                        runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
+                        runOperation(new FullUserDataOperation(BaseChronosOperation.Action.CLEAR));
+                    }
                     if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
                 }
                 break;

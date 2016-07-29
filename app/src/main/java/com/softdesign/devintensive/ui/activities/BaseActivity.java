@@ -23,6 +23,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
 import com.softdesign.devintensive.utils.Const;
@@ -168,7 +169,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         Log.d(TAG, "logout: ");
         if (mode == 1) {
             runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
-            DATA_MANAGER.getPreferencesManager().totalLogout();
+            runOperation(new FullUserDataOperation(BaseChronosOperation.Action.CLEAR));
         }
         startAuthActivity();
     }

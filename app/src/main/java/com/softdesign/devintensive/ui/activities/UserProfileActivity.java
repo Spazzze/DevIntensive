@@ -1,7 +1,5 @@
 package com.softdesign.devintensive.ui.activities;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -15,18 +13,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.network.CustomGlideModule;
-import com.softdesign.devintensive.data.storage.viewmodels.UserListViewModel;
-import com.softdesign.devintensive.ui.adapters.RepositoriesAdapter;
-import com.softdesign.devintensive.utils.Const;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
-
-import static com.softdesign.devintensive.utils.AppUtils.setListViewHeightBasedOnChildren;
 
 public class UserProfileActivity extends BaseActivity {
 
@@ -38,7 +30,6 @@ public class UserProfileActivity extends BaseActivity {
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarLayout;
     @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;
     @BindView(R.id.repo_list) ListView mListView_repo;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +71,7 @@ public class UserProfileActivity extends BaseActivity {
     @SuppressWarnings("SameParameterValue")
 
     private void initProfileData() {
-        UserListViewModel userListViewModel = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);
+/*        UserListViewModel userListViewModel = getIntent().getParcelableExtra(Const.PARCELABLE_KEY);
 
         final List<String> repositories = userListViewModel.getRepositories();
         final RepositoriesAdapter repositoriesAdapter = new RepositoriesAdapter(this, repositories);
@@ -97,6 +88,6 @@ public class UserProfileActivity extends BaseActivity {
 
         mCollapsingToolbarLayout.setTitle(userListViewModel.getFullName());
 
-        CustomGlideModule.loadImage(userListViewModel.getUserPhoto(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
+        CustomGlideModule.loadImage(userListViewModel.getUserPhoto(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);*/
     }
 }

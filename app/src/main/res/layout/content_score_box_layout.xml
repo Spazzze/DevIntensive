@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
-        <import type="android.view.View" />
+        <variable
+            name="behavior"
+            type="com.softdesign.devintensive.ui.view.behaviors.CustomLinearLayoutBehavior" />
 
         <variable
             name="profile"
@@ -13,15 +14,15 @@
     </data>
     <!-- ScoreBox Layout -->
     <LinearLayout
-        android:id="@+id/scoreBox_layout"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/size_huge_112"
-        android:background="@color/color_grey"
+        android:layout_height="@{profile.list ? @dimen/size_large_68 : @dimen/size_huge_112, default=wrap_content}"
+        android:background="@{profile.list ? @android:color/transparent : @color/color_grey}"
+        android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
-        app:min_collapsed_height="@dimen/size_medium_56"
-        tools:ignore="Overdraw">
+        android:visibility="@{!profile.moving}"
+        app:layout_behavior="com.softdesign.devintensive.ui.view.behaviors.CustomLinearLayoutBehavior"
+        app:min_collapsed_height="@dimen/size_medium_56">
 
         <!-- Rating -->
         <LinearLayout
@@ -31,15 +32,19 @@
             <TextView
                 android:id="@+id/scoreBox_rating"
                 style="@style/scoreBox_text.count"
-                android:text="@{profile.rating}" />
+                android:text="@{profile.rating}"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@string/header.scoreBox_ratingText" />
+                android:text="@string/header.scoreBox_ratingText"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
         </LinearLayout>
 
-        <View style="@style/scoreBox_lineSeparator" />
+        <View
+            style="@style/scoreBox_lineSeparator"
+            android:visibility="@{!profile.list}" />
 
         <!-- Lines of code -->
         <LinearLayout
@@ -49,15 +54,19 @@
             <TextView
                 android:id="@+id/scoreBox_codeLines"
                 style="@style/scoreBox_text.count"
-                android:text="@{String.valueOf(profile.codeLines)}" />
+                android:text="@{String.valueOf(profile.codeLines)}"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@{@plurals/codeLines(profile.codeLines)}" />
+                android:text="@{@plurals/codeLines(profile.codeLines)}"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
         </LinearLayout>
 
-        <View style="@style/scoreBox_lineSeparator" />
+        <View
+            style="@style/scoreBox_lineSeparator"
+            android:visibility="@{!profile.list}" />
 
         <!-- Projects -->
         <LinearLayout
@@ -67,11 +76,13 @@
             <TextView
                 android:id="@+id/scoreBox_projects"
                 style="@style/scoreBox_text.count"
-                android:text="@{String.valueOf(profile.projects)}" />
+                android:text="@{String.valueOf(profile.projects)}"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@{@plurals/projects(profile.projects)}" />
+                android:text="@{@plurals/projects(profile.projects)}"
+                android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
         </LinearLayout>
 

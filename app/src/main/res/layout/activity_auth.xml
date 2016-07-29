@@ -152,7 +152,7 @@
                             android:fontFamily="sans-serif-condensed"
                             android:text="@string/header.auth_save_email"
                             android:textColor="@color/color_grey_light"
-                            app:onClick="@{auth.saveLoginName}" />
+                            app:onClick="@{auth::saveLoginName}" />
 
                         <!-- Button 'ENTER' -->
                         <com.devspark.robototextview.widget.RobotoButton

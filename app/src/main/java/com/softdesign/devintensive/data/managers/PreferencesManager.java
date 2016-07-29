@@ -8,7 +8,6 @@ import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.vk.sdk.VKAccessToken;
-import com.vk.sdk.VKSdk;
 
 import java.util.Date;
 
@@ -72,20 +71,6 @@ public class PreferencesManager {
     @SuppressWarnings("unused")
     public VKAccessToken loadVKToken() {
         return VKAccessToken.tokenFromSharedPreferences(mContext, Const.VK_ACCESS_TOKEN);
-    }
-    //endregion
-
-    //region General auth methods
-
-    /**
-     * totally removes all current users auth data
-     */
-    public void totalLogout() {
-        //removing all received tokens and auth status
-        VKSdk.logout();                         //vk logout
-        VKAccessToken.removeTokenAtKey(mContext, Const.VK_ACCESS_TOKEN);
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.clear().apply();
     }
     //endregion
 

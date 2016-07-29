@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.data.storage.models;
 
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
+import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
 
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
@@ -64,14 +65,18 @@ public class UserEntity {
         this.internalId = index;
     }
 
-    public List<String> getRepoList() {
-        if (getRepositoryEntities() == null) return new ArrayList<>();
-        else
-            return new ArrayList<String>() {{
+    public List<RepoViewModel> getRepoViewModelsList() {
+        if (getRepositoryEntities().size() > 0) {
+            return new ArrayList<RepoViewModel>() {{
                 for (RepositoryEntity r : getRepositoryEntities()) {
-                    add(r.getRepositoryName());
+                    add(new RepoViewModel(r.getRemoteId(), r.getRepositoryName()));
                 }
             }};
+        } else {
+            return new ArrayList<RepoViewModel>() {{
+                add(new RepoViewModel("", ""));
+            }};
+        }
     }
 
     public List<String> getLikesList() {

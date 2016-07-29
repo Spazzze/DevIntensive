@@ -69,7 +69,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
 
     @Override
     public void onPause() {
-        saveUserTextData();
+        saveUserData();
         super.onPause();
     }
 
@@ -231,22 +231,18 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
 
     private void saveUserData() {
 
-        if (!mProfileViewModel.isAuthorizedUser()) return;
+        if (mProfileViewModel == null || !mProfileViewModel.isAuthorizedUser()) return;
 
         Log.d(TAG, "saveUserData: ");
         if (mCallbacks != null) {
             if (!DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(mProfileViewModel.getUserPhotoUri())) {
-                mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());
+                mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());   //// TODO: 29.07.2016 в очередь на выполнение
             }
             if (!DATA_MANAGER.getPreferencesManager().loadUserAvatar().equals((mProfileViewModel.getUserAvatarUri()))) {
                 mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
             }
             if (isUserDataChanged()) mCallbacks.uploadUserData(mProfileViewModel);
         }
-        saveUserTextData();
-    }
-
-    private void saveUserTextData() {
         runOperation(new FullUserDataOperation(mProfileViewModel));
     }
 
@@ -258,6 +254,10 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         savedUser = (User) AppUtils.getObjectFromJson(jsonSavedUser, User.class);
 
         return !mProfileViewModel.compareUserData(savedUser);
+    }
+
+    public void denySaving(){
+        mProfileViewModel = null;
     }
     //endregion
 

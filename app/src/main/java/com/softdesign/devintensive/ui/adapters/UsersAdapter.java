@@ -13,8 +13,8 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.storage.viewmodels.UserListViewModel;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 
@@ -34,7 +34,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private final CustomUserListFilter mFilter;
     private final OnStartDragListener mDragStartListener;
 
-    private List<UserListViewModel> mUsers;
+    private List<ProfileViewModel> mUsers;
     private OnItemCLickListener mViewClickListener;
     private OnItemCLickListener mLikesClickListener;
 
@@ -47,9 +47,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener) {
-        mUsers = new ArrayList<UserListViewModel>() {{
+        mUsers = new ArrayList<ProfileViewModel>() {{
             for (UserEntity u : users) {
-                add(new UserListViewModel(u));
+                add(new ProfileViewModel(u));
             }
         }};
         mDragStartListener = dragStartListener;
@@ -57,9 +57,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
-        mUsers = new ArrayList<UserListViewModel>() {{
+        mUsers = new ArrayList<ProfileViewModel>() {{
             for (UserEntity u : users) {
-                add(new UserListViewModel(u));
+                add(new ProfileViewModel(u));
             }
         }};
         mDragStartListener = dragStartListener;
@@ -95,7 +95,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onItemDismiss(int position) {
-        UserListViewModel u = mUsers.get(position);
+        ProfileViewModel u = mUsers.get(position);
         BUS.post(new ChangeUserInternalId(u.getRemoteId(), null));
         mFilter.getList().remove(u);
         mUsers.remove(u);
@@ -110,11 +110,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public List<UserListViewModel> getUsers() {
+    public List<ProfileViewModel> getUsers() {
         return mUsers;
     }
 
-    private void setUsers(List<UserListViewModel> users) {
+    private void setUsers(List<ProfileViewModel> users) {
         synchronized (this) {
             mUsers = users;
         }
@@ -122,9 +122,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     public void setUsersFromDB(final List<UserEntity> users) {
         synchronized (this) {
-            mUsers = new ArrayList<UserListViewModel>() {{
+            mUsers = new ArrayList<ProfileViewModel>() {{
                 for (UserEntity u : users) {
-                    add(new UserListViewModel(u));
+                    add(new ProfileViewModel(u));
                 }
             }};
         }
@@ -208,9 +208,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public static class CustomUserListFilter extends Filter {
 
         private final UsersAdapter mAdapter;
-        private final List<UserListViewModel> mList;
+        private final List<ProfileViewModel> mList;
 
-        public List<UserListViewModel> getList() {
+        public List<ProfileViewModel> getList() {
             return mList;
         }
 
@@ -223,11 +223,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
-            List<UserListViewModel> tempList = new ArrayList<>();
+            List<ProfileViewModel> tempList = new ArrayList<>();
 
             if (constraint.length() != 0) {
                 final String filterPattern = constraint.toString().toLowerCase().trim();
-                for (final UserListViewModel s : mList) {
+                for (final ProfileViewModel s : mList) {
                     if (s.getFullName().toLowerCase().contains(filterPattern) ||
                             s.getHometask().contains(filterPattern)) {
                         tempList.add(s);

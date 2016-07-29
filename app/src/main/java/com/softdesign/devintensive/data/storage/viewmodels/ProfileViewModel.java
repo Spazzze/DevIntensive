@@ -1,20 +1,30 @@
 package com.softdesign.devintensive.data.storage.viewmodels;
 
+import android.content.Context;
 import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.softdesign.devintensive.BR;
+import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.network.restmodels.User;
+import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class ProfileViewModel extends BaseViewModel implements Parcelable {
+
+    private static final Context CONTEXT = DevIntensiveApplication.getContext();
+    private static final String AUTH_USER_ID = DataManager.getInstance().getPreferencesManager().loadBuiltInAuthId();
 
     private String mUserPhoto;
     private String mFullName;
@@ -24,22 +34,28 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     private String mPhone;
     private String mEmail;
     private String mVK;
-    private String mBio;
+    private String mBio = "";
     private String mUserAvatarUri;
     private String mUserPhotoUri;
+    private int mInternalId = 0;
+    private String mRemoteId;
+    private String mHometask;
 
     private List<RepoViewModel> mRepoViewModels = new ArrayList<>();
+    private Set<String> mLikesBy = new HashSet<>();
 
     private boolean isEditMode = false;
     private boolean isAuthorizedUser = false;
+    private boolean isLiked = false;
+    private boolean isMoving = false;
+    private boolean isList = false;
 
+    //region ::::::::::::::::::::::::::::::::::: Constructors
     public ProfileViewModel(User user, String photoUri, String avatarUri) {
 
         isAuthorizedUser = true;
 
-        mUserPhotoUri = photoUri;
-        mUserAvatarUri = avatarUri;
-
+        mUserPhoto = user.getPublicInfo().getPhoto();
         mFullName = String.format("%s %s", user.getFirstName(), user.getSecondName());
         mRating = user.getProfileValues().getRating();
         mCodeLines = user.getProfileValues().getIntСodeLines();
@@ -47,28 +63,41 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mPhone = user.getContacts().getPhone();
         mEmail = user.getContacts().getEmail();
         mVK = user.getContacts().getVk();
-        mBio = user.getPublicInfo().getBio();
+        String bio = user.getPublicInfo().getBio();
+        mBio = AppUtils.isEmptyOrNull(bio) ? "" : bio.trim();
+        mUserPhotoUri = photoUri;
+        Log.d(TAG, "ProfileViewModel: " + photoUri);
+        mUserAvatarUri = AppUtils.isEmptyOrNull(avatarUri) ? user.getPublicInfo().getAvatar() : avatarUri;
+        mRemoteId = user.getId();
+        mHometask = user.getProfileValues().getHomeTask();
+
         mRepoViewModels = createRepoViewModelList(user.getRepositories().getRepo());
+        mLikesBy = new HashSet<>(user.getProfileValues().getLikesBy());
+
+        isLiked = mLikesBy.contains(AUTH_USER_ID);
     }
 
-    public ProfileViewModel(UserListViewModel user) {
-
-        isAuthorizedUser = false;
-
-        mUserPhoto = user.getUserPhoto();
+    public ProfileViewModel(UserEntity user) {
+        mUserPhoto = user.getPhoto();
         mFullName = user.getFullName();
-        mRating = user.getRating();
-        String codeLines = user.getProjects();
-        mCodeLines = AppUtils.isEmptyOrNull(codeLines) ? 0 : Integer.parseInt(codeLines);
-        String projects = user.getProjects();
-        mProjects = AppUtils.isEmptyOrNull(projects) ? 0 : Integer.parseInt(projects);
-        mBio = user.getBio();
+        mRating = String.valueOf(user.getRating());
+        mCodeLines = user.getCodeLines();
+        mProjects = user.getProjects();
+        String bio = user.getBio();
+        mBio = AppUtils.isEmptyOrNull(bio) ? "" : bio.trim();
+        mInternalId = user.getInternalId();
+        mRemoteId = user.getRemoteId();
+        mHometask = user.getHomeTask();
 
-        for (String s : user.getRepositories()) {
-            if (!s.isEmpty()) mRepoViewModels.add(new RepoViewModel(s, false, false));
-        }
+        mRepoViewModels = user.getRepoViewModelsList();
+        mLikesBy = new HashSet<>(user.getLikesList());
+
+        isLiked = mLikesBy.contains(AUTH_USER_ID);
+        isList = true;
     }
+    //endregion
 
+    //region ::::::::::::::::::::::::::::::::::: Utils
     public void updateValues(@Nullable ProfileViewModel model) {
         if (model == null) return;
 
@@ -116,6 +145,26 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             setUserPhotoUri(model.getUserPhotoUri());
         }
 
+        if (!AppUtils.equals(this.mInternalId, model.getInternalId())) {
+            setInternalId(model.getInternalId());
+        }
+
+        if (!AppUtils.equals(this.mRemoteId, model.getRemoteId())) {
+            setRemoteId(model.getRemoteId());
+        }
+
+        if (!AppUtils.equals(this.mHometask, model.getHometask())) {
+            setHometask(model.getHometask());
+        }
+
+        if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, model.getRepoViewModels())) {
+            setRepoViewModels(model.getRepoViewModels());
+        }
+
+        if (!AppUtils.compareLists(this.mLikesBy, model.getLikesBy())) {
+            setLikesBy(model.getLikesBy());
+        }
+
         if (isEditMode() != model.isEditMode()) {
             setEditMode(model.isEditMode());
         }
@@ -124,12 +173,11 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             setAuthorizedUser(model.isAuthorizedUser());
         }
 
-        if (!AppUtils.compareRepoModelLists(this.mRepoViewModels, model.getRepoViewModels())) {
-            setRepoViewModels(model.getRepoViewModels());
+        if (isLiked() != model.isLiked()) {
+            setLiked(model.isLiked());
         }
     }
 
-    //region Utils
     public void addEmptyRepo() {
         if (isEditMode()) {
             mRepoViewModels.add(new RepoViewModel("", isEditMode(), isAuthorizedUser()));
@@ -195,7 +243,42 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
 
     //endregion
 
-    //region Getters
+    //region ::::::::::::::::::::::::::::::::::: Getters
+    @Bindable
+    public boolean isList() {
+        return isList;
+    }
+
+    @Bindable
+    public String getHometask() {
+        return mHometask;
+    }
+
+    @Bindable
+    public int getInternalId() {
+        return mInternalId;
+    }
+
+    @Bindable
+    public String getRemoteId() {
+        return mRemoteId;
+    }
+
+    @Bindable
+    public Set<String> getLikesBy() {
+        return mLikesBy;
+    }
+
+    @Bindable
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    @Bindable
+    public boolean isMoving() {
+        return isMoving;
+    }
+
     @Bindable
     public String getUserPhoto() {
         return mUserPhoto;
@@ -267,7 +350,50 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     }
     //endregion
 
-    //region Setters
+    //region ::::::::::::::::::::::::::::::::::: Setters
+    public void setList(boolean list) {
+        isList = list;
+        notifyPropertyChanged(BR.list);
+    }
+
+    public void setHometask(String hometask) {
+        mHometask = hometask;
+        notifyPropertyChanged(BR.hometask);
+    }
+
+    public void setRemoteId(String remoteId) {
+        mRemoteId = remoteId;
+        notifyPropertyChanged(BR.remoteId);
+    }
+
+    public void setInternalId(int internalId) {
+        mInternalId = internalId;
+        notifyPropertyChanged(BR.internalId);
+    }
+
+    public void setLikesBy(Set<String> likesBy) {
+        mLikesBy = likesBy;
+        notifyPropertyChanged(BR.likesBy);
+    }
+
+    public void setLikesBy(boolean isLiked) {
+        if (isLiked) {
+            getLikesBy().add(AUTH_USER_ID);
+        } else getLikesBy().remove(AUTH_USER_ID);
+        notifyPropertyChanged(BR.likesBy);
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
+        notifyPropertyChanged(BR.liked);
+        setLikesBy(liked);
+    }
+
+    public void setMoving(boolean moving) {
+        isMoving = moving;
+        notifyPropertyChanged(BR.moving);
+    }
+
     public void setUserPhoto(String userPhoto) {
         mUserPhoto = userPhoto;
         notifyPropertyChanged(BR.userPhoto);
@@ -357,7 +483,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     }
     //endregion
 
-    //region Parcel
+    //region ::::::::::::::::::::::::::::::::::: Parcel
     protected ProfileViewModel(Parcel in) {
         mUserPhoto = in.readString();
         mFullName = in.readString();
@@ -370,19 +496,17 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mBio = in.readString();
         mUserAvatarUri = in.readString();
         mUserPhotoUri = in.readString();
-        if (in.readByte() == 0x01) {
-            mRepoViewModels.clear();
-            in.readList(mRepoViewModels, RepoViewModel.class.getClassLoader());
-        } else {
-            mRepoViewModels.clear();
-        }
+        mInternalId = in.readInt();
+        mRemoteId = in.readString();
+        mHometask = in.readString();
+        mRepoViewModels = in.createTypedArrayList(RepoViewModel.CREATOR);
+        List<String> tempList = in.createStringArrayList();
+        mLikesBy = new HashSet<>(tempList);
         isEditMode = in.readByte() != 0x00;
         isAuthorizedUser = in.readByte() != 0x00;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
+        isLiked = in.readByte() != 0x00;
+        isMoving = in.readByte() != 0x00;
+        isList = in.readByte() != 0x00;
     }
 
     @Override
@@ -398,14 +522,22 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         dest.writeString(mBio);
         dest.writeString(mUserAvatarUri);
         dest.writeString(mUserPhotoUri);
-        if (mRepoViewModels == null || mRepoViewModels.size() == 0) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mRepoViewModels);
-        }
+        dest.writeInt(mInternalId);
+        dest.writeString(mRemoteId);
+        dest.writeString(mHometask);
+        dest.writeTypedList(mRepoViewModels);
+        dest.writeStringList(new ArrayList<>(mLikesBy));
+        dest.writeValue(mLikesBy);
         dest.writeByte((byte) (isEditMode ? 0x01 : 0x00));
         dest.writeByte((byte) (isAuthorizedUser ? 0x01 : 0x00));
+        dest.writeByte((byte) (isLiked ? 0x01 : 0x00));
+        dest.writeByte((byte) (isMoving ? 0x01 : 0x00));
+        dest.writeByte((byte) (isList ? 0x01 : 0x00));
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     @SuppressWarnings("unused")
