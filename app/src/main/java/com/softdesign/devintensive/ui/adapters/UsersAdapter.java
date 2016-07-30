@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.ui.adapters;
 
 import android.databinding.DataBindingUtil;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
@@ -204,13 +203,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         @Override
         public void onItemSelected() {
             getBinding().getProfile().setMoving(true);
-            itemView.setBackgroundColor(Color.LTGRAY);
         }
 
         @Override
         public void onItemClear() {
             getBinding().getProfile().setMoving(false);
-            itemView.setBackgroundColor(0);
         }
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::

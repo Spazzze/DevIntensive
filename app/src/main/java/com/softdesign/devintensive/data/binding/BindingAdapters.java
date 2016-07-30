@@ -70,6 +70,16 @@ public class BindingAdapters {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Custom
+    @BindingAdapter("resize_by_aspect")
+    public static void resizeImage(ImageView view, float aspectRatio) {
+        int width = AppUtils.getScreenWidth();
+        int height = (int) (width / aspectRatio);
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.width = width;
+        layoutParams.height = height;
+        view.setLayoutParams(layoutParams);
+    }
+
     @BindingAdapter("offsetSystemWindow")
     public static void offsetSystemWindow(View view, boolean isNeeded) {
         if (!isNeeded) return;

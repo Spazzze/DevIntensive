@@ -41,6 +41,7 @@
 
     <!-- Corner Radius -->
     <dimen name="corner_radius_2">2dp</dimen>
+    <dimen name="corner_radius_8">8dp</dimen>
 
     <!-- Lines -->
     <dimen name="line_size_1">1dp</dimen>
@@ -56,5 +57,7 @@
 
     <!-- Etc -->
     <dimen name="toolbar_top_offset">0dp</dimen>
+    <dimen name="padding_0">0dp</dimen>
+
 
 </resources>
