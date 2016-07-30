@@ -21,7 +21,6 @@ public class DevIntensiveApplication extends Application {
     private static Context sContext;
     private static Activity sActivity;
     private static DaoSession sDaoSession;
-    private static int sScreenWidth;
 
     public static Context getContext() {
         return sContext;
@@ -45,7 +44,6 @@ public class DevIntensiveApplication extends Application {
         super.onCreate();
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sContext = this;
-        sScreenWidth = AppUtils.getScreenWidth();
 
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
@@ -62,10 +60,6 @@ public class DevIntensiveApplication extends Application {
 
     public static DaoSession getDaoSession() {
         return sDaoSession;
-    }
-
-    public static int getScreenWidth() {
-        return sScreenWidth;
     }
 
     public static void setCurrentActivity(Activity currentActivity) {

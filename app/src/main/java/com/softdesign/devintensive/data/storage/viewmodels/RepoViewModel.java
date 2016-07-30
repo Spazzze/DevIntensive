@@ -13,8 +13,7 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
     private boolean isEnabled = false;
     private boolean isCanBeEdit = false;
 
-
-
+    //region :::::::::::::::::::::::::::::::::::::::::: Constructors
     public RepoViewModel(String repoUri, boolean isEnabled, boolean isCanBeEdit) {
         this.mId = "";
         this.mRepoUri = repoUri;
@@ -33,8 +32,9 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
         this.mId = id;
         this.mRepoUri = repoUri;
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ---------- Getters ----------
+    //region :::::::::::::::::::::::::::::::::::::::::: Getters
     @Bindable
     public String getId() {
         return mId;
@@ -54,9 +54,9 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
     public String getRepoUri() {
         return mRepoUri;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ---------- Setters ----------
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
     public void setId(String id) {
         this.mId = id;
         notifyPropertyChanged(BR.id);
@@ -76,9 +76,9 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
         isCanBeEdit = canBeEdit;
         notifyPropertyChanged(BR.canBeEdit);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ---------- Parcel -----------
+    //region :::::::::::::::::::::::::::::::::::::::::: Parcel
     protected RepoViewModel(Parcel in) {
         mId = in.readString();
         mRepoUri = in.readString();
@@ -111,6 +111,6 @@ public class RepoViewModel extends BaseViewModel implements Parcelable {
             return new RepoViewModel[size];
         }
     };
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }
 

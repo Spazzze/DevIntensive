@@ -27,11 +27,13 @@ public interface BaseActivityCallback {
 
     void startMainActivity();
 
-    void startUserListActivity();
-
     void openAppSettings();
 
     void openAppSettingsForResult(int flag);
 
     void setupToolbar(Toolbar toolbar, @MenuRes int id);
+
+    void setupToolbarWithoutNavMenu(Toolbar toolbar, @MenuRes int id);
+
+    void onBackPressed();
 }

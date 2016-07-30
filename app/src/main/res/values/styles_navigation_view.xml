@@ -15,12 +15,4 @@
     <style name="navView_Text.header_Email" parent="navView_Text.header_Name">
         <item name="android:fontFamily">sans-serif-regular</item>
     </style>
-
-    <style name="navView_Text.list" parent="navView_Text">
-        <item name="android:textColor">@color/color_black</item>
-    </style>
-
-    <style name="navView_Text.subHeader" parent="navView_Text">
-        <item name="android:textColor">@color/color_grey</item>
-    </style>
 </resources>

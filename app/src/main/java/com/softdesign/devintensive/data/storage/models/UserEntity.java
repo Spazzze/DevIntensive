@@ -89,9 +89,9 @@ public class UserEntity {
             }};
     }
 
-    //region Generated
+    //region :::::::::::::::::::::::::::::::::::::::::: Generated
 
-    //region Standard Getters And Setters
+    //region :::::::::::::::::::::::::::::::::::::::::: Standard Getters And Setters
     public String getBio() {
         return this.bio;
     }
@@ -188,7 +188,7 @@ public class UserEntity {
         this.repositoryEntities = repositoryEntities;
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     /**
      * Used for active entity operations.
@@ -327,5 +327,5 @@ public class UserEntity {
         return likesBy;
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

@@ -34,14 +34,15 @@ public class DialogsFragment extends DialogFragment {
         return dialogsFragment;
     }
 
-    //region <<<<<<<<<<<<<<<<<<<Life cycle>>>>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Life cycle
     @SuppressWarnings("deprecation")
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (activity instanceof MainActivityCallback) {
             mMainActivityCallback = (MainActivityCallback) activity;
-        } else if (activity instanceof BaseActivityCallback) {
+        }
+        if (activity instanceof BaseActivityCallback) {
             mBaseActivityCallback = (BaseActivityCallback) activity;
         }
     }
@@ -66,9 +67,9 @@ public class DialogsFragment extends DialogFragment {
                 return errorAlertDialog(getString(R.string.error));
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<<<<<<<<<Dialogs>>>>>>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Dialogs
     private Dialog loadPhotoDialog() {
         return new AlertDialog.Builder(getActivity())
                 .setTitle(getString(R.string.header_profile_loadPhotoDialog_title))
@@ -112,9 +113,9 @@ public class DialogsFragment extends DialogFragment {
                     else dialog.cancel();
                 }).create();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<<<<<<UTILS>>>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     private void choosePhoto(DialogInterface dialogInterface, int i) {
         switch (i) {
             case 0:
@@ -142,5 +143,5 @@ public class DialogsFragment extends DialogFragment {
                 break;
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

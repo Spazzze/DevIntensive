@@ -36,7 +36,7 @@ public class EditProfileReq {
         setGithub(AppUtils.repoListIntoJson(model.repoListFromModel()));
     }
 
-    //region Setters
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
     public void setPhoneNumber(String phoneNumber) {
         mParamsMap.put("phone", phoneNumber);
     }
@@ -60,7 +60,7 @@ public class EditProfileReq {
     public void setBio(String bio) {
         mParamsMap.put("bio", bio);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     public HashMap<String, RequestBody> createReqBody() {
         HashMap<String, RequestBody> requestBodyMap = new HashMap<>();

@@ -25,7 +25,7 @@ public class UserInfoTextWatcher implements TextWatcher {
     private final EditText mEditText;
     private final TextInputLayout mTextInputLayout;
 
-    //region inheritable methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Inheritable methods
     public UserInfoTextWatcher(EditText editText, TextInputLayout textInputLayout) {
         this.mResources = editText.getContext().getResources();
         this.mEditText = editText;
@@ -58,9 +58,9 @@ public class UserInfoTextWatcher implements TextWatcher {
                 break;
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Main check methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Main check methods
 
     /**
      * validates and reformats cellphone number into ru.locale format
@@ -180,9 +180,9 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_gitHub));
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Simple validation methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Simple validation methods
 
     /**
      * validates cellphone number if it matches ru.locale format
@@ -241,8 +241,9 @@ public class UserInfoTextWatcher implements TextWatcher {
         String pattern = Const.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     /**
      * displays or removes error at current TextInputLayout
      *
@@ -330,4 +331,5 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         return stringBuilder.toString();
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

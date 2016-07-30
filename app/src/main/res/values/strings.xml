@@ -71,8 +71,8 @@
     <string name="error.unknown_response">Возникла ошибка при обращении к серверу</string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
+    <string name="error.cannot_load_user_profile">Профиль пользователя не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
-    <string name="error.data_from_db_is_not_loaded">Данные из БД не были загружены</string>
     <string name="error.permission_denied_camera">Приложению необходимо разрешение на пользование камерой, чтобы делать снимки.</string>
     <string name="error.permission_denied_write_storage">Приложению необходимо разрешение на возможность записи на SDCARD, чтобы сохранять снимки.</string>
     <string name="error.permission_denied_read_storage">Приложению необходимо разрешение на возможность чтения с SDCARD, чтобы загружать снимки.</string>

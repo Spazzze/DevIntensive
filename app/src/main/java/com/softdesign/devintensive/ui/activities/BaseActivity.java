@@ -1,6 +1,8 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -29,7 +30,6 @@ import com.softdesign.devintensive.ui.fragments.DialogsFragment;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
-import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
 @SuppressWarnings("unused")
@@ -39,9 +39,10 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final EventBus BUS = EventBus.getDefault();
+    public final FragmentManager mManager = getFragmentManager();
     private ProgressDialog mProgressDialog;
 
-    //region Activity's LifeCycle
+    //region :::::::::::::::::::::::::::::::::: Activity's LifeCycle
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +95,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     //endregion
 
-    //region Announce
+    //region :::::::::::::::::::::::::::::::::: Announce
     public void showProgressDialog() {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this, R.style.custom_dialog);
@@ -146,25 +147,25 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     }
     //endregion
 
-    //region UTIL (штырила у Сереги Куприна, на память)
+    //region :::::::::::::::::::::::::::::::::: UTIL
     public <T extends View> T $(@IdRes int id) {
         //noinspection unchecked
         return (T) findViewById(id);
-    }
+    } //(штырила у Сереги Куприна, на память)
 
     @Nullable
     public <T extends BaseActivity> T as(Class<T> clazz) {
         //noinspection unchecked
         return (T) this;
     }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Fragment> T findFragment(Class<T> clazz) {
+        return (T) getFragmentManager().findFragmentByTag(clazz.getName());
+    }
     //endregion
 
-    @Override
-    public void setContentView(@LayoutRes int layoutResID) {
-        super.setContentView(layoutResID);
-        ButterKnife.bind(this);
-    }
-
+    //region :::::::::::::::::::::::::::::::::: Callbacks
     public void logout(int mode) {
         Log.d(TAG, "logout: ");
         if (mode == 1) {
@@ -181,12 +182,14 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     }
 
     public void startMainActivity() {
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-        this.finish();
-    }
-
-    public void startUserListActivity() {
-        startActivity(new Intent(getApplicationContext(), UserListActivity.class));
+        if (!this.getClass().getName().contains("MainActivity")) {
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            this.finish();
+        } else {
+            for (int i = 0; i < mManager.getBackStackEntryCount(); i++) {
+                mManager.popBackStackImmediate();
+            }
+        }
     }
 
     public void openAppSettings() {
@@ -208,4 +211,15 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
             toolbar.inflateMenu(id);
         }
     }
+
+    @Override
+    public void setupToolbarWithoutNavMenu(Toolbar toolbar, @MenuRes int id) {
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            toolbar.inflateMenu(id);
+        }
+    }
+    //endregion
 }

@@ -25,6 +25,7 @@ public class CustomGlideModule implements GlideModule {
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
     private static final String TAG = Const.TAG_PREFIX + "CustomGlideModule";
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Module
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {
 
@@ -44,7 +45,9 @@ public class CustomGlideModule implements GlideModule {
     @Override
     public void registerComponents(Context context, Glide glide) {
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     public static void loadImage(final Drawable path, final ImageView target) {
         if (AppUtils.isEmptyOrNull(path, target)) {
             Log.e(TAG, "loadImage: path or target is null or empty.");
@@ -170,4 +173,5 @@ public class CustomGlideModule implements GlideModule {
             return null;
         }
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

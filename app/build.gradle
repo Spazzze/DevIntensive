@@ -1,7 +1,7 @@
 apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
-//butterKnife
+//annotations
 apply plugin: 'android-apt'
 
 
@@ -83,9 +83,6 @@ dependencies {
     compile libraries.supportAppCompat
     compile libraries.supportDesign
     compile libraries.supportCardView
-
-    compile libraries.butterKnife
-    apt libraries.butterKnifeCompiler
 
     compile libraries.glide
     compile libraries.timber

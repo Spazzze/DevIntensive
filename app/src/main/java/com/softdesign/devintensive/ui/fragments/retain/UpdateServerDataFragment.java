@@ -21,7 +21,7 @@ import static com.softdesign.devintensive.utils.AppUtils.filePathFromUri;
 
 public class UpdateServerDataFragment extends BaseNetworkFragment {
 
-    //region Request status
+    //region :::::::::::::::::::::::::::::::::::::::::: Request status
     @Override
     @SuppressWarnings("unchecked")
     public void onRequestComplete(Response response) {
@@ -37,9 +37,9 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
             runOperation(new FullUserDataOperation(res.getData().getUser()));
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Requests
+    //region :::::::::::::::::::::::::::::::::::::::::: Requests
     public void uploadUserPhoto(final String uri_SelectedImage) {
 
         if (uri_SelectedImage == null || !isExecutePossible()) return;
@@ -94,5 +94,5 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
             DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody()).enqueue(new NetworkCallback<>());
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

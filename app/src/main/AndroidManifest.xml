@@ -27,9 +27,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
 
-        <!-- BaseActivity -->
-        <activity android:name=".ui.activities.BaseActivity" />
-
         <!-- AuthActivity -->
         <activity
             android:name=".ui.activities.AuthActivity"
@@ -40,17 +37,6 @@
             android:name=".ui.activities.MainActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
-
-        <!-- UserListActivity -->
-        <activity
-            android:name=".ui.activities.UserListActivity"
-            android:launchMode="singleTask" />
-
-        <!-- UserProfileActivity -->
-        <activity
-            android:name=".ui.activities.UserProfileActivity"
-            android:launchMode="singleTask"
-            android:parentActivityName=".ui.activities.UserListActivity" />
 
         <!-- VKServiceActivity -->
         <activity

@@ -25,7 +25,7 @@ public class LoadUsersInfoFragment extends BaseNetworkFragment {
         downloadUserListIntoDB();
     }
 
-    //region <<<<<<<<<<<<<<<<<<<<Requests>>>>>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Requests
     public void downloadUserListIntoDB() {
 
         if (this.mStatus == Status.RUNNING) {
@@ -81,9 +81,9 @@ public class LoadUsersInfoFragment extends BaseNetworkFragment {
             DATA_MANAGER.likeUser(userId).enqueue(callback);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<<<<UTIL>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     private void getUserListFromServer() {
         DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<BaseListModel<UserListRes>>() {
             @Override
@@ -101,5 +101,5 @@ public class LoadUsersInfoFragment extends BaseNetworkFragment {
             }
         });
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

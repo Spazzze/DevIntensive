@@ -3,11 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
-        <variable
-            name="behavior"
-            type="com.softdesign.devintensive.ui.view.behaviors.CustomLinearLayoutBehavior" />
-
         <variable
             name="profile"
             type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />

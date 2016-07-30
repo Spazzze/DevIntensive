@@ -84,7 +84,9 @@ ext.libraries = [
 
         butterKnife              : "com.jakewharton:butterknife:$versions.butterKnife",
         butterKnifeCompiler      : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
+
         projectLombok            : "org.projectlombok:lombok:$versions.projectLombok",
+
         chronos                  : "com.redmadrobot:chronos:$versions.chronos",
 
         // Graph

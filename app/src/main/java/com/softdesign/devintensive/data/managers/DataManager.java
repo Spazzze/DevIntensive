@@ -39,6 +39,7 @@ public class DataManager {
         this.mDaoSession = DevIntensiveApplication.getDaoSession();
     }
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     public static DataManager getInstance() {
         return INSTANCE;
     }
@@ -50,15 +51,15 @@ public class DataManager {
     public PreferencesManager getPreferencesManager() {
         return mPreferencesManager;
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //endregion
-    //region ========== Auth ===========
+    //region :::::::::::::::::::::::::::::::::::::::::: Auth
     public boolean isUserAuthenticated() {
         return !mPreferencesManager.loadBuiltInAuthId().isEmpty() && !mPreferencesManager.loadBuiltInAuthToken().isEmpty();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ========== Network ===========
+    //region :::::::::::::::::::::::::::::::::::::::::: Network
     public Call<BaseModel<UserAuthRes>> loginUser(@Body UserLoginReq req) {
         return mRestService.loginUser(req);
     }
@@ -92,5 +93,5 @@ public class DataManager {
     public Call<BaseModel<ProfileValues>> unlikeUser(@Path("userId") String userId) {
         return mRestService.unlikeUser(userId);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

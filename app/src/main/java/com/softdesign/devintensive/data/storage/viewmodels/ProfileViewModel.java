@@ -5,7 +5,6 @@ import android.databinding.Bindable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.data.managers.DataManager;
@@ -51,6 +50,10 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     private boolean isList = false;
 
     //region ::::::::::::::::::::::::::::::::::: Constructors
+
+    public ProfileViewModel() {
+    }
+
     public ProfileViewModel(User user, String photoUri, String avatarUri) {
 
         isAuthorizedUser = true;
@@ -65,8 +68,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mVK = user.getContacts().getVk();
         String bio = user.getPublicInfo().getBio();
         mBio = AppUtils.isEmptyOrNull(bio) ? "" : bio.trim();
-        mUserPhotoUri = photoUri;
-        Log.d(TAG, "ProfileViewModel: " + photoUri);
+        mUserPhotoUri = AppUtils.isEmptyOrNull(photoUri) ? mUserPhoto : photoUri;
         mUserAvatarUri = AppUtils.isEmptyOrNull(avatarUri) ? user.getPublicInfo().getAvatar() : avatarUri;
         mRemoteId = user.getId();
         mHometask = user.getProfileValues().getHomeTask();
@@ -88,6 +90,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         mInternalId = user.getInternalId();
         mRemoteId = user.getRemoteId();
         mHometask = user.getHomeTask();
+        mUserPhotoUri = mUserPhoto;
 
         mRepoViewModels = user.getRepoViewModelsList();
         mLikesBy = new HashSet<>(user.getLikesList());
@@ -95,11 +98,11 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         isLiked = mLikesBy.contains(AUTH_USER_ID);
         isList = true;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Utils
-    public void updateValues(@Nullable ProfileViewModel model) {
-        if (model == null) return;
+    public ProfileViewModel updateValues(@Nullable ProfileViewModel model) {
+        if (model == null) return null;
 
         if (!AppUtils.equals(this.mUserPhoto, model.getUserPhoto())) {
             setUserPhoto(model.getUserPhoto());
@@ -176,6 +179,8 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         if (isLiked() != model.isLiked()) {
             setLiked(model.isLiked());
         }
+
+        return this;
     }
 
     public void addEmptyRepo() {
@@ -241,7 +246,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         }};
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Getters
     @Bindable
@@ -348,7 +353,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     public List<RepoViewModel> getRepoViewModels() {
         return mRepoViewModels;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Setters
     public void setList(boolean list) {
@@ -481,7 +486,7 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             notifyPropertyChanged(BR.repoViewModels);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Parcel
     protected ProfileViewModel(Parcel in) {
@@ -552,5 +557,5 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
             return new ProfileViewModel[size];
         }
     };
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

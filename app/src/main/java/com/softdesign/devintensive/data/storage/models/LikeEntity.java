@@ -24,7 +24,7 @@ public class LikeEntity {
         this.remoteId = whoLikedId;
     }
 
-    //region Generated
+    //region :::::::::::::::::::::::::::::::::::::::::: Generated
     /**
      * Used for active entity operations.
      */
@@ -117,5 +117,5 @@ public class LikeEntity {
     @Generated(hash = 1383136376)
     public LikeEntity() {
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

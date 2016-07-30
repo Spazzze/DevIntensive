@@ -17,10 +17,6 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
         mAdapter = adapter;
     }
 
-    public void swapAdapter(ItemTouchHelperAdapter adapter) {
-        mAdapter = adapter;
-    }
-
     @Override
     public boolean isLongPressDragEnabled() {
         return true;

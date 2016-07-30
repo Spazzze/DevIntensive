@@ -33,6 +33,7 @@ public class BaseNetworkFragment extends ChronosFragment {
         FINISHED,
     }
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     public Status getStatus() {
         return mStatus;
     }
@@ -52,8 +53,9 @@ public class BaseNetworkFragment extends ChronosFragment {
         }
         return true;
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Fragment Life Cycle
+    //region :::::::::::::::::::::::::::::::::::::::::: Fragment Life Cycle
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -103,9 +105,9 @@ public class BaseNetworkFragment extends ChronosFragment {
         mCallbacks = null;
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Request status
+    //region :::::::::::::::::::::::::::::::::::::::::: Request status
     public void onRequestStarted() {
         mStatus = Status.RUNNING;
         mCancelled = false;
@@ -150,7 +152,7 @@ public class BaseNetworkFragment extends ChronosFragment {
         mStatus = Status.FINISHED;
         if (mCallbacks != null) mCallbacks.onRequestFinished();
     }
-//endregion
+//endregion ::::::::::::::::::::::::::::::::::::::::::
 
     public class NetworkCallback<T> implements Callback<T> {
 

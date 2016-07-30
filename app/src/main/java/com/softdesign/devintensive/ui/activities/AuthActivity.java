@@ -38,7 +38,7 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     private AuthNetworkFragment mAuthNetworkFragment;
     private final AuthViewModel mAuthViewModel = new AuthViewModel(AuthActivity.this);
 
-    //region onCreate
+    //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,9 +70,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         super.onSaveInstanceState(outState);
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Fragments
+    //region :::::::::::::::::::::::::::::::::::::::::: Fragments
     private void attachAuthFragment() {
         mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
         if (mAuthNetworkFragment == null) {
@@ -80,9 +80,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
             mFragmentManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region TaskCallbacks
+    //region :::::::::::::::::::::::::::::::::::::::::: TaskCallbacks
 
     @Override
     public void onRequestStarted() {
@@ -108,9 +108,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         hideProgressDialog();
         actionDependsOnFailTriesCount(count);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region onClick
+    //region :::::::::::::::::::::::::::::::::::::::::: onClick
 
     @Override
     public void onClick(View view) {
@@ -130,9 +130,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
                 break;
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Activity Results
+    //region :::::::::::::::::::::::::::::::::::::::::: Activity Results
     @Override
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -152,9 +152,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Background Operation Results
+    //region :::::::::::::::::::::::::::::::::::::::::: Background Operation Results
     @SuppressWarnings("unused")
     public void onOperationFinished(final UserLoginDataOperation.Result result) {
         if (result.isSuccessful() && result.getOutput() != null) {
@@ -163,9 +163,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
             mAuthBinding.authEmail.setSelection(mAuthViewModel.getLoginName().length());
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Login methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Login methods
 
     private void startSignIn() {
         if (mAuthNetworkFragment != null)
@@ -185,9 +185,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         startMainActivity();
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Ui methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Ui methods
 
     private void showSnackBar(String message) {
         Snackbar.make(mAuthBinding.coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
@@ -213,5 +213,5 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
         ERROR_STOP_HANDLER.removeCallbacksAndMessages(null);
         ERROR_STOP_HANDLER.postDelayed(() -> mAuthViewModel.setWrongPassword(false), AppConfig.ERROR_FADE_TIME);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

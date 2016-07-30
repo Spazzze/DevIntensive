@@ -48,7 +48,7 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         }
     }
 
-    //region --------------GETTERS-------------
+    //region :::::::::::::::::::::::::::::::::::::::::: Getters
     @Bindable
     public String getPassword() {
         return mPassword;
@@ -72,9 +72,9 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
     public BaseActivity getActivity() {
         return mActivity;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region -------------SETTERS----------------
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
     public void clearData() {
         setPassword(null);
         setLoginName(null);
@@ -104,9 +104,9 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         mActivity = activity;
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<PARCEL>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Parcel
     protected AuthViewModel(Parcel in) {
         mLoginName = in.readString();
         mPassword = in.readString();
@@ -139,5 +139,5 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
             return new AuthViewModel[size];
         }
     };
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

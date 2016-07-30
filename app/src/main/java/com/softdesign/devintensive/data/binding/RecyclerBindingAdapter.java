@@ -16,6 +16,7 @@ public class RecyclerBindingAdapter<T> extends RecyclerView.Adapter<RecyclerBind
     private List<T> items = new ArrayList<>();
     private BindingHolder.OnItemClickListener mItemClickListener;
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Adapter
     public RecyclerBindingAdapter(int holderLayout, int variableId, List<T> items, BindingHolder.OnItemClickListener onItemClickListener) {
         this.mItemClickListener = onItemClickListener;
         this.holderLayout = holderLayout;
@@ -39,7 +40,9 @@ public class RecyclerBindingAdapter<T> extends RecyclerView.Adapter<RecyclerBind
     public int getItemCount() {
         return items.size();
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: ViewHolder
     public static class BindingHolder extends RecyclerView.ViewHolder {
         private ViewDataBinding binding;
 
@@ -61,4 +64,5 @@ public class RecyclerBindingAdapter<T> extends RecyclerView.Adapter<RecyclerBind
             void onItemClick(int position);
         }
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

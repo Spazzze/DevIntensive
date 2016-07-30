@@ -41,7 +41,7 @@ public class NavHeaderViewModel extends BaseViewModel implements Parcelable {
         }
     }
 
-    //region <<<<<<<<<<<<<GETTERS>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Getters
     @Bindable
     public boolean isEditing() {
         return isEditing;
@@ -61,9 +61,9 @@ public class NavHeaderViewModel extends BaseViewModel implements Parcelable {
     public String getUserAvatarUri() {
         return mUserAvatarUri;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<SETTERS>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
 
     public void setEditing(boolean editing) {
         isEditing = editing;
@@ -85,9 +85,9 @@ public class NavHeaderViewModel extends BaseViewModel implements Parcelable {
         notifyPropertyChanged(BR.userAvatarUri);
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<PARCEL>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Parcel
     protected NavHeaderViewModel(Parcel in) {
         mNavFullName = in.readString();
         mNavEmail = in.readString();
@@ -120,5 +120,5 @@ public class NavHeaderViewModel extends BaseViewModel implements Parcelable {
             return new NavHeaderViewModel[size];
         }
     };
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

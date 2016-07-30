@@ -43,6 +43,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         void onErrorCount(int count);
     }
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Life cycle
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +61,9 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
             throw new IllegalStateException("Parent activity must implement AuthTaskCallbacks");
         }
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Requests Status
     @Override
     public void onRequestHttpError(AppUtils.BackendHttpError error) {
 
@@ -106,8 +109,9 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                 !AppUtils.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
         super.onRequestComplete(null);
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Network Requests
+    //region :::::::::::::::::::::::::::::::::::::::::: Network Requests
 
     public void signIn(String id, String pass) {
 
@@ -161,8 +165,9 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         });
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
     private void saveUserAuthData(@NonNull BaseModel<UserAuthRes> userModelRes) {
         DATA_MANAGER.getPreferencesManager().saveBuiltInAuthInfo(
                 userModelRes.getData().getUser().getId(),
@@ -212,6 +217,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                 .asBitmap()
                 .into(photoTarget);
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }
 
 

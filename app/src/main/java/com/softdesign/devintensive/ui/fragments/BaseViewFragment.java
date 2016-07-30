@@ -23,11 +23,30 @@ public class BaseViewFragment extends ChronosFragment {
     public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final EventBus BUS = EventBus.getDefault();
-    public static final Context APPCONTEXT = DevIntensiveApplication.getContext();
+    public static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     public MainActivityCallback mCallbacks;
 
-    //region <<<<<<<<<<<<<<<<LIFE CYCLE>>>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Life cycle
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause: ");
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "onResume: ");
+        super.onResume();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: ");
+        super.onCreate(savedInstanceState);
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -84,8 +103,8 @@ public class BaseViewFragment extends ChronosFragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState: ");
         super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState: ");
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

@@ -24,7 +24,7 @@ public class RepositoryEntity {
 
     private String userRemoteId;
 
-    //region Generated
+    //region :::::::::::::::::::::::::::::::::::::::::: Generated
     /**
      * Used for active entity operations.
      */
@@ -95,7 +95,7 @@ public class RepositoryEntity {
         myDao = daoSession != null ? daoSession.getRepositoryEntityDao() : null;
     }
 
-    //region Standard Getters And Setters
+    //region :::::::::::::::::::::::::::::::::::::::::: Standard Getters And Setters
     public String getUserRemoteId() {
         return this.userRemoteId;
     }
@@ -127,8 +127,8 @@ public class RepositoryEntity {
     public void setId(Long id) {
         this.id = id;
     }
-    //endregion
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     public RepositoryEntity(Repo repo, String userId) {
         this.repositoryName = repo.getGit();

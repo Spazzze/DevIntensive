@@ -24,7 +24,6 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
-    private static final String TAG = Const.TAG_PREFIX + "DatabaseOperation";
 
     public enum Sort {
         RATING,
@@ -100,7 +99,8 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         }
         return null;
     }
-    //region Main methods
+    
+    //region :::::::::::::::::::::::::::::::::::::::::: Main methods
 
     private void updateUserInDB(String likedUserId, ProfileValues values) {
         UserEntity likedEntity = findUserInDB(likedUserId);
@@ -178,7 +178,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                         .build()
                         .list();
             } catch (Exception e) {
-                Log.e("DEV", "sortDB: " + e.getMessage());
+                Log.e(TAG, "sortDB: " + e.getMessage());
             }
         } else {
             try {
@@ -188,7 +188,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                         .build()
                         .list();
             } catch (Exception e) {
-                Log.e("DEV", "sortDB: " + e.getMessage());
+                Log.e(TAG, "sortDB: " + e.getMessage());
             }
         }
 
@@ -226,9 +226,9 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             mDaoSession.getUserEntityDao().update(firstEntity);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Functional methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Functional methods
     private int findMaxInternalId(List<UserEntity> curDB) {
         int maxInternalId = 0;
         for (UserEntity u : curDB) {
@@ -251,9 +251,9 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         }
         return -1;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Result
+    //region :::::::::::::::::::::::::::::::::::::::::: Result
     @NonNull
     @Override
     public Class<? extends ChronosOperationResult<List<UserEntity>>> getResultClass() {
@@ -262,5 +262,5 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
 
     public final static class Result extends ChronosOperationResult<List<UserEntity>> {
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

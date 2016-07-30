@@ -25,7 +25,7 @@ public class PreferencesManager {
         mContext = DevIntensiveApplication.getContext();
     }
 
-    //region User Data save & load
+    //region :::::::::::::::::::::::::::::::::::::::::: User Data save & load
 
     public User loadAllUserData() {
         String json = mSharedPreferences.getString(Const.USER_JSON_OBJ, null);
@@ -40,9 +40,9 @@ public class PreferencesManager {
     public String loadUserAvatar() {
         return mSharedPreferences.getString(Const.USER_PROFILE_AVATAR_URI, "");
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Our Primary Auth
+    //region :::::::::::::::::::::::::::::::::::::::::: Our Primary Auth
     public void saveBuiltInAuthInfo(String id, String token) {
         if (id != null && token != null && !id.isEmpty() && !token.isEmpty()) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
@@ -59,9 +59,9 @@ public class PreferencesManager {
     public String loadBuiltInAuthToken() {
         return mSharedPreferences.getString(Const.BUILTIN_ACCESS_TOKEN, "");
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Vk Auth
+    //region :::::::::::::::::::::::::::::::::::::::::: Vk Auth
     public void saveVKAuthorizationInfo(VKAccessToken res) {
         if (res != null) {
             res.saveTokenToSharedPreferences(mContext, Const.VK_ACCESS_TOKEN);
@@ -72,12 +72,12 @@ public class PreferencesManager {
     public VKAccessToken loadVKToken() {
         return VKAccessToken.tokenFromSharedPreferences(mContext, Const.VK_ACCESS_TOKEN);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region DB
+    //region :::::::::::::::::::::::::::::::::::::::::: DB
     public boolean isDBNeedsUpdate() {
         long updatedTime = mSharedPreferences.getLong(Const.DB_UPDATED_TIME_KEY, 0);
         return (new Date().getTime() - updatedTime) > AppConfig.DB_REFRESH_RATE;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

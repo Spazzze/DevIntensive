@@ -13,8 +13,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -26,6 +26,7 @@ import com.softdesign.devintensive.databinding.ActivityMainBinding;
 import com.softdesign.devintensive.databinding.ItemNavHeaderMainBinding;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
+import com.softdesign.devintensive.ui.fragments.UserListFragment;
 import com.softdesign.devintensive.ui.fragments.UserProfileFragment;
 import com.softdesign.devintensive.ui.fragments.retain.LoadUsersInfoFragment;
 import com.softdesign.devintensive.ui.fragments.retain.UpdateServerDataFragment;
@@ -35,8 +36,6 @@ import com.softdesign.devintensive.utils.Const;
 public class MainActivity extends BaseActivity implements MainActivityCallback, BaseTaskCallbacks,
         NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-    private final FragmentManager mFragmentManager = getFragmentManager();
-
     private ActivityMainBinding mMainBinding;
     private ItemNavHeaderMainBinding mNavHeaderBinding;
     private NavHeaderViewModel mNavHeaderViewModel;
@@ -44,6 +43,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     private LoadUsersInfoFragment mLoadUsersInfoFragment;
     private UpdateServerDataFragment mDataFragment;
     private UserProfileFragment mProfileFragment;
+    private UserListFragment mUserListFragment;
 
     //region :::::::::::::::::::::::::::::::::: OnCreate 
     @Override
@@ -57,15 +57,9 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
         attachDataFragment();
         attachLoadIntoDBFragment();
-        attachProfileFragment();
+        attachMainProfileFragment();
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu_main, menu);
-        return true;
-    }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Life Cycle 
     @Override
@@ -74,7 +68,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         outState.putParcelable(Const.PARCELABLE_KEY_NAV_VIEW, mNavHeaderViewModel);
         super.onSaveInstanceState(outState);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: OnClick
 
@@ -92,9 +86,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-                mMainBinding.drawer.openDrawer(GravityCompat.START);
-                return true;
             case R.id.toolbar_logout:
                 logout(1);
                 return true;
@@ -108,9 +99,10 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     public void onBackPressed() {
         if (mMainBinding.navView != null && mMainBinding.drawer.isDrawerOpen(GravityCompat.START)) {
             mMainBinding.drawer.closeDrawer(GravityCompat.START);
-        } else if (mProfileFragment != null && mProfileFragment.isEditing()) {
+        } else if (findProfileFragment() != null && mProfileFragment.isEditing()) {
             mProfileFragment.changeEditMode(false);
         } else {
+            unlockDrawer();
             super.onBackPressed();
         }
     }
@@ -119,8 +111,11 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.navMenu_userProfile:
+                startMainActivity();
+                break;
             case R.id.navMenu_team:
-                startUserListActivity();
+                attachUserListFragment();
                 break;
             case R.id.navMenu_options:
                 openAppSettings();
@@ -130,14 +125,14 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 break;
             default:
                 showToast(item.getTitle().toString());
-                item.setChecked(true);
                 break;
         }
+        item.setChecked(true);
         mMainBinding.drawer.closeDrawer(GravityCompat.START);
         return false;
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: UI
 
@@ -159,8 +154,26 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mNavHeaderViewModel = new NavHeaderViewModel(model);
             mNavHeaderBinding.setNavProfile(mNavHeaderViewModel);
         } else mNavHeaderViewModel.updateValues(model);
+    } //// TODO: 30.07.2016 нав меню лочить и нормально прописать для всех фрагментов
+
+    @Override
+    public void showProgressDialog() {
+        if (findUserListFragment() != null) {
+            Log.d(TAG, "showProgressDialog: 1");
+            mUserListFragment.showProgressDialog();
+        } else {
+            Log.d(TAG, "showProgressDialog: 2");
+            super.showProgressDialog();
+        }
     }
-    //endregion
+
+    @Override
+    public void hideProgressDialog() {
+        if (findUserListFragment() != null) mUserListFragment.hideProgressDialog();
+        else super.hideProgressDialog();
+    }
+
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Load data && Events
 
@@ -172,7 +185,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     public void onOperationFinished(final FullUserDataOperation.Result result) {
         if (result.isSuccessful()) {
             if (result.getOutput() != null) { //only Loading
-                Log.d(TAG, "onOperationFinished: ");
                 setNavView(result.getOutput());
             } else {
                 if (mNavHeaderViewModel == null) logout(0);
@@ -182,7 +194,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             if (mNavHeaderViewModel == null) logout(0);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Activity Results
     @Override
@@ -245,51 +257,92 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             }
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region  :::::::::::::::::::::::::::::::::: Fragments
+    public UserProfileFragment findProfileFragment() {
+        if (mProfileFragment == null) mProfileFragment = findFragment(UserProfileFragment.class);
+        return mProfileFragment;
+    }
 
-    private void attachProfileFragment() {
-        mProfileFragment = (UserProfileFragment) mFragmentManager.findFragmentByTag(UserProfileFragment.class.getName());
-        if (mProfileFragment == null) {
+    public UpdateServerDataFragment findDataFragment() {
+        if (mDataFragment == null) mDataFragment = findFragment(UpdateServerDataFragment.class);
+        return mDataFragment;
+    }
+
+    public LoadUsersInfoFragment findLoadUsersInfoFragment() {
+        if (mLoadUsersInfoFragment == null)
+            mLoadUsersInfoFragment = findFragment(LoadUsersInfoFragment.class);
+        return mLoadUsersInfoFragment;
+    }
+
+    public UserListFragment findUserListFragment() {
+        if (mUserListFragment == null) mUserListFragment = findFragment(UserListFragment.class);
+        return mUserListFragment;
+    }
+
+    public void attachOtherUserFragment(Bundle args) {
+        UserProfileFragment userProfileFragment = (UserProfileFragment) mManager.findFragmentByTag(Const.OTHER_USER_PROFILE_KEY);
+        if (userProfileFragment == null) {
+            userProfileFragment = new UserProfileFragment();
+            userProfileFragment.setArguments(args);
+            replaceMainFragment(userProfileFragment, true, Const.OTHER_USER_PROFILE_KEY);
+        }  else {
+            userProfileFragment.setArguments(args);
+            mManager.popBackStack(Const.OTHER_USER_PROFILE_KEY, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+    }
+
+    private void attachMainProfileFragment() {
+        if (findProfileFragment() == null) {
             mProfileFragment = new UserProfileFragment();
-            replaceMainFragment(mProfileFragment, false);
+            replaceMainFragment(mProfileFragment, false, UserProfileFragment.class.getName());
+        }  else {
+            mManager.popBackStack(UserProfileFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+    }
+
+    private void attachUserListFragment() {
+        if (findUserListFragment() == null) {
+            mUserListFragment = new UserListFragment();
+            replaceMainFragment(mUserListFragment, true, UserListFragment.class.getName());
+        } else {
+            mManager.popBackStack(UserListFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            replaceMainFragment(mUserListFragment, true, UserListFragment.class.getName());
         }
     }
 
     private void attachDataFragment() {
-        mDataFragment = (UpdateServerDataFragment) mFragmentManager.findFragmentByTag(UpdateServerDataFragment.class.getName());
-        if (mDataFragment == null) {
+        if (findDataFragment() == null) {
             mDataFragment = new UpdateServerDataFragment();
-            mFragmentManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
+            mManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
         }
     }
 
     private void attachLoadIntoDBFragment() {
-        mLoadUsersInfoFragment = (LoadUsersInfoFragment) mFragmentManager.findFragmentByTag(LoadUsersInfoFragment.class.getName());
-        if (mLoadUsersInfoFragment == null) {
+        if (findLoadUsersInfoFragment() == null) {
             mLoadUsersInfoFragment = new LoadUsersInfoFragment();
-            mFragmentManager.beginTransaction().add(mLoadUsersInfoFragment, LoadUsersInfoFragment.class.getName()).commit();
+            mManager.beginTransaction().add(mLoadUsersInfoFragment, LoadUsersInfoFragment.class.getName()).commit();
         }
     }
 
-    private void replaceMainFragment(Fragment fragment, boolean addToBackStack) {
-        FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.replace(R.id.container, fragment, fragment.getClass().getName());
+    private void replaceMainFragment(Fragment fragment, boolean addToBackStack, String tag) {
+        FragmentTransaction transaction = mManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        transaction.replace(R.id.container, fragment, tag);
         if (addToBackStack) {
-            transaction.addToBackStack(fragment.getClass().getName());
+            transaction.addToBackStack(tag);
         }
         transaction.commit();
     }
 
     @Override
     public void logout(int mode) {
-        if (mode == 1 && mProfileFragment != null) mProfileFragment.denySaving();
+        if (mode == 1 && findProfileFragment() != null) mProfileFragment.denySaving();
         super.logout(mode);
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Task Callbacks
     @Override
@@ -299,38 +352,68 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     @Override
     public void onRequestFinished() {
-
+        Log.d(TAG, "onRequestFinished: ");
+        hideProgressDialog();
+        if (findUserListFragment() != null) mUserListFragment.requestDataFromDB();
     }
 
     @Override
     public void onRequestFailed(String error) {
         Log.e(TAG, "onRequestFailed: " + error);
+        hideProgressDialog();
+        if (findUserListFragment() != null) {
+            if (mUserListFragment.getUsersAdapter() == null) {
+                showError(Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN, R.string.error_cannot_load_user_list);
+            } else {
+                showError(Const.DIALOG_SHOW_ERROR, R.string.error_cannot_load_user_list);
+            }
+        }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Fragments Callbacks
 
     @Override
+    public void unlockDrawer() {
+        mMainBinding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+    }
+
+    @Override
+    public void lockDrawer() {
+        mMainBinding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+    }
+
+    @Override
+    public void openDrawer() {
+        mMainBinding.drawer.openDrawer(GravityCompat.START);
+    }
+
+    @Override
+    public void closeCurrentFragment() {
+        mManager.popBackStackImmediate();
+    }
+
+    @Override
     public void loadAvatarFromGallery() {
-        if (mProfileFragment != null)
+        if (findProfileFragment() != null)
             mProfileFragment.loadImageFromGallery(Const.REQUEST_AVATAR_FROM_GALLERY);
     }
 
     @Override
     public void loadAvatarFromCamera() {
-        if (mProfileFragment != null)
+        if (findProfileFragment() != null)
             mProfileFragment.takeSnapshotFromCamera(Const.REQUEST_AVATAR_FROM_CAMERA);
     }
 
     @Override
     public void loadPhotoFromGallery() {
-        if (mProfileFragment != null)
+        if (findProfileFragment() != null)
             mProfileFragment.loadImageFromGallery(Const.REQUEST_PHOTO_FROM_GALLERY);
     }
 
     @Override
     public void loadPhotoFromCamera() {
-        if (mProfileFragment != null)
+        if (findProfileFragment() != null)
             mProfileFragment.takeSnapshotFromCamera(Const.REQUEST_PHOTO_FROM_CAMERA);
     }
 
@@ -338,23 +421,36 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     public void uploadUserData(ProfileViewModel model) {
         if (model == null) return;
         mNavHeaderViewModel.updateValues(model);
-        if (mDataFragment != null) mDataFragment.uploadUserData(model);
+        if (findDataFragment() != null) mDataFragment.uploadUserData(model);
     }
 
     @Override
     public void uploadUserPhoto(String uri) {
-        if (mDataFragment != null) mDataFragment.uploadUserPhoto(uri);
+        if (findDataFragment() != null) mDataFragment.uploadUserPhoto(uri);
     }
 
     @Override
     public void uploadUserAvatar(String uri) {
         mNavHeaderViewModel.setUserAvatarUri(uri);
-        if (mDataFragment != null) mDataFragment.uploadUserAvatar(uri);
+        if (findDataFragment() != null) mDataFragment.uploadUserAvatar(uri);
     }
 
     @Override
     public void updateNavViewModel(ProfileViewModel model) {
         mNavHeaderViewModel.updateValues(model);
     }
-    //endregion
+
+    @Override
+    public void forceRefreshUserListFromServer() {
+        showProgressDialog();
+        if (findLoadUsersInfoFragment() != null)
+            mLoadUsersInfoFragment.forceRefreshUserListIntoDB();
+    }
+
+    @Override
+    public void likeUser(String remoteId, boolean liked) {
+        if (findLoadUsersInfoFragment() != null) mLoadUsersInfoFragment.likeUser(remoteId, liked);
+    }
+
+//endregion ::::::::::::::::::::::::::::::::::::::::::
 }

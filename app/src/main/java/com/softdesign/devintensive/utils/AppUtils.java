@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
@@ -63,10 +64,9 @@ import retrofit2.Response;
  */
 @SuppressWarnings({"unused", "deprecation"})
 public class AppUtils {
-
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
 
-    //region NetworkUtils
+    //region :::::::::::::::::::::::::::::::::::::::::: Network
 
     /**
      * Checks if network is available at this time
@@ -76,9 +76,18 @@ public class AppUtils {
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region UIUtils
+    //region :::::::::::::::::::::::::::::::::::::::::: UI
+
+    public static int getScreenOrientation() {
+        Display getOrient = DevIntensiveApplication.getCurrentActivity().getWindowManager().getDefaultDisplay();
+        if (getOrient.getWidth() < getOrient.getHeight()) {
+            return Configuration.ORIENTATION_PORTRAIT;
+        } else {
+            return Configuration.ORIENTATION_LANDSCAPE;
+        }
+    }
 
     public static void openWebPage(@NonNull Context context, @Nullable String url) {
         if (url == null || url.isEmpty()) return;
@@ -221,9 +230,9 @@ public class AppUtils {
                 .setAction(actionButtonText, listener)
                 .show();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region IO system methods
+    //region :::::::::::::::::::::::::::::::::::::::::: IO system methods
 
     /**
      * creates empty png file at SDCARD in folder Pictures with name IMG_yyyyMMdd_HHmmss_1238162378618.png
@@ -283,9 +292,9 @@ public class AppUtils {
         }
         return filePath;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Packages and Activities methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Packages and Activities methods
 
     private static void startActivity(@NonNull Context context, @NonNull Intent intent) {
         if (!(context instanceof Activity)) {
@@ -330,9 +339,9 @@ public class AppUtils {
         }
     }
 
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Converters
+    //region :::::::::::::::::::::::::::::::::::::::::: Converters
     public static String getJsonFromObject(Object object, Class<?> typeClass) {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -393,9 +402,9 @@ public class AppUtils {
             }
         }};
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Comparison
+    //region :::::::::::::::::::::::::::::::::::::::::: Comparison
     public static boolean compareRepoModelLists(List<RepoViewModel> list1, List<RepoViewModel> list2) {
         HashMap<String, String> map1 = repoModelIntoMap(list1);
         HashMap<String, String> map2 = repoModelIntoMap(list2);
@@ -430,8 +439,7 @@ public class AppUtils {
         return (a == null) ? (b == null) : a.equals(b);
     }
 
-    public static <T> T notNull(T a, T b) {
-        //noinspection unchecked
+    public static <T> T nN(T a, T b) {
         return !isEmptyOrNull(a) ? a : b;
     }
 
@@ -452,9 +460,9 @@ public class AppUtils {
     public static boolean isEmptyOrNull(List<?> list) {
         return list == null || list.isEmpty();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ErrorUtils
+    //region :::::::::::::::::::::::::::::::::::::::::: Errors
 
     /**
      * Converts received from server http error into human-readable error
@@ -501,5 +509,5 @@ public class AppUtils {
             return new BackendHttpError("Cannot convert error", errorCode);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

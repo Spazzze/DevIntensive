@@ -17,6 +17,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 
@@ -24,9 +25,18 @@ import java.util.List;
 
 public class BindingAdapters {
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
+    public static final String TAG = Const.TAG_PREFIX + "BindingAdapters";
 
     private BindingAdapters() {
         throw new AssertionError();
+    }
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Overridden defaults
+    @BindingAdapter("android:layout_height")
+    public static void setLayoutHeight(View view, float height) {
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.height = (int) height;
+        view.setLayoutParams(layoutParams);
     }
 
     @BindingAdapter("layout_behavior")
@@ -42,11 +52,31 @@ public class BindingAdapters {
         }
     }
 
-    @BindingAdapter("android:layout_height")
-    public static void setLayoutHeight(View view, float height) {
-        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-        layoutParams.height = (int) height;
-        view.setLayoutParams(layoutParams);
+    @BindingAdapter("android:enabled")
+    public static void removeError(EditText editText, boolean isEnabled) {
+        Boolean tag = (Boolean) editText.getTag(R.id.et_errorHandler_tag);
+        if (tag == null || tag != isEnabled) {
+            if (!isEnabled) {
+                TextInputLayout parent = (TextInputLayout) editText.getParent();
+                if (parent != null) {
+                    parent.setErrorEnabled(false);
+                    parent.setError(null);
+                }
+            }
+            editText.setTag(R.id.et_errorHandler_tag, isEnabled);
+            editText.setEnabled(isEnabled);
+        }
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Custom
+    @BindingAdapter("offsetSystemWindow")
+    public static void offsetSystemWindow(View view, boolean isNeeded) {
+        if (!isNeeded) return;
+        CoordinatorLayout.LayoutParams cl = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+        if (cl == null) return;
+        cl.topMargin = (int) (AppUtils.getStatusBarHeight() + AppUtils.getAppBarSize());
+        view.setLayoutParams(cl);
     }
 
     @BindingAdapter("roundedImage")
@@ -73,22 +103,6 @@ public class BindingAdapters {
     @BindingAdapter("onClick")
     public static void bindOnClick(View view, final Runnable runnable) {
         view.setOnClickListener(v -> runnable.run());
-    }
-
-    @BindingAdapter("android:enabled")
-    public static void removeError(EditText editText, boolean isEnabled) {
-        Boolean tag = (Boolean) editText.getTag(R.id.et_errorHandler_tag);
-        if (tag == null || tag != isEnabled) {
-            if (!isEnabled) {
-                TextInputLayout parent = (TextInputLayout) editText.getParent();
-                if (parent != null) {
-                    parent.setErrorEnabled(false);
-                    parent.setError(null);
-                }
-            }
-            editText.setTag(R.id.et_errorHandler_tag, isEnabled);
-            editText.setEnabled(isEnabled);
-        }
     }
 
     @BindingAdapter("userInfoTextWatcher")
@@ -130,4 +144,5 @@ public class BindingAdapters {
             recyclerView.swapAdapter(adapter, false);
         }
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

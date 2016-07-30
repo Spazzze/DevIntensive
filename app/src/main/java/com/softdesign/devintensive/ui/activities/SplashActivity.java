@@ -18,9 +18,10 @@ import java.util.Date;
 public class SplashActivity extends AppCompatActivity implements AuthNetworkFragment.AuthTaskCallbacks {
 
     private static final String TAG = Const.TAG_PREFIX + "Splash Activity";
-    private final FragmentManager mFragmentManager = getFragmentManager();
+    private final FragmentManager mManager = getFragmentManager();
     private final long mTime = new Date().getTime();
 
+    //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,18 +33,19 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
             attachAuthFragment();
         }
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Fragments
+    //region :::::::::::::::::::::::::::::::::::::::::: Fragments
     private void attachAuthFragment() {
-        AuthNetworkFragment authNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
+        AuthNetworkFragment authNetworkFragment = (AuthNetworkFragment) mManager.findFragmentByTag(AuthNetworkFragment.class.getName());
         if (authNetworkFragment == null) {
             authNetworkFragment = new AuthNetworkFragment();
-            mFragmentManager.beginTransaction().add(authNetworkFragment, AuthNetworkFragment.class.getName()).commit();
+            mManager.beginTransaction().add(authNetworkFragment, AuthNetworkFragment.class.getName()).commit();
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region TaskCallbacks
+    //region :::::::::::::::::::::::::::::::::::::::::: TaskCallbacks
     @Override
     public void onRequestStarted() {
 
@@ -65,7 +67,7 @@ public class SplashActivity extends AppCompatActivity implements AuthNetworkFrag
     public void onErrorCount(int count) {
 
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     private void startAuthActivity() {
         startActivity(new Intent(this, AuthActivity.class));

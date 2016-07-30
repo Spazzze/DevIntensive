@@ -37,7 +37,7 @@ public class UserListRes extends BaseResponse{
     @Expose
     private String updated;
 
-    //region <<<<<<<<<<<<<<GETTERS>>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Getters
     public String getId() {
         return id;
     }
@@ -77,9 +77,9 @@ public class UserListRes extends BaseResponse{
     public String getFullName() {
         return String.format("%s %s", firstName, secondName);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region <<<<<<<<<<<<<SETTERS>>>>>>>>>>>>>
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
     public void setId(String id) {
         this.id = id;
     }
@@ -115,5 +115,5 @@ public class UserListRes extends BaseResponse{
     public void setUpdated(String updated) {
         this.updated = updated;
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

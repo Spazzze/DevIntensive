@@ -17,6 +17,8 @@ import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
+import com.softdesign.devintensive.ui.fragments.UserListFragment;
+import com.softdesign.devintensive.utils.AppUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +40,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private OnItemCLickListener mViewClickListener;
     private OnItemCLickListener mLikesClickListener;
 
-    //region Adapter
+    //region :::::::::::::::::::::::::::::::::::::::::: Adapter
     @Override
     public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
@@ -54,6 +56,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         }};
         mDragStartListener = dragStartListener;
         mFilter = new CustomUserListFilter(UsersAdapter.this);
+    }
+
+    public UsersAdapter(List<ProfileViewModel> userEntities, UserListFragment dragStartListener, OnItemCLickListener callUserProfileFragment, OnItemCLickListener likeUser) {
+
+        mUsers = userEntities;
+        mDragStartListener = dragStartListener;
+        mFilter = new CustomUserListFilter(UsersAdapter.this);
+        mViewClickListener = callUserProfileFragment;
+        mLikesClickListener = likeUser;
     }
 
     public UsersAdapter(List<UserEntity> users, OnStartDragListener dragStartListener, OnItemCLickListener viewClickListener, OnItemCLickListener likesClickListener) {
@@ -80,7 +91,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
 
         holder.getBinding().setProfile(mUsers.get(position));
-
     }
 
     @Override
@@ -115,6 +125,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     private void setUsers(List<ProfileViewModel> users) {
+        if (AppUtils.compareLists(users, mUsers)) return;
         synchronized (this) {
             mUsers = users;
         }
@@ -148,9 +159,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             return secondUserRemoteId;
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ViewHolder
+    //region :::::::::::::::::::::::::::::::::::::::::: ViewHolder
     public static class UserViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
 
         private ItemUserListBinding mBinding;
@@ -202,9 +213,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             itemView.setBackgroundColor(0);
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Filter
+    //region :::::::::::::::::::::::::::::::::::::::::: Filter
     public static class CustomUserListFilter extends Filter {
 
         private final UsersAdapter mAdapter;
@@ -245,6 +256,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             this.mAdapter.notifyDataSetChanged();
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }
 
