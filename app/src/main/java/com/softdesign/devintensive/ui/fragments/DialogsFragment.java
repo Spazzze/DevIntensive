@@ -2,9 +2,9 @@ package com.softdesign.devintensive.ui.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 
 import com.softdesign.devintensive.R;
@@ -12,7 +12,7 @@ import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.Const;
 
-public class DialogsFragment extends DialogFragment {
+public class DialogsFragment extends android.support.v4.app.DialogFragment {
 
     private MainActivityCallback mMainActivityCallback;
     private BaseActivityCallback mBaseActivityCallback;
@@ -47,16 +47,17 @@ public class DialogsFragment extends DialogFragment {
         }
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int type = getArguments().getInt(Const.DIALOG_FRAGMENT_KEY);
         switch (type) {
             case Const.DIALOG_LOAD_PROFILE_PHOTO:
                 if (mMainActivityCallback != null) return loadPhotoDialog();
-                else return null;
+                else errorAlertDialog(getString(R.string.error));
             case Const.DIALOG_LOAD_PROFILE_AVATAR:
                 if (mMainActivityCallback != null) return loadAvatarDialog();
-                else return null;
+                else errorAlertDialog(getString(R.string.error));
             case Const.DIALOG_SHOW_ERROR:
                 return errorAlertDialog(getArguments().getString(Const.DIALOG_CONTENT_KEY));
             case Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN:

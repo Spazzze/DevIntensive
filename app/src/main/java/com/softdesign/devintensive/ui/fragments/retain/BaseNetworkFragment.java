@@ -3,7 +3,7 @@ package com.softdesign.devintensive.ui.fragments.retain;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.redmadrobot.chronos.gui.fragment.ChronosFragment;
+import com.redmadrobot.chronos.gui.fragment.ChronosSupportFragment;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
@@ -15,7 +15,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class BaseNetworkFragment extends ChronosFragment {
+public class BaseNetworkFragment extends ChronosSupportFragment {
 
     public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
 

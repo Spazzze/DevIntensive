@@ -1,8 +1,5 @@
 package com.softdesign.devintensive.ui.activities;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -13,6 +10,9 @@ import android.provider.Settings;
 import android.support.annotation.IdRes;
 import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -39,7 +39,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
     public static final EventBus BUS = EventBus.getDefault();
-    public final FragmentManager mManager = getFragmentManager();
+    public final FragmentManager mManager = getSupportFragmentManager();
     private ProgressDialog mProgressDialog;
 
     //region :::::::::::::::::::::::::::::::::: Activity's LifeCycle
@@ -138,12 +138,12 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     public void showDialogFragment(int dialogId) {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId);
-        newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
+        newFragment.show(getSupportFragmentManager(), newFragment.getClass().toString() + dialogId);
     }
 
     public void showDialogFragment(int dialogId, String message) {
         DialogFragment newFragment = DialogsFragment.newInstance(dialogId, message);
-        newFragment.show(getFragmentManager(), newFragment.getClass().toString() + dialogId);
+        newFragment.show(getSupportFragmentManager(), newFragment.getClass().toString() + dialogId);
     }
     //endregion
 
@@ -161,7 +161,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
 
     @SuppressWarnings("unchecked")
     public <T extends Fragment> T findFragment(Class<T> clazz) {
-        return (T) getFragmentManager().findFragmentByTag(clazz.getName());
+        return (T) getSupportFragmentManager().findFragmentByTag(clazz.getName());
     }
     //endregion
 

@@ -32,17 +32,22 @@ import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperCallback;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
+import com.yalantis.contextmenu.lib.ContextMenuDialogFragment;
+import com.yalantis.contextmenu.lib.MenuObject;
+import com.yalantis.contextmenu.lib.MenuParams;
+import com.yalantis.contextmenu.lib.interfaces.OnMenuItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserListFragment extends BaseViewFragment implements OnStartDragListener {
+public class UserListFragment extends BaseViewFragment implements OnStartDragListener, OnMenuItemClickListener {
 
     private FragmentUserListBinding mListBinding;
 
     private UsersAdapter mUsersAdapter;
     private ItemTouchHelper mItemTouchHelper;
     private Sort mSort = Sort.CUSTOM;
+    private ContextMenuDialogFragment mMenuDialogFragment;
 
     //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Nullable
@@ -113,6 +118,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     //region :::::::::::::::::::::::::::::::::::::::::: UI
     private void initFields(Bundle savedInstanceState) {
         Log.d(TAG, "initFields: ");
+        setupMenu();
         mCallbacks.setupToolbar(mListBinding.toolbar, R.menu.toolbar_menu_user_list);
 
         mListBinding.userList.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -130,7 +136,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         if (savedList != null) {
             resumeUserListAdapter(savedList);
         } else {
-            requestDataFromDB();
+            requestDataFromDB(Sort.CUSTOM);
         }
     }
 
@@ -140,6 +146,60 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     public void showProgressDialog() {
         if (mListBinding != null) mListBinding.swipeRefresh.setRefreshing(true);
+    }
+
+    public void setupMenu() {
+
+        MenuObject close = new MenuObject();
+        close.setResource(R.drawable.ic_close_accent);
+
+        MenuObject favourites = new MenuObject(R.string.header_favourites);
+        favourites.setResource(R.drawable.ic_favourites_accent);
+        favourites.setId(R.id.favourites_menu);
+        favourites.setBgColor(R.color.color_accent);
+
+        MenuObject sortByRating = new MenuObject(R.string.header_sortByRating);
+        sortByRating.setResource(R.drawable.ic_sort_descending_accent);
+        sortByRating.setId(R.id.sortByRating_menu);
+
+        MenuObject sortByCode = new MenuObject(R.string.header_sortByCode);
+        sortByCode.setResource(R.drawable.ic_sort_descending_accent);
+        sortByCode.setId(R.id.sortByCode_menu);
+
+        MenuObject sortByCustom = new MenuObject(R.string.header_sortByCustom);
+        sortByCustom.setResource(R.drawable.ic_custom_sort_accent);
+        sortByCustom.setId(R.id.sortByCustom_menu);
+
+        MenuObject resetCustomSort = new MenuObject(R.string.header_resetCustomSort);
+        resetCustomSort.setResource(R.drawable.ic_reset_custom_sort_accent);
+        resetCustomSort.setId(R.id.resetCustomSort_menu);
+
+        MenuObject refresh = new MenuObject(R.string.header_refresh);
+        refresh.setResource(R.drawable.ic_refresh_accent);
+        refresh.setId(R.id.refresh_menu);
+
+        List<MenuObject> menuObjects = new ArrayList<>();
+
+        menuObjects.add(close);
+        menuObjects.add(favourites);
+        menuObjects.add(sortByRating);
+        menuObjects.add(sortByCode);
+        menuObjects.add(sortByCustom);
+        menuObjects.add(resetCustomSort);
+        menuObjects.add(refresh);
+
+        MenuParams menuParams = new MenuParams();
+        menuParams.setActionBarSize((int) AppUtils.getAppBarSize());
+        menuParams.setMenuObjects(menuObjects);
+        menuParams.setClosableOutside(true);
+        menuParams.setFitsSystemWindow(true);
+        menuParams.setClipToPadding(false);
+        menuParams.setShowAnimationDuration(50);
+        menuParams.setHideAnimationDuration(0);
+        menuParams.setTextClickable(false);
+
+        mMenuDialogFragment = ContextMenuDialogFragment.newInstance(menuParams);
+        mMenuDialogFragment.setItemClickListener(this);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
@@ -157,28 +217,39 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     }
 
     @Override
+    public void onMenuItemClick(View v, int position) {
+
+        switch (v.getId()) {
+            case R.id.favourites_menu:
+                requestDataFromDB(Sort.FAVOURITES);
+                break;
+            case R.id.sortByRating_menu:
+                requestDataFromDB(Sort.RATING);
+                break;
+            case R.id.sortByCode_menu:
+                requestDataFromDB(Sort.CODE);
+                break;
+            case R.id.sortByCustom_menu:
+                requestDataFromDB(Sort.CUSTOM);
+                break;
+            case R.id.resetCustomSort_menu:
+                resetCustomSorting();
+                break;
+            case R.id.refresh_menu:
+                forceRefreshUserListFromServer();
+                break;
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 mCallbacks.openDrawer();
                 return true;
-            case R.id.toolbar_refresh:
-                forceRefreshUserListFromServer();
-                return true;
-            case R.id.toolbar_sortByRating:
-                mSort = Sort.RATING;
-                requestDataFromDB();
-                return true;
-            case R.id.toolbar_sortByCode:
-                mSort = Sort.CODE;
-                requestDataFromDB();
-                return true;
-            case R.id.toolbar_customSort:
-                mSort = Sort.CUSTOM;
-                requestDataFromDB();
-                return true;
-            case R.id.toolbar_customReset:
-                resetCustomSorting();
+            case R.id.toolbar_menu:
+                if (mMenuDialogFragment != null)
+                    mMenuDialogFragment.show(getFragmentManager(), mMenuDialogFragment.getClass().getSimpleName());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -235,6 +306,11 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     public void requestDataFromDB() {
         runOperation(new DatabaseOperation(mSort));
+    }
+
+    private void requestDataFromDB(Sort sort) {
+        mSort = sort;
+        runOperation(new DatabaseOperation(sort));
     }
 
     private void forceRefreshUserListFromServer() {

@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/fab_right_space"
             android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@{profile.editMode ? @drawable/ic_done_black_24dp : @drawable/ic_edit_black_24dp}"
+            android:src="@{profile.editMode ? @drawable/ic_done_white : @drawable/ic_edit_white}"
             android:visibility="@{profile.authorizedUser}"
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom|right" />

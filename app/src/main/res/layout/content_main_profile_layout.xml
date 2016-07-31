@@ -157,7 +157,7 @@
                 <ImageView
                     android:id="@+id/addGitHub_img"
                     style="@style/profileItem_icon.left"
-                    android:src="@{profile.editMode ? @drawable/ic_add_circle_accent : @drawable/ic_github_circle}"
+                    android:src="@{profile.editMode ? @drawable/ic_add_circle_accent : @drawable/ic_github_circle_grey}"
                     app:onClick="@{profile::addEmptyRepo}" />
 
                 <android.support.v7.widget.RecyclerView

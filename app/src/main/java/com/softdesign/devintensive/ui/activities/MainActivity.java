@@ -1,9 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -11,6 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -329,7 +329,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     private void replaceMainFragment(Fragment fragment, boolean addToBackStack, String tag) {
         FragmentTransaction transaction = mManager.beginTransaction();
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.replace(R.id.container, fragment, tag);
         if (addToBackStack) {
             transaction.addToBackStack(tag);

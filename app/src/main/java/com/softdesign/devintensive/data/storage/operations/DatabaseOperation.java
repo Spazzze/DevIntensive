@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.redmadrobot.chronos.ChronosOperationResult;
+import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
@@ -28,6 +29,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         RATING,
         CODE,
         CUSTOM,
+        FAVOURITES,
     }
 
     final DaoSession mDaoSession = DATA_MANAGER.getDaoSession();
@@ -180,6 +182,24 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                         .orderAsc(sortProperty)
                         .build()
                         .list();
+            } catch (Exception e) {
+                Log.e(TAG, "sortDB: " + e.getMessage());
+            }
+        } else if (sorting == Sort.FAVOURITES) {
+            String myId = DataManager.getInstance().getPreferencesManager().loadBuiltInAuthId();
+            try {
+                userList = mDaoSession
+                        .queryBuilder(UserEntity.class)
+                        .orderDesc(sortProperty)
+                        .build()
+                        .list();
+                List<UserEntity> likedUserList = new ArrayList<>();
+                for (UserEntity u : userList) {
+                    if (u.getLikesList().size() > 0 && u.getLikesList().contains(myId)) {
+                        likedUserList.add(u);
+                    }
+                }
+                return likedUserList;
             } catch (Exception e) {
                 Log.e(TAG, "sortDB: " + e.getMessage());
             }

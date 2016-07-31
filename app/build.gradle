@@ -67,6 +67,8 @@ android {
 
 dependencies {
 
+    compile project(path: ':context-menu.android')
+
     compile(libraries.retrofit) {
         exclude module: 'okhhtp'
     }

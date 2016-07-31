@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.ui.activities;
 
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -33,7 +32,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     private static final Handler ERROR_STOP_HANDLER = new Handler();
 
-    private final FragmentManager mFragmentManager = getFragmentManager();
     private ActivityAuthBinding mAuthBinding;
     private AuthNetworkFragment mAuthNetworkFragment;
     private final AuthViewModel mAuthViewModel = new AuthViewModel(AuthActivity.this);
@@ -74,10 +72,10 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     //region :::::::::::::::::::::::::::::::::::::::::: Fragments
     private void attachAuthFragment() {
-        mAuthNetworkFragment = (AuthNetworkFragment) mFragmentManager.findFragmentByTag(AuthNetworkFragment.class.getName());
+        mAuthNetworkFragment = (AuthNetworkFragment) mManager.findFragmentByTag(AuthNetworkFragment.class.getName());
         if (mAuthNetworkFragment == null) {
             mAuthNetworkFragment = new AuthNetworkFragment();
-            mFragmentManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
+            mManager.beginTransaction().add(mAuthNetworkFragment, AuthNetworkFragment.class.getName()).commit();
         }
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::

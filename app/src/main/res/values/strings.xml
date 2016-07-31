@@ -1,15 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <integer name="com_vk_sdk_AppId">5535661</integer>
-    <string name="facebook_app_id">1741889442760936</string>
-    <item name="et_TextWatcher_tag" type="id" />
-    <item name="et_errorHandler_tag" type="id" />
-    <item name="repo_recycleView_tag" type="id" />
-    <item name="imageUrl_tag" type="id" />
-    <item name="avatar_tag" type="id" />
-    <item name="avatarEdit_tag" type="id" />
-    <item name="height_tag" type="id" />
-    <item name="behavior_tag" type="id" />
-
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
         <item>Выбрать из галереи</item>
@@ -42,7 +31,7 @@
     <string name="header.allow">Разрешить</string>
     <string name="header.login">Войти</string>
     <string name="header.logout">Выйти</string>
-    <string name="header.refresh">Обновить с сервера</string>
+    <string name="header.refresh">Обновить</string>
     <string name="header.sortByRating">Сортировка по рейтингу</string>
     <string name="header.sortByCode">Сортировка по строкам кода</string>
     <string name="header.sortByCustom">Своя сортировка</string>
@@ -52,6 +41,8 @@
     <string name="header.view">Просмотр</string>
     <string name="header.current_homeTask">Hometask</string>
     <string name="header.like">Любо \u0020</string>
+    <string name="header.resetCustomSort">Сбросить свою сортировку</string>
+    <string name="header.favourites">Закладки</string>
 
     <!--Errors-->
     <string name="error">Ошибка</string>
@@ -110,7 +101,6 @@
     </string>
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
-    <string name="header.resetCustomSort">Обнулить кастомную</string>
 
     <plurals name="projects">
         <item quantity="zero">проектов</item>
