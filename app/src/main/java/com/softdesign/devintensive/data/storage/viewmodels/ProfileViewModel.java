@@ -12,6 +12,7 @@ import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 import java.util.ArrayList;
@@ -101,6 +102,11 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Utils
+    public int set_16_9_AspectHeight(){
+        int width = AppUtils.getScreenWidth();
+        return (int) (width / Const.ASPECT_RATIO_16_9);
+    }
+
     public ProfileViewModel updateValues(@Nullable ProfileViewModel model) {
         if (model == null) return null;
 

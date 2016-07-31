@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.storage.operations.ClearGlideCacheOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation.Sort;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
@@ -59,7 +61,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_menu_search, menu);
+        inflater.inflate(R.menu.toolbar_menu_user_list, menu);
 
         MenuItem searchItem = menu.findItem(R.id.search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
@@ -111,7 +113,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     //region :::::::::::::::::::::::::::::::::::::::::: UI
     private void initFields(Bundle savedInstanceState) {
         Log.d(TAG, "initFields: ");
-        mCallbacks.setupToolbar(mListBinding.toolbar, R.menu.toolbar_menu_search);
+        mCallbacks.setupToolbar(mListBinding.toolbar, R.menu.toolbar_menu_user_list);
 
         mListBinding.userList.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListBinding.swipeRefresh.setOnRefreshListener(this::forceRefreshUserListFromServer);
@@ -130,11 +132,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         } else {
             requestDataFromDB();
         }
-    }
-
-    @Override
-    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
-        mItemTouchHelper.startDrag(viewHolder);
     }
 
     public void hideProgressDialog() {
@@ -180,10 +177,20 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
                 mSort = Sort.CUSTOM;
                 requestDataFromDB();
                 return true;
+            case R.id.toolbar_customReset:
+                resetCustomSorting();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        mItemTouchHelper.startDrag(viewHolder);
+        mUsersAdapter.getUsers().get(viewHolder.getAdapterPosition()).setMoving(true);
+    }
+
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Events
@@ -221,6 +228,10 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Data
+    public void resetCustomSorting() {
+        mSort = Sort.CUSTOM;
+        runOperation(new DatabaseOperation(BaseChronosOperation.Action.RESET));
+    }
 
     public void requestDataFromDB() {
         runOperation(new DatabaseOperation(mSort));
@@ -228,6 +239,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     private void forceRefreshUserListFromServer() {
         Log.d(TAG, "forceRefreshUserListFromServer: ");
+        runOperation(new ClearGlideCacheOperation());
         mCallbacks.forceRefreshUserListFromServer();
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
@@ -245,7 +257,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     private void initUserListAdapter(List<UserEntity> userEntities) {
         mUsersAdapter = new UsersAdapter(userEntities, this, this::callUserProfileFragment, this::likeUser);
-
+        mUsersAdapter.setSort(mSort);
         initRecycleView();
     }
 
@@ -269,7 +281,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     private void updateUserListAdapter(List<UserEntity> userEntities) {
         Log.d(TAG, "updateUserListAdapter: ");
-        mUsersAdapter.setUsersFromDB(userEntities);
+        mUsersAdapter.setUsersFromDB(userEntities, mSort);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

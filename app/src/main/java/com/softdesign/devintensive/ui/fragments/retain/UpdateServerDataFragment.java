@@ -40,16 +40,16 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Requests
-    public void uploadUserPhoto(final String uri_SelectedImage) {
+    public void uploadUserPhoto(final String imageUri) {
 
-        if (uri_SelectedImage == null || !isExecutePossible()) return;
+        if (imageUri == null || imageUri.startsWith("http") || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserPhoto: ");
 
         synchronized (this) {
             onRequestStarted();
 
-            File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
+            File file = new File(filePathFromUri(Uri.parse(imageUri)));
 
             final RequestBody requestFile =
                     RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
@@ -62,15 +62,15 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         }
     }
 
-    public void uploadUserAvatar(final String uri_SelectedImage) {
+    public void uploadUserAvatar(final String imageUri) {
 
-        if (uri_SelectedImage == null || !isExecutePossible()) return;
+        if (imageUri == null || imageUri.startsWith("http") || !isExecutePossible()) return;
 
         Log.d(TAG, "uploadUserAvatar: ");
         synchronized (this) {
             onRequestStarted();
 
-            File file = new File(filePathFromUri(Uri.parse(uri_SelectedImage)));
+            File file = new File(filePathFromUri(Uri.parse(imageUri)));
 
             final RequestBody requestFile =
                     RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);

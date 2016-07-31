@@ -274,11 +274,13 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         boolean hasChanges = false;
         Log.d(TAG, "saveUserData: ");
 
-        if (!DATA_MANAGER.getPreferencesManager().loadUserPhoto().equals(mProfileViewModel.getUserPhotoUri())) {
+        String savedPhoto = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
+        if (!AppUtils.isEmptyOrNull(savedPhoto) && !AppUtils.equals(savedPhoto, mProfileViewModel.getUserPhotoUri())) {
             hasChanges = true;
             mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());   //// TODO: 29.07.2016 в очередь на выполнение
         }
-        if (!DATA_MANAGER.getPreferencesManager().loadUserAvatar().equals((mProfileViewModel.getUserAvatarUri()))) {
+        String savedAvatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
+        if (!AppUtils.isEmptyOrNull(savedAvatar) && !AppUtils.equals(savedAvatar, mProfileViewModel.getUserAvatarUri())) {
             hasChanges = true;
             mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
         }

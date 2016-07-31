@@ -72,7 +72,7 @@ public class BindingAdapters {
     //region :::::::::::::::::::::::::::::::::::::::::: Custom
     @BindingAdapter("resize_by_aspect")
     public static void resizeImage(ImageView view, float aspectRatio) {
-        int width = AppUtils.getScreenWidth();
+        int width = view.getMeasuredWidth();
         int height = (int) (width / aspectRatio);
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
         layoutParams.width = width;

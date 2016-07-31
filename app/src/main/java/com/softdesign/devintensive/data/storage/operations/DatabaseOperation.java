@@ -13,7 +13,6 @@ import com.softdesign.devintensive.data.storage.models.LikeEntity;
 import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.models.UserEntityDao;
-import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
 import org.greenrobot.greendao.Property;
@@ -96,10 +95,13 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
 
             case LOAD:
                 return sortDB(mSort);
+
+            case RESET:
+                return resetCustomSorting();
         }
         return null;
     }
-    
+
     //region :::::::::::::::::::::::::::::::::::::::::: Main methods
 
     private void updateUserInDB(String likedUserId, ProfileValues values) {
@@ -115,7 +117,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         List<RepositoryEntity> allRepositories = new ArrayList<>();
         List<UserEntity> allUsers = new ArrayList<>();
         List<LikeEntity> allLikes = new ArrayList<>();
-        List<UserEntity> curDB = sortDB(Sort.CUSTOM);
+        List<UserEntity> curDB = sortDB(Sort.RATING);
 
         if (curDB.size() != 0) {
             int maxIndex = findMaxInternalId(curDB);
@@ -136,7 +138,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         } else {
             for (int i = 0; i < response.size(); i++) {
                 UserListRes user = response.get(i);
-                allUsers.add(new UserEntity(user, i));
+                allUsers.add(new UserEntity(user, i + 1));
 
                 List<RepositoryEntity> l = user.getRepositories().getRepoEntitiesList(user.getId());
                 allRepositories.addAll(l);
@@ -174,6 +176,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             try {
                 userList = mDaoSession
                         .queryBuilder(UserEntity.class)
+                        .where(UserEntityDao.Properties.InternalId.gt(0))
                         .orderAsc(sortProperty)
                         .build()
                         .list();
@@ -205,11 +208,9 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     private void swapEntityInternalIds(@NonNull String firstUserRemoteId, String secondUserRemoteId) {
         UserEntity firstEntity = findUserInDB(firstUserRemoteId);
         if (firstEntity == null) return;
-
-        int oldInternalId = firstEntity.getInternalId();
-
         //swap place
         if (secondUserRemoteId != null) {
+            int oldInternalId = firstEntity.getInternalId();
             UserEntity secondEntity = findUserInDB(secondUserRemoteId);
             if (secondEntity != null) {
                 int newInternalId = secondEntity.getInternalId();
@@ -218,13 +219,20 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                 mDaoSession.getUserEntityDao().update(firstEntity);
                 mDaoSession.getUserEntityDao().update(secondEntity);
             }
-        } else { //move card to the lowest place
-            List<UserEntity> curDB = sortDB(Sort.CUSTOM);
-            if (AppUtils.isEmptyOrNull(curDB)) return;
-            int newInternalId = findMaxInternalId(curDB) + 1;
-            firstEntity.setInternalId(newInternalId);
+        } else {
+            firstEntity.setInternalId(0);
             mDaoSession.getUserEntityDao().update(firstEntity);
         }
+    }
+
+    private List<UserEntity> resetCustomSorting() {
+        List<UserEntity> curDB = sortDB(Sort.RATING);
+        for (int i = 0; i < curDB.size(); i++) {
+            UserEntity user = curDB.get(i);
+            user.setInternalId(i + 1);
+        }
+        mDaoSession.getUserEntityDao().updateInTx(curDB);
+        return curDB;
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 

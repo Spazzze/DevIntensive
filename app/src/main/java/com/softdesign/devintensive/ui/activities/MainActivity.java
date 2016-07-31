@@ -104,6 +104,9 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         } else {
             unlockDrawer();
             super.onBackPressed();
+            if (mManager.getBackStackEntryCount() == 0) {
+                mMainBinding.navView.getMenu().getItem(0).setChecked(true);
+            }
         }
     }
 
@@ -154,15 +157,13 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mNavHeaderViewModel = new NavHeaderViewModel(model);
             mNavHeaderBinding.setNavProfile(mNavHeaderViewModel);
         } else mNavHeaderViewModel.updateValues(model);
-    } //// TODO: 30.07.2016 нав меню лочить и нормально прописать для всех фрагментов
+    }
 
     @Override
     public void showProgressDialog() {
         if (findUserListFragment() != null) {
-            Log.d(TAG, "showProgressDialog: 1");
             mUserListFragment.showProgressDialog();
         } else {
-            Log.d(TAG, "showProgressDialog: 2");
             super.showProgressDialog();
         }
     }
@@ -287,7 +288,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             userProfileFragment = new UserProfileFragment();
             userProfileFragment.setArguments(args);
             replaceMainFragment(userProfileFragment, true, Const.OTHER_USER_PROFILE_KEY);
-        }  else {
+        } else {
             userProfileFragment.setArguments(args);
             mManager.popBackStack(Const.OTHER_USER_PROFILE_KEY, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
@@ -297,7 +298,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         if (findProfileFragment() == null) {
             mProfileFragment = new UserProfileFragment();
             replaceMainFragment(mProfileFragment, false, UserProfileFragment.class.getName());
-        }  else {
+        } else {
             mManager.popBackStack(UserProfileFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }

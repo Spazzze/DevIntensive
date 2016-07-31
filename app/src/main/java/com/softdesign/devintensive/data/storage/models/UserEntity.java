@@ -38,7 +38,6 @@ public class UserEntity {
     private String homeTask;
     private String bio;
     private String photo;
-    @NotNull
     private int internalId;
 
     @ToMany(joinProperties = {

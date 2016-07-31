@@ -32,7 +32,7 @@
                 <!--Photo-->
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@{profile.set_16_9_AspectHeight(), default=wrap_content}"
                     android:scaleType="centerCrop"
                     app:resize_by_aspect="@{profile.moving ? 5.5f : 1.78f}"
                     app:imageUrl="@{profile.userPhoto}" />
@@ -125,21 +125,20 @@
                 android:visibility="@{!profile.moving}"/>
 
             <!--Button View & Likes-->
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:visibility="@{!profile.moving}">
 
                 <!--Button View-->
                 <Button
                     android:id="@+id/list_more_info_btn"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/spacing_normal_16"
-                    android:layout_weight="1"
+                    android:maxWidth="@dimen/button_width_126"
+                    android:layout_marginRight="@dimen/spacing_large_64"
                     android:paddingLeft="@dimen/spacing_normal_16"
                     android:paddingRight="@dimen/spacing_normal_16"
                     android:text="@string/header.view"
@@ -147,35 +146,41 @@
 
                 <!--Button Likes-->
                 <RelativeLayout
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
+                    android:maxWidth="@dimen/button_width_126"
+                    android:layout_alignParentRight="true"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1.25">
+                    tools:ignore="RelativeOverlap">
 
                     <com.softdesign.devintensive.ui.view.elements.CenteredIconButton
                         android:id="@+id/list_like_btn"
                         style="@style/Widget.AppCompat.Button.Borderless"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:drawableLeft="@drawable/ic_heart_outline"
-                        android:drawablePadding="@dimen/spacing_medial_24"
-                        android:text="@{@string/header_like + profile.likesBy.size()}"
+                        android:drawablePadding="@dimen/spacing_small_8"
+                        android:paddingLeft="@dimen/spacing_small_8"
+                        android:paddingRight="@dimen/spacing_small_8"
+                        android:text="@{String.valueOf(profile.likesBy.size())}"
                         android:textColor="@color/color_accent"
                         android:visibility="@{!profile.liked}" />
 
                     <com.softdesign.devintensive.ui.view.elements.CenteredIconButton
                         android:id="@+id/list_unlike_btn"
                         style="@style/Widget.AppCompat.Button.Borderless"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:drawableLeft="@drawable/ic_heart"
-                        android:drawablePadding="@dimen/spacing_medial_24"
-                        android:text="@{@string/header_like + profile.likesBy.size()}"
+                        android:paddingLeft="@dimen/spacing_small_8"
+                        android:paddingRight="@dimen/spacing_small_8"
+                        android:drawablePadding="@dimen/spacing_small_8"
+                        android:text="@{String.valueOf(profile.likesBy.size())}"
                         android:textColor="@color/color_primary"
                         android:visibility="@{profile.liked}" />
 
                 </RelativeLayout>
 
-            </LinearLayout>
+            </RelativeLayout>
 
         </LinearLayout>
 

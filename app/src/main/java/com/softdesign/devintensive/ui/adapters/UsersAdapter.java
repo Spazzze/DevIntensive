@@ -13,6 +13,7 @@ import android.widget.Filterable;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
@@ -38,6 +39,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private List<ProfileViewModel> mUsers;
     private OnItemCLickListener mViewClickListener;
     private OnItemCLickListener mLikesClickListener;
+    private DatabaseOperation.Sort mSort = DatabaseOperation.Sort.CUSTOM;
 
     //region :::::::::::::::::::::::::::::::::::::::::: Adapter
     @Override
@@ -88,8 +90,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
-
         holder.getBinding().setProfile(mUsers.get(position));
+        if (mSort != DatabaseOperation.Sort.CUSTOM) holder.getBinding().handle.setVisibility(View.GONE);
+        else holder.getBinding().handle.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -130,13 +133,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         }
     }
 
-    public void setUsersFromDB(final List<UserEntity> users) {
+    public void setUsersFromDB(final List<UserEntity> users, DatabaseOperation.Sort sort) {
         synchronized (this) {
             mUsers = new ArrayList<ProfileViewModel>() {{
                 for (UserEntity u : users) {
                     add(new ProfileViewModel(u));
                 }
             }};
+            mSort = sort;
         }
         notifyDataSetChanged();
     }
@@ -158,6 +162,16 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             return secondUserRemoteId;
         }
     }
+
+    public void setSort(DatabaseOperation.Sort sort) {
+        mSort = sort;
+    }
+
+    @Override
+    public DatabaseOperation.Sort getSort() {
+        return mSort;
+    }
+
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: ViewHolder
@@ -202,7 +216,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
         @Override
         public void onItemSelected() {
-            getBinding().getProfile().setMoving(true);
         }
 
         @Override
