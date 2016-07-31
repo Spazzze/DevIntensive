@@ -206,7 +206,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
             actionBar.setDisplayHomeAsUpEnabled(true);
             toolbar.inflateMenu(id);
         }

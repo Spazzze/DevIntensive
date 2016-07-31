@@ -30,7 +30,7 @@
 
                 <ImageView
                     style="@style/profileItem_icon.left"
-                    android:src="@drawable/ic_call_black_24dp" />
+                    android:src="@drawable/ic_call_grey" />
 
                 <LinearLayout style="@style/profileItem_LL_infoBox">
 
@@ -57,7 +57,7 @@
                 <ImageView
                     android:id="@+id/makeCall_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_phone_in_talk_black_24dp"
+                    android:src="@drawable/ic_call_active_grey"
                     android:visibility="@{!profile.editMode}" />
 
             </RelativeLayout>
@@ -73,7 +73,7 @@
 
                 <ImageView
                     style="@style/profileItem_icon.left"
-                    android:src="@drawable/ic_email_black_24dp" />
+                    android:src="@drawable/ic_email_grey" />
 
                 <LinearLayout style="@style/profileItem_LL_infoBox">
 
@@ -100,7 +100,7 @@
                 <ImageView
                     android:id="@+id/sendEmail_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_send_black_24dp"
+                    android:src="@drawable/ic_send_grey"
                     android:visibility="@{!profile.editMode}" />
             </RelativeLayout>
 
@@ -115,7 +115,7 @@
 
                 <ImageView
                     style="@style/profileItem_icon.left"
-                    android:src="@drawable/ic_vk" />
+                    android:src="@drawable/ic_vk_grey" />
 
                 <LinearLayout style="@style/profileItem_LL_infoBox">
 
@@ -142,7 +142,7 @@
                 <ImageView
                     android:id="@+id/openVK_img"
                     style="@style/profileItem_icon.right"
-                    android:src="@drawable/ic_remove_red_eye_black_24dp"
+                    android:src="@drawable/ic_eye_grey"
                     android:visibility="@{!profile.editMode}" />
             </RelativeLayout>
 
@@ -177,7 +177,7 @@
 
                 <ImageView
                     style="@style/profileItem_icon.left"
-                    android:src="@drawable/ic_account_circle" />
+                    android:src="@drawable/ic_account_circle_grey" />
 
                 <LinearLayout style="@style/profileItem_LL_infoBox">
 

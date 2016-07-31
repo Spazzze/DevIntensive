@@ -86,7 +86,7 @@
                                 android:id="@+id/signIn_vk_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:src="@drawable/ic_vk_colored_24" />
+                                android:src="@drawable/ic_vk_colored" />
 
                         </LinearLayout>
 

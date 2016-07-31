@@ -60,7 +60,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginBottom="@dimen/spacing_large_56"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_add_a_photo_white_24px" />
+                android:src="@drawable/ic_add_a_photo_white" />
         </RelativeLayout>
 
     </FrameLayout>

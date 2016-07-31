@@ -90,7 +90,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="top|right"
                     android:scaleType="center"
-                    android:src="@drawable/ic_menu_black_24dp"
+                    android:src="@drawable/ic_menu_white"
                     tools:ignore="ContentDescription,RtlHardcoded" />
 
             </FrameLayout>
@@ -157,7 +157,7 @@
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ic_heart_outline"
+                        android:drawableLeft="@drawable/ic_heart_outline_accent"
                         android:drawablePadding="@dimen/spacing_small_8"
                         android:paddingLeft="@dimen/spacing_small_8"
                         android:paddingRight="@dimen/spacing_small_8"
@@ -170,7 +170,7 @@
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:drawableLeft="@drawable/ic_heart"
+                        android:drawableLeft="@drawable/ic_heart_accent"
                         android:paddingLeft="@dimen/spacing_small_8"
                         android:paddingRight="@dimen/spacing_small_8"
                         android:drawablePadding="@dimen/spacing_small_8"

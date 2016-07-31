@@ -30,7 +30,7 @@
 
     <item
         android:id="@+id/toolbar_logout"
-        android:icon="@drawable/ic_logout_white_24dp"
+        android:icon="@drawable/ic_logout_white"
         android:title="@string/header.logout"
         app:showAsAction="never" />
 
