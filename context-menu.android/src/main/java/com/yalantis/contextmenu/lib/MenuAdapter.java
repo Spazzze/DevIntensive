@@ -50,7 +50,7 @@ public class MenuAdapter {
  */
         this.mMenuItemSize = actionBarHeight;
         setViews();
-        resetAnimations();
+        resetAnimations(mIsMenuOpen);
         mAnimatorSetShowMenu = setOpenCloseAnimation(false);
         mAnimatorSetHideMenu = setOpenCloseAnimation(true);
     }
@@ -122,10 +122,10 @@ public class MenuAdapter {
     /**
      * Set starting params to all animations
      */
-    private void resetAnimations() {
+    private void resetAnimations(boolean isMenuOpen) {
         for (int i = 0; i < getItemCount(); i++) {
             resetTextAnimation(mTextWrapper.getChildAt(i));
-            if (i == 0) {
+            if (i == 0 && isMenuOpen) {
                 resetSideAnimation(mMenuWrapper.getChildAt(i));
             } else {
                 resetVerticalAnimation(mMenuWrapper.getChildAt(i), false);
@@ -186,7 +186,8 @@ public class MenuAdapter {
 
         Animator imageRotation = isCloseAnimation ?
                 wrapperPosition == 0 ? AnimatorUtils.rotationCloseToRight(mMenuWrapper.getChildAt(wrapperPosition)) : AnimatorUtils.rotationCloseVertical(mMenuWrapper.getChildAt(wrapperPosition))
-                : wrapperPosition == 0 ? AnimatorUtils.rotationOpenFromRight(mMenuWrapper.getChildAt(wrapperPosition)) : AnimatorUtils.rotationOpenVertical(mMenuWrapper.getChildAt(wrapperPosition));
+                : AnimatorUtils.rotationOpenVertical(mMenuWrapper.getChildAt(wrapperPosition));
+
         imageAnimations.add(imageRotation);
     }
 
@@ -277,7 +278,7 @@ public class MenuAdapter {
 
     public void menuToggle() {
         if (!mIsAnimationRun) {
-            resetAnimations();
+            resetAnimations(mIsMenuOpen);
             mIsAnimationRun = true;
             if (mIsMenuOpen) {
                 mAnimatorSetHideMenu.start();

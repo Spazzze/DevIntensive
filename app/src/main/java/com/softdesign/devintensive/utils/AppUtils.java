@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
@@ -64,7 +65,11 @@ import retrofit2.Response;
  */
 @SuppressWarnings({"unused", "deprecation"})
 public class AppUtils {
+
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
+
+    private static int screenWidth = 0;
+    private static int screenHeight = 0;
 
     //region :::::::::::::::::::::::::::::::::::::::::: Network
 
@@ -130,21 +135,36 @@ public class AppUtils {
         return v.getMeasuredHeight();
     }
 
-    /**
-     * @return current screen width
-     */
-    public static int getScreenWidth() {
-        WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        int deviceWidth;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+    public static int dpToPx(int dp) {
+        return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
+    }
+
+    public static int getScreenHeight() {
+        if (screenHeight == 0) {
+            WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            deviceWidth = size.x;
-        } else {
-            deviceWidth = display.getWidth();
+            screenHeight = size.y;
         }
-        return deviceWidth;
+
+        return screenHeight;
+    }
+
+    public static int getScreenWidth() {
+        if (screenWidth == 0) {
+            WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            screenWidth = size.x;
+        }
+
+        return screenWidth;
+    }
+
+    public static boolean isAndroid5() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**

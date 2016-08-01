@@ -4,8 +4,8 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/toolbar_logout"
-        android:icon="@drawable/ic_logout_white"
-        android:title="@string/header.logout"
-        app:showAsAction="never" />
+        android:id="@+id/toolbar_refresh"
+        android:icon="@drawable/ic_refresh_white"
+        android:title="@string/header.refresh"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -213,12 +213,11 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     }
 
     @Override
-    public void setupToolbarWithoutNavMenu(Toolbar toolbar, @MenuRes int id) {
+    public void setupToolbarWithoutNavMenu(Toolbar toolbar) {
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            toolbar.inflateMenu(id);
         }
     }
     //endregion

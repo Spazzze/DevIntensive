@@ -12,6 +12,6 @@
     <item
         android:id="@+id/toolbar_menu"
         android:icon="@drawable/ic_menu_down_white"
-        android:title="@string/header.refresh"
-        app:showAsAction="ifRoom" />
+        android:title="@string/header.menu"
+        app:showAsAction="always" />
 </menu>

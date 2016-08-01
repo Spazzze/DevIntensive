@@ -32,6 +32,7 @@
     <string name="header.login">Войти</string>
     <string name="header.logout">Выйти</string>
     <string name="header.refresh">Обновить</string>
+    <string name="header.menu">Меню</string>
     <string name="header.sortByRating">Сортировка по рейтингу</string>
     <string name="header.sortByCode">Сортировка по строкам кода</string>
     <string name="header.sortByCustom">Своя сортировка</string>

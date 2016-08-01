@@ -50,6 +50,8 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     private boolean isMoving = false;
     private boolean isList = false;
 
+    private static int sAspectHeight = 0;
+
     //region ::::::::::::::::::::::::::::::::::: Constructors
 
     public ProfileViewModel() {
@@ -102,9 +104,12 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region ::::::::::::::::::::::::::::::::::: Utils
-    public int set_16_9_AspectHeight(){
-        int width = AppUtils.getScreenWidth();
-        return (int) (width / Const.ASPECT_RATIO_16_9);
+    public int set_16_9_AspectHeight() {
+        if (sAspectHeight == 0) {
+            int width = AppUtils.getScreenWidth();
+            sAspectHeight = (int) (width / Const.ASPECT_RATIO_16_9);
+        }
+        return sAspectHeight;
     }
 
     public ProfileViewModel updateValues(@Nullable ProfileViewModel model) {

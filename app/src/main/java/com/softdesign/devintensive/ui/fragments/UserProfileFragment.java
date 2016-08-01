@@ -130,6 +130,9 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
                     mCallbacks.openDrawer();
                 } else mCallbacks.onBackPressed();
                 return true;
+            case R.id.toolbar_refresh:
+                mCallbacks.showToast("Обновляем, ага");
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -168,7 +171,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
             mCallbacks.setupToolbar(mProfileBinding.toolbar, R.menu.toolbar_menu_main);
         } else {
             mCallbacks.lockDrawer();
-            mCallbacks.setupToolbarWithoutNavMenu(mProfileBinding.toolbar, R.menu.toolbar_menu_main);
+            mCallbacks.setupToolbarWithoutNavMenu(mProfileBinding.toolbar);
         }
         if (mProfileBinding.getProfile() == null) {
             mProfileBinding.setProfile(model);

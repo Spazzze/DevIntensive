@@ -33,7 +33,7 @@ public interface BaseActivityCallback {
 
     void setupToolbar(Toolbar toolbar, @MenuRes int id);
 
-    void setupToolbarWithoutNavMenu(Toolbar toolbar, @MenuRes int id);
+    void setupToolbarWithoutNavMenu(Toolbar toolbar);
 
     void onBackPressed();
 }

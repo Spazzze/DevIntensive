@@ -82,18 +82,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         }
     }
 
-    //Menu
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_logout:
-                logout(1);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     //Back button
     @Override
     public void onBackPressed() {

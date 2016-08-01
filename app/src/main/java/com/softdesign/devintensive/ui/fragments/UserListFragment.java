@@ -127,7 +127,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
         List<ProfileViewModel> savedList = null;
         if (mUsersAdapter != null && mUsersAdapter.getUsers().size() > 0) {
-            resumeRecycleView();
+            initRecycleView();
             return;
         }
         if (savedInstanceState != null) {
@@ -151,31 +151,30 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     public void setupMenu() {
 
         MenuObject close = new MenuObject();
-        close.setResource(R.drawable.ic_close_accent);
+        close.setResource(R.drawable.ic_menu_up_white);
 
         MenuObject favourites = new MenuObject(R.string.header_favourites);
         favourites.setResource(R.drawable.ic_favourites_accent);
         favourites.setId(R.id.favourites_menu);
-        favourites.setBgColor(R.color.color_accent);
 
         MenuObject sortByRating = new MenuObject(R.string.header_sortByRating);
-        sortByRating.setResource(R.drawable.ic_sort_descending_accent);
+        sortByRating.setResource(R.drawable.ic_sort_descending_colored);
         sortByRating.setId(R.id.sortByRating_menu);
 
         MenuObject sortByCode = new MenuObject(R.string.header_sortByCode);
-        sortByCode.setResource(R.drawable.ic_sort_descending_accent);
+        sortByCode.setResource(R.drawable.ic_sort_descending_colored);
         sortByCode.setId(R.id.sortByCode_menu);
 
         MenuObject sortByCustom = new MenuObject(R.string.header_sortByCustom);
-        sortByCustom.setResource(R.drawable.ic_custom_sort_accent);
+        sortByCustom.setResource(R.drawable.ic_custom_sort_colored);
         sortByCustom.setId(R.id.sortByCustom_menu);
 
         MenuObject resetCustomSort = new MenuObject(R.string.header_resetCustomSort);
-        resetCustomSort.setResource(R.drawable.ic_reset_custom_sort_accent);
+        resetCustomSort.setResource(R.drawable.ic_reset_custom_sort_colored);
         resetCustomSort.setId(R.id.resetCustomSort_menu);
 
         MenuObject refresh = new MenuObject(R.string.header_refresh);
-        refresh.setResource(R.drawable.ic_refresh_accent);
+        refresh.setResource(R.drawable.ic_refresh_white);
         refresh.setId(R.id.refresh_menu);
 
         List<MenuObject> menuObjects = new ArrayList<>();
@@ -188,6 +187,11 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         menuObjects.add(resetCustomSort);
         menuObjects.add(refresh);
 
+        for (MenuObject o : menuObjects) {
+            o.setBgColor(R.color.color_primary_dark);
+            o.setMenuTextAppearanceStyle(R.style.UserListMenuText);
+        }
+
         MenuParams menuParams = new MenuParams();
         menuParams.setActionBarSize((int) AppUtils.getAppBarSize());
         menuParams.setMenuObjects(menuObjects);
@@ -195,8 +199,8 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         menuParams.setFitsSystemWindow(true);
         menuParams.setClipToPadding(false);
         menuParams.setShowAnimationDuration(50);
-        menuParams.setHideAnimationDuration(0);
-        menuParams.setTextClickable(false);
+        menuParams.setHideAnimationDuration(50);
+        menuParams.setTextClickable(true);
 
         mMenuDialogFragment = ContextMenuDialogFragment.newInstance(menuParams);
         mMenuDialogFragment.setItemClickListener(this);
@@ -337,11 +341,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         initRecycleView();
     }
 
-    private void resumeRecycleView() {
-        Log.d(TAG, "resumeRecycleView: ");
-        mListBinding.userList.swapAdapter(mUsersAdapter, false);
-    }
-
     private void initRecycleView() {
         mListBinding.userList.swapAdapter(mUsersAdapter, false);
 
@@ -350,8 +349,8 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
 
-        ItemTouchHelperCallback itemTouchHelperCallback = new ItemTouchHelperCallback(mUsersAdapter);
-        mItemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+        ItemTouchHelperCallback touchHelperCallback = new ItemTouchHelperCallback(mUsersAdapter);
+        mItemTouchHelper = new ItemTouchHelper(touchHelperCallback);
         mItemTouchHelper.attachToRecyclerView(mListBinding.userList);
     }
 
