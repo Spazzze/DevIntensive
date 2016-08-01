@@ -5,8 +5,8 @@
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
-        android:fitsSystemWindows="false"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
         <!-- AppBar -->
         <android.support.design.widget.AppBarLayout
@@ -34,10 +34,10 @@
             android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingLeft="@dimen/spacing_small_8"
-            android:paddingRight="@dimen/spacing_small_8"
+            android:layout_marginTop="?attr/actionBarSize"
             android:orientation="vertical"
-            app:offsetSystemWindow="@{true}">
+            android:paddingLeft="@dimen/spacing_small_8"
+            android:paddingRight="@dimen/spacing_small_8">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/user_list"
