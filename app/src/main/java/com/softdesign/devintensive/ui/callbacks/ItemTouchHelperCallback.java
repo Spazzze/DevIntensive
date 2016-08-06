@@ -4,8 +4,6 @@ import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
-
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private static final float ALPHA_FULL = 1.0f;
@@ -18,12 +16,12 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isLongPressDragEnabled() {
-        return false;
+        return mAdapter.isMovable();
     }
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        return true;
+        return mAdapter.isMovable();
     }
 
     @Override
@@ -31,7 +29,7 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
         // Set movement flags based on the layout manager
         int dragFlags;
         int swipeFlags;
-        if (mAdapter.getSort() == DatabaseOperation.Sort.CUSTOM) {
+        if (mAdapter.isMovable()) {
             dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
             swipeFlags = ItemTouchHelper.END;
         } else {

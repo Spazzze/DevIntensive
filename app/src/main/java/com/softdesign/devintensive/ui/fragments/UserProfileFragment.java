@@ -156,8 +156,8 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         mProfileViewModel.changeLiked(!isLiked);
 
         Animations.animateLikeButton(
-                mProfileBinding.mainProfileLayout.btnLikeImgL,
-                mProfileBinding.mainProfileLayout.btnLikeImgR,
+                mProfileBinding.mainProfileLayout.buttonLikesLayout.btnLikeImgL,
+                mProfileBinding.mainProfileLayout.buttonLikesLayout.btnLikeImgR,
                 !isLiked);
     }
 

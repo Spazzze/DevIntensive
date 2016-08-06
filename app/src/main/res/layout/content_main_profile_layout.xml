@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="contentDescription">
 
@@ -215,55 +216,10 @@
                 android:layout_height="@dimen/size_medium_48"
                 android:layout_gravity="center_vertical">
 
-                <!--Like Button1-->
-                <ImageView
-                    android:id="@+id/btn_like_imgL"
-                    android:layout_width="@dimen/size_small_24"
-                    android:layout_height="@dimen/size_small_24"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/spacing_normal_16"
-                    android:background="@android:color/transparent"
-                    android:src="@{profile.liked ? @drawable/ic_heart_accent : @drawable/ic_heart_outline_accent}" />
-
-                <!--Like Button2-->
-                <ImageView
-                    android:id="@+id/btn_like_imgR"
-                    android:layout_width="@dimen/size_small_24"
-                    android:layout_height="@dimen/size_small_24"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/spacing_normal_16"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_heart_broken_right"
-                    android:visibility="gone" />
-
-                <!--TextSwitcher Likes Count-->
-                <TextSwitcher
-                    android:id="@+id/ts_LikesCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_toRightOf="@+id/btn_like_imgL"
-                    android:inAnimation="@anim/slide_in_counter"
-                    android:outAnimation="@anim/slide_out_counter"
-                    android:textColor="@color/color_primary"
-                    app:switchText="@{profile.animateTextChange ? @{String.valueOf(profile.getLikesBy.size()) : null}">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{String.valueOf(profile.getLikesBy.size())}"
-                        android:textSize="@dimen/font_normal_16" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-
-                        android:textSize="@dimen/font_normal_16" />
-
-                </TextSwitcher>
+                <include
+                    android:id="@+id/button_likes_layout"
+                    layout="@layout/content_button_likes"
+                    bind:profile="@{profile}" />
 
             </RelativeLayout>
 

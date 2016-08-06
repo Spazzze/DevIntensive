@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="contentDescription">
+
+    <data>
+
+        <variable
+            name="profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
+    </data>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small_8"
+        app:cardBackgroundColor="@color/color_white"
+        app:cardCornerRadius="@dimen/corner_radius_8">
+
+        <!-- PhotoHolder -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!--Photo-->
+            <ImageView
+                android:id="@+id/user_photo_img"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:scaleType="centerCrop"
+                app:imageUrl="@{profile.userPhotoUri}"
+                app:placeholder="@{@drawable/user_bg}" />
+
+            <!--FullName-->
+            <com.devspark.robototextview.widget.RobotoTextView
+                style="@style/Shadowed_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingLeft="@dimen/spacing_normal_16"
+                android:paddingRight="@dimen/spacing_normal_16"
+                android:text="@{profile.fullName}"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/font_medium_24"
+                app:typeface="roboto_medium" />
+
+            <!--Drag and Drop place-->
+            <ImageView
+                android:id="@+id/handle"
+                android:layout_width="?listPreferredItemHeight"
+                android:layout_height="match_parent"
+                android:layout_gravity="top|left"
+                android:scaleType="center"
+                android:src="@drawable/ic_menu_white"
+                tools:ignore="ContentDescription,RtlHardcoded" />
+
+        </FrameLayout>
+
+    </android.support.v7.widget.CardView>
+
+</layout>

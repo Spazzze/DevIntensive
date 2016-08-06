@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_small_8"
         app:cardBackgroundColor="@color/color_white"
-        app:cardCornerRadius="@{profile.moving ? @dimen/corner_radius_8 : @dimen/corner_radius_4}">
+        app:cardCornerRadius="@dimen/corner_radius_4">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -29,25 +29,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <android.support.percent.PercentFrameLayout
-                    android:id="@+id/photo_FL"
+                <!--Photo-->
+                <com.softdesign.devintensive.ui.view.elements.AspectRatioImageView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop">
-
-                    <!--Photo-->
-                    <ImageView
-                        android:id="@+id/user_photo_img"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:scaleType="centerCrop"
-                        app:imageUrl="@{profile.userPhotoUri}"
-                        app:layout_aspectRatio="178%"
-                        app:layout_widthPercent="100%"
-                        app:placeholder="@{@drawable/user_bg}"
-                        app:resize_by_aspect="@{profile.moving ? 5.5f : 1.78f}" />
-
-                </android.support.percent.PercentFrameLayout>
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerCrop"
+                    app:aspect_ratio="1.78"
+                    app:imageUrl="@{profile.userPhotoUri}"
+                    app:placeholder="@{@drawable/user_bg}" />
 
                 <!--FullName-->
                 <com.devspark.robototextview.widget.RobotoTextView
@@ -72,7 +61,6 @@
                     android:layout_marginEnd="@dimen/spacing_tiny_4"
                     android:layout_marginRight="@dimen/spacing_tiny_4"
                     android:orientation="horizontal"
-                    android:visibility="@{!profile.moving}"
                     tools:ignore="RtlHardcoded">
 
                     <TextView
@@ -95,16 +83,6 @@
 
                 </LinearLayout>
 
-                <!--Drag and Drop place-->
-                <ImageView
-                    android:id="@+id/handle"
-                    android:layout_width="?listPreferredItemHeight"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="top|left"
-                    android:scaleType="center"
-                    android:src="@drawable/ic_menu_white"
-                    tools:ignore="ContentDescription,RtlHardcoded" />
-
             </FrameLayout>
 
             <!-- ScoreBox -->
@@ -115,8 +93,7 @@
                 android:layout_gravity="bottom"
                 android:background="@android:color/transparent"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="@{!profile.moving}">
+                android:orientation="vertical">
 
                 <include
                     android:id="@+id/score_box_layout"
@@ -138,22 +115,20 @@
                 android:text="@{profile.bio}"
                 android:textColor="@color/color_grey_light"
                 android:textSize="@dimen/font_normal_14"
-                android:visibility="@{!profile.moving &amp;&amp; !profile.bio.isEmpty()}" />
+                android:visibility="@{!profile.bio.isEmpty()}" />
 
             <!-- LineSeparator -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/line_size_1"
                 android:layout_marginBottom="@dimen/spacing_small_8"
-                android:background="@color/color_grey_light"
-                android:visibility="@{!profile.moving}" />
+                android:background="@color/color_grey_light" />
 
             <!--Button View & Likes-->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:visibility="@{!profile.moving}">
+                android:gravity="center_vertical">
 
                 <!--Button View-->
                 <Button
@@ -183,58 +158,13 @@
                     android:id="@+id/btn_like"
                     android:layout_width="80dp"
                     android:layout_height="@dimen/size_medium_48"
-                    android:layout_toLeftOf="@+id/btn_more_info"
-                    tools:ignore="RelativeOverlap">
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="@dimen/size_medium_48">
 
-                    <!--Like Button1-->
-                    <ImageView
-                        android:id="@+id/btn_like_imgL"
-                        android:layout_width="@dimen/size_small_24"
-                        android:layout_height="@dimen/size_small_24"
-                        android:layout_centerVertical="true"
-                        android:layout_marginLeft="@dimen/spacing_normal_16"
-                        android:layout_toLeftOf="@+id/ts_LikesCount"
-                        android:background="@android:color/transparent"
-                        android:src="@{profile.liked ? @drawable/ic_heart_accent : @drawable/ic_heart_outline_accent}" />
-
-                    <!--Like Button2-->
-                    <ImageView
-                        android:id="@+id/btn_like_imgR"
-                        android:layout_width="@dimen/size_small_24"
-                        android:layout_height="@dimen/size_small_24"
-                        android:layout_centerVertical="true"
-                        android:layout_marginLeft="@dimen/spacing_normal_16"
-                        android:layout_toLeftOf="@+id/ts_LikesCount"
-                        android:background="@android:color/transparent"
-                        android:src="@drawable/ic_heart_broken_right"
-                        android:visibility="gone" />
-
-                    <!--TextSwitcher Likes Count-->
-                    <TextSwitcher
-                        android:id="@+id/ts_LikesCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginLeft="12dp"
-                        android:layout_marginRight="@dimen/spacing_normal_16"
-                        android:inAnimation="@anim/slide_in_counter"
-                        android:outAnimation="@anim/slide_out_counter"
-                        android:textColor="@color/color_primary"
-                        app:switchText="@{profile.animateTextChange ? @{String.valueOf(profile.getLikesBy.size()) : null}">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@{String.valueOf(profile.getLikesBy.size())}"
-                            android:textSize="@dimen/font_normal_16" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="@dimen/font_normal_16" />
-
-                    </TextSwitcher>
+                    <include
+                        android:id="@+id/button_likes_layout"
+                        layout="@layout/content_button_likes"
+                        bind:profile="@{profile}" />
 
                 </RelativeLayout>
 

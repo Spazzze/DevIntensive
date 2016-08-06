@@ -87,10 +87,10 @@ public class BindingAdapters {
         Pair<String, Drawable> pair = (Pair) view.getTag(R.id.imageUrl_tag);
 
         if (pair == null || !AppUtils.equals(url, pair.first) || !AppUtils.equals(pair.second, placeholder)) {
-            CustomGlideModule.loadImage(url, placeholder, placeholder, view);
+            CustomGlideModule.loadImage(url, placeholder, view);
             view.setTag(R.id.imageUrl_tag, new Pair<>(url, placeholder));
         }
-    }  //2 params
+    }
 
     @BindingAdapter("resize_by_aspect")
     public static void resizeImage(ImageView view, float aspectRatio) {

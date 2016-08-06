@@ -49,8 +49,8 @@ public class CustomGlideModule implements GlideModule {
 
     //region :::::::::::::::::::::::::::::::::::::::::: Utils
 
-    public static void loadImage(String path, Drawable placeholder, Drawable error, ImageView target) {
-        if (AppUtils.isEmptyOrNull(placeholder, error, target)) {
+    public static void loadImage(String path, Drawable placeholder, ImageView target) {
+        if (AppUtils.isEmptyOrNull(placeholder, target)) {
             Log.e(TAG, "loadImage: Some of arguments is null or empty.");
             return;
         }
@@ -60,8 +60,8 @@ public class CustomGlideModule implements GlideModule {
 
         Glide.with(CONTEXT)
                 .load(pathToPhoto)
-                .error(error)
                 .placeholder(placeholder)
+                .dontAnimate()
                 .centerCrop()
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)

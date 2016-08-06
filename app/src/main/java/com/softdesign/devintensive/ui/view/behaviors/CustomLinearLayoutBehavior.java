@@ -21,6 +21,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends Coord
     public CustomLinearLayoutBehavior(Context context, AttributeSet attrs) {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomLinearLayoutBehavior);
         mMinLLSize = a.getDimensionPixelSize(R.styleable.CustomLinearLayoutBehavior_min_collapsed_height, 0);
+        mMaxLLSize = a.getDimensionPixelSize(R.styleable.CustomLinearLayoutBehavior_max_collapsed_height, 0);
         a.recycle();
     }
 
@@ -55,7 +56,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends Coord
         final CoordinatorLayout.LayoutParams lp =
                 (CoordinatorLayout.LayoutParams) child.getLayoutParams();
 
-        if (mMaxLLSize == 0.0f) {
+        if (mMinAppbarHeight == 0.0f) {
             initProperties(child, dependency);
         }
 
@@ -69,7 +70,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends Coord
     }
 
     private void initProperties(View child, View dependency) {  //расчет начальных параметров
-        mMaxLLSize = child.getHeight();
+        if (mMaxLLSize == 0.0f) mMaxLLSize = child.getHeight();
         if (mMinLLSize == 0.0f) mMinLLSize = getViewMinHeight(child);
         mMinAppbarHeight = getStatusBarHeight() + getAppBarSize();
         mMaxAppbarHeight = dependency.getHeight() - mMinAppbarHeight;

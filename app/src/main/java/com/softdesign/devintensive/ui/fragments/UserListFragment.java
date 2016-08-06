@@ -27,7 +27,6 @@ import android.view.animation.OvershootInterpolator;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.NetworkRequest.Status;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.data.storage.operations.ClearGlideCacheOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation.Sort;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
@@ -419,7 +418,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     }
 
     public void forceRequestDataFromServer() {
-        runOperation(new ClearGlideCacheOperation());
         mCallbacks.forceRefreshUserListFromServer();
     }
 

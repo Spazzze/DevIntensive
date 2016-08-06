@@ -152,8 +152,8 @@ public class Animations {
 
     public static void animateLikeButton(final UsersAdapter.UserViewHolder holder) {
 
-        ImageView likeImageLeft = holder.getBinding().btnLikeImgL;
-        ImageView likeImageRight = holder.getBinding().btnLikeImgR;
+        ImageView likeImageLeft = holder.getBinding().buttonLikesLayout.btnLikeImgL;
+        ImageView likeImageRight = holder.getBinding().buttonLikesLayout.btnLikeImgR;
         boolean isLiked = holder.getBinding().getProfile().isLiked();
 
         animateLikeButton(likeImageLeft, likeImageRight, isLiked);

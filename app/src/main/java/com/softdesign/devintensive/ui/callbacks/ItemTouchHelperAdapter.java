@@ -2,8 +2,6 @@ package com.softdesign.devintensive.ui.callbacks;
 
 import android.support.v7.widget.RecyclerView;
 
-import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
-
 public interface ItemTouchHelperAdapter {
 
     /**
@@ -32,6 +30,6 @@ public interface ItemTouchHelperAdapter {
      */
     void onItemDismiss(int position);
 
-    DatabaseOperation.Sort getSort();
+    boolean isMovable();
 }
 

@@ -64,6 +64,7 @@
             app:layout_anchor="@id/appbar_layout"
             app:layout_anchorGravity="bottom"
             app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
+            app:max_collapsed_height="@dimen/size_huge_112"
             app:min_collapsed_height="@dimen/size_medium_56">
 
             <include

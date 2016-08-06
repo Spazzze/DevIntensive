@@ -83,7 +83,6 @@ dependencies {
     compile libraries.supportAppCompat
     compile libraries.supportDesign
     compile libraries.supportCardView
-    compile libraries.percentRelativeLayout
 
     compile libraries.glide
     compile libraries.robotoTextView

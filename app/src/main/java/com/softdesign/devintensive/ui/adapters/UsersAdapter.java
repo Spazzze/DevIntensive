@@ -1,10 +1,8 @@
 package com.softdesign.devintensive.ui.adapters;
 
 import android.databinding.DataBindingUtil;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -45,6 +43,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private List<ProfileViewModel> mUsers = new ArrayList<>();
     private OnItemClickListener mClickListener;
     private Sort mSort = Sort.CUSTOM;
+    private boolean isMovable = false;
 
     //region :::::::::::::::::::::::::::::::::::::::::: Adapter
 
@@ -66,9 +65,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
         holder.getBinding().setProfile(mUsers.get(position));
-        if (mSort != Sort.CUSTOM)
-            holder.getBinding().handle.setVisibility(View.GONE);  //// TODO: 03.08.2016 переделать
-        else holder.getBinding().handle.setVisibility(View.VISIBLE);
         holder.getBinding().getProfile().setAnimateTextChange(false);
     }
 
@@ -170,7 +166,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         mSort = sort;
     }
 
-    @Override
     public Sort getSort() {
         return mSort;
     }
@@ -179,7 +174,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         this.mClickListener = cLickListener;
     }
 
-//endregion ::::::::::::::::::::::::::::::::::::::::::
+    public boolean isMovable() {
+        return isMovable;
+    }
+
+    public void setMovable(boolean movable) {
+        isMovable = movable;
+    }
+
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: ViewHolder
     public static class UserViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
@@ -190,12 +193,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             super(itemView);
             mBinding = DataBindingUtil.bind(itemView);
 
+/*
             mBinding.handle.setOnTouchListener((v, event) -> {
                 if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
                     dragListener.onStartDrag(this);
                 }
                 return false;
             });
+*/
 
             mBinding.btnViewProfile.setOnClickListener(v -> {
                 if (listener != null) {
