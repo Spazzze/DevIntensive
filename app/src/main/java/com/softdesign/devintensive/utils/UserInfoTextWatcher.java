@@ -88,7 +88,7 @@ public class UserInfoTextWatcher implements TextWatcher {
         /////////// Reformatting section ///////////
 
         int a = 0;
-        if (!phone.startsWith("+")) a = 1;
+        if (!phone.startsWith("+")) a = 2;
         //Убираем превышение по количеству символов
         if (phone.length() > MAX_SYMBOLS_COUNT - a) {
             if (setCursorPosToEnd || cursorPosition == 0 ||
@@ -244,6 +244,7 @@ public class UserInfoTextWatcher implements TextWatcher {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Utils
+
     /**
      * displays or removes error at current TextInputLayout
      *

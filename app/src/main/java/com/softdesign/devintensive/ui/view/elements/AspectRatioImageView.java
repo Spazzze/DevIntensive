@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
 public class AspectRatioImageView extends ImageView {
@@ -26,7 +25,7 @@ public class AspectRatioImageView extends ImageView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int newWidth = AppUtils.getScreenWidth();
+        int newWidth = getMeasuredWidth();
         int newHeight = (int) (newWidth / mAspectRatio);
 
         setMeasuredDimension(newWidth, newHeight);

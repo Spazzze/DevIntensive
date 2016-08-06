@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
-                android:src="@drawable/ic_avatar_edit_colored"
+                android:src="@drawable/ic_edit_outline_colored"
                 android:visibility="@{nav_profile.editing}" />
         </RelativeLayout>
 

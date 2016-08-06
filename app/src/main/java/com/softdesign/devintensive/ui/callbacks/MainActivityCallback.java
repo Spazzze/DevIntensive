@@ -1,18 +1,17 @@
 package com.softdesign.devintensive.ui.callbacks;
 
 import android.os.Bundle;
+import android.support.annotation.MenuRes;
+import android.support.v7.widget.Toolbar;
 
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 
 public interface MainActivityCallback extends BaseActivityCallback {
 
-    void loadPhotoFromGallery();
+    void loadImageFromGallery(int intentId);
 
-    void loadPhotoFromCamera();
-
-    void loadAvatarFromCamera();
-
-    void loadAvatarFromGallery();
+    void takeSnapshotFromCamera(int intentId);
 
     void uploadUserData(ProfileViewModel model);
 
@@ -24,15 +23,19 @@ public interface MainActivityCallback extends BaseActivityCallback {
 
     void forceRefreshUserListFromServer();
 
-    void closeCurrentFragment();
+    void likeUser(String remoteId, boolean liked);
 
     void attachOtherUserFragment(Bundle args);
 
-    void likeUser(String remoteId, boolean liked);
+    void attachLikesListFragment(Bundle b);
+
+    boolean isNetworkRequestRunning(NetworkRequest.ID id);
+
+    void setupToolbar(Toolbar toolbar, @MenuRes int id, boolean drawerOpening);
 
     void openDrawer();
 
-    void lockDrawer();
+    void forceRefreshLikesListFromServer(String userId, boolean isLikedByMe);
 
-    void unlockDrawer();
+    void showDialogFragment(int dialogId);
 }

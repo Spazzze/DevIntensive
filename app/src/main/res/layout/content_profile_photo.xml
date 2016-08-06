@@ -5,8 +5,6 @@
 
     <data>
 
-        <import type="android.view.View" />
-
         <variable
             name="profile"
             type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
@@ -28,12 +26,14 @@
             android:fitsSystemWindows="true"
             android:scaleType="centerCrop"
             app:imageUrl="@{profile.userPhotoUri}"
+            app:placeholder="@{@drawable/user_bg}"
             />
 
         <!--Change Photo Layout-->
         <RelativeLayout
             android:id="@+id/placeholder_profilePhoto"
             android:layout_width="match_parent"
+            android:fitsSystemWindows="true"
             android:layout_height="match_parent"
             android:visibility="@{profile.editMode}">
 

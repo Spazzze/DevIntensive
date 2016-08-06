@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.View;
@@ -15,13 +14,7 @@ import static com.softdesign.devintensive.utils.AppUtils.getAppBarSize;
 import static com.softdesign.devintensive.utils.AppUtils.getStatusBarHeight;
 import static com.softdesign.devintensive.utils.AppUtils.getViewMinHeight;
 
-/**
- * Behavior to link LinearLayout to AppBarLayout's bottom edge
- *
- * @param <LinearLayout> to link to.
- */
-@SuppressWarnings("unused")
-public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBarLayout.ScrollingViewBehavior {
+public class CustomLinearLayoutBehavior<LinearLayout extends View> extends CoordinatorLayout.Behavior<LinearLayout> {
 
     private float mMinLLSize, mMaxLLSize, mMinAppbarHeight, mMaxAppbarHeight, mExpandedPercentageFactor;
 
@@ -32,7 +25,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBa
     }
 
     @Override
-    public Parcelable onSaveInstanceState(CoordinatorLayout parent, View child) {
+    public Parcelable onSaveInstanceState(CoordinatorLayout parent, LinearLayout child) {
         Bundle bundle = new Bundle();
         bundle.putFloat("mMinLLSize", this.mMinLLSize);
         bundle.putFloat("mMaxLLSize", this.mMaxLLSize);
@@ -43,7 +36,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBa
     }
 
     @Override
-    public void onRestoreInstanceState(CoordinatorLayout parent, View child, Parcelable state) {
+    public void onRestoreInstanceState(CoordinatorLayout parent, LinearLayout child, Parcelable state) {
         if (!(state instanceof Bundle)) return; // implicit null check
 
         Bundle bundle = (Bundle) state;
@@ -58,30 +51,15 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBa
     }
 
     @Override
-    public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
-        return dependency instanceof AppBarLayout;
-    }
-
-    @Override
-    public boolean onDependentViewChanged(CoordinatorLayout parent, View child, View dependency) {
-        final CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
-
-        AppBarLayout appBarLayout;
-        if (dependency instanceof AppBarLayout) {
-            appBarLayout = (AppBarLayout) dependency;
-            if (lp.getAnchorId() != -1 && lp.getAnchorId() != appBarLayout.getId()) {
-                // The anchor ID doesn't match the dependency
-                return false;
-            }
-        } else {
-            return false;
-        }
+    public boolean onDependentViewChanged(CoordinatorLayout parent, LinearLayout child, View dependency) {
+        final CoordinatorLayout.LayoutParams lp =
+                (CoordinatorLayout.LayoutParams) child.getLayoutParams();
 
         if (mMaxLLSize == 0.0f) {
-            initProperties(child, appBarLayout);
+            initProperties(child, dependency);
         }
 
-        float curAppBarHeight = appBarLayout.getBottom() - mMinAppbarHeight;
+        float curAppBarHeight = dependency.getBottom() - mMinAppbarHeight;
         mExpandedPercentageFactor = curAppBarHeight / mMaxAppbarHeight;
         lp.height = (int) (mMinLLSize + (mMaxLLSize - mMinLLSize) * mExpandedPercentageFactor);
 
@@ -90,7 +68,7 @@ public class CustomLinearLayoutBehavior<LinearLayout extends View> extends AppBa
         return super.onDependentViewChanged(parent, child, dependency);
     }
 
-    private void initProperties(View child, AppBarLayout dependency) {  //расчет начальных параметров
+    private void initProperties(View child, View dependency) {  //расчет начальных параметров
         mMaxLLSize = child.getHeight();
         if (mMinLLSize == 0.0f) mMinLLSize = getViewMinHeight(child);
         mMinAppbarHeight = getStatusBarHeight() + getAppBarSize();

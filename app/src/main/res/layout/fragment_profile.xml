@@ -13,7 +13,8 @@
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <!-- AppBar -->
         <android.support.design.widget.AppBarLayout
@@ -44,7 +45,6 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:layout_marginTop="@dimen/toolbar_top_offset"
                     android:theme="@style/AppTheme.PopupOverlay"
                     app:layout_collapseMode="pin" />
 
@@ -53,16 +53,40 @@
         </android.support.design.widget.AppBarLayout>
 
         <!-- ScoreBox -->
-        <include
-            android:id="@+id/score_box_layout"
-            layout="@layout/content_score_box_layout"
-            bind:profile="@{profile}" />
+        <LinearLayout
+            android:id="@+id/scoreBox_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_huge_112"
+            android:layout_gravity="bottom"
+            android:background="@color/color_grey"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_anchor="@id/appbar_layout"
+            app:layout_anchorGravity="bottom"
+            app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
+            app:min_collapsed_height="@dimen/size_medium_56">
+
+            <include
+                android:id="@+id/score_box_layout"
+                layout="@layout/content_score_box_layout"
+                bind:profile="@{profile}" />
+
+        </LinearLayout>
 
         <!-- NestedScrollView with User Info inside -->
-        <include
-            android:id="@+id/main_profile_layout"
-            layout="@layout/content_main_profile_layout"
-            bind:profile="@{profile}" />
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_anchor="@id/scoreBox_layout"
+            app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior">
+
+            <include
+                android:id="@+id/main_profile_layout"
+                layout="@layout/content_main_profile_layout"
+                bind:profile="@{profile}" />
+
+        </android.support.v4.widget.NestedScrollView>
 
         <!-- FloatingActionButton -->
         <android.support.design.widget.FloatingActionButton

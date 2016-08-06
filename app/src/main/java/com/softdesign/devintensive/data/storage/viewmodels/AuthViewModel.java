@@ -5,34 +5,19 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.softdesign.devintensive.BR;
-import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
-import com.softdesign.devintensive.ui.activities.BaseActivity;
 import com.softdesign.devintensive.utils.AppUtils;
 
 public class AuthViewModel extends BaseViewModel implements Parcelable {
-
-    private BaseActivity mActivity;
 
     private String mLoginName = "";
     private String mPassword;
     private boolean isSavingLogin = false;
     private boolean isWrongPassword = false;
 
-    public AuthViewModel(BaseActivity activity) {
-        mActivity = activity;
+    public AuthViewModel() {
     }
 
-    public void saveLoginName() {
-        String loginName = null;
-        if (isSavingLogin) loginName = mLoginName;
-        if (mActivity != null) {
-            mActivity.runOperation(new UserLoginDataOperation(loginName));
-        } else {
-            new UserLoginDataOperation(loginName).run();
-        }
-    }
-
-    public void updateValues(AuthViewModel model){
+    public void updateValues(AuthViewModel model) {
         if (model == null) return;
 
         if (!AppUtils.equals(this.mLoginName, model.getLoginName())) {
@@ -69,9 +54,6 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         return isWrongPassword;
     }
 
-    public BaseActivity getActivity() {
-        return mActivity;
-    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Setters
@@ -98,10 +80,6 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
     public void setLoginName(String loginName) {
         mLoginName = loginName;
         notifyPropertyChanged(BR.loginName);
-    }
-
-    public void setActivity(BaseActivity activity) {
-        mActivity = activity;
     }
 
     //endregion ::::::::::::::::::::::::::::::::::::::::::

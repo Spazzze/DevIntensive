@@ -8,13 +8,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IdRes;
-import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -27,6 +26,8 @@ import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.fragments.DialogsFragment;
+import com.softdesign.devintensive.ui.fragments.UserProfileFragment;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
@@ -112,17 +113,9 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         }
     }
 
-    public void showError(int messageId) {
+    public void showError(@StringRes int messageId) {
         try {
             showDialogFragment(Const.DIALOG_SHOW_ERROR, getString(messageId));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void showError(int dialogId, int messageId) {
-        try {
-            showDialogFragment(dialogId, getString(messageId));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,18 +125,34 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         showDialogFragment(Const.DIALOG_SHOW_ERROR, message);
     }
 
+    public void showToast(@StringRes int messageId) {
+        Toast.makeText(this, getString(messageId), Toast.LENGTH_LONG).show();
+    }
+
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     public void showDialogFragment(int dialogId) {
-        DialogFragment newFragment = DialogsFragment.newInstance(dialogId);
-        newFragment.show(getSupportFragmentManager(), newFragment.getClass().toString() + dialogId);
+        DialogFragment dialog = DialogsFragment.newInstance(dialogId);
+        FragmentTransaction ft = mManager.beginTransaction();
+        ft.add(dialog, dialog.getClass().toString() + dialogId);
+        ft.commitAllowingStateLoss();
     }
 
     public void showDialogFragment(int dialogId, String message) {
-        DialogFragment newFragment = DialogsFragment.newInstance(dialogId, message);
-        newFragment.show(getSupportFragmentManager(), newFragment.getClass().toString() + dialogId);
+        DialogFragment dialog = DialogsFragment.newInstance(dialogId, message);
+        FragmentTransaction ft = mManager.beginTransaction();
+        ft.add(dialog, dialog.getClass().toString() + dialogId);
+        ft.commitAllowingStateLoss();
+    }
+
+    public void errorAlertExitToMain(String error) {
+        showDialogFragment(Const.DIALOG_SHOW_ERROR_RETURN_TO_MAIN, error);
+    }
+
+    public void errorAlertExitToAuth(String error) {
+        showDialogFragment(Const.DIALOG_SHOW_ERROR_RETURN_TO_AUTH, error);
     }
     //endregion
 
@@ -169,8 +178,12 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     public void logout(int mode) {
         Log.d(TAG, "logout: ");
         if (mode == 1) {
+            UserProfileFragment mainProfileFragment = findFragment(UserProfileFragment.class);
+            if (mainProfileFragment != null) mainProfileFragment.denySaving();
             runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
             runOperation(new FullUserDataOperation(BaseChronosOperation.Action.CLEAR));
+        } else {
+            showToast(R.string.error_ui);
         }
         startAuthActivity();
     }
@@ -201,24 +214,17 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
         startActivityForResult(appSettingsIntent, flag);
     }
 
-    @Override
-    public void setupToolbar(Toolbar toolbar, @MenuRes int id) {
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            toolbar.inflateMenu(id);
-        }
+    public String getCurrentFragmentTag() {
+        int count = mManager.getBackStackEntryCount();
+        if (count > 0) return mManager.getBackStackEntryAt(count - 1).getName();
+        else return null;
     }
 
-    @Override
-    public void setupToolbarWithoutNavMenu(Toolbar toolbar) {
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+    public Fragment getCurrentFragment() {
+        String tag = getCurrentFragmentTag();
+        if (!AppUtils.isEmptyOrNull(tag)) return mManager.findFragmentByTag(tag);
+        else return findFragment(UserProfileFragment.class);
     }
+
     //endregion
 }

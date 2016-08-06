@@ -1,0 +1,90 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="likesCount"
+            type="android.databinding.ObservableInt" />
+    </data>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <!-- AppBar -->
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_grey"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <!-- Toolbar -->
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:theme="@style/ToolbarStyle">
+
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    style="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@{@string/header_menu_liked}" />
+            </android.support.v7.widget.Toolbar>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <!-- User list with Refresh on Swipe -->
+                <android.support.v4.widget.SwipeRefreshLayout
+                    android:id="@+id/swipeRefresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="?attr/actionBarSize"
+                    android:orientation="vertical"
+                    android:paddingLeft="@dimen/spacing_normal_16">
+
+                    <!-- User list with Refresh on Swipe -->
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/user_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                </android.support.v4.widget.SwipeRefreshLayout>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="@{@plurals/people(likesCount.get(), likesCount.get()), default = 0}" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </android.support.design.widget.CoordinatorLayout>
+
+</layout>

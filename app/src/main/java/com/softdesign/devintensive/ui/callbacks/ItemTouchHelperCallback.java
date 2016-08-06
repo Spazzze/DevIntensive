@@ -5,8 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
-import com.softdesign.devintensive.ui.adapters.ItemTouchHelperAdapter;
-import com.softdesign.devintensive.ui.adapters.ItemTouchHelperViewHolder;
 
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
@@ -15,7 +13,7 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     private ItemTouchHelperAdapter mAdapter;
 
     public ItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
-        mAdapter = adapter;
+        this.mAdapter = adapter;
     }
 
     @Override

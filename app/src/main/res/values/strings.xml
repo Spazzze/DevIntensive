@@ -22,6 +22,7 @@
     <string name="header.menu_myProfile">Мой профиль</string>
     <string name="header.menu_myContacts">Контакты</string>
     <string name="header.menu_myTeam">Команда</string>
+    <string name="header.menu_liked">Оценили</string>
     <string name="header.menu_myTasks">Задачи</string>
     <string name="header.menu_myNotifications">Уведомления</string>
     <string name="header.menu_myBookmarks">Закладки</string>
@@ -47,6 +48,8 @@
 
     <!--Errors-->
     <string name="error">Ошибка</string>
+    <string name="error.ui">Произошла ошибка интерфейса</string>
+    <string name="error.user_not_authenticated">Ошибка доступа. Необходима повторная авторизация.</string>
     <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать требуемые разрешения</string>
     <string name="error.cannot_save_file">"Проблема при сохранении файла: "</string>
     <string name="error.editText_email">Введите существующий e-mail</string>
@@ -64,6 +67,7 @@
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
     <string name="error.cannot_load_user_profile">Профиль пользователя не может быть загружен</string>
+    <string name="error.cannot_load_likes_list">Список не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
     <string name="error.permission_denied_camera">Приложению необходимо разрешение на пользование камерой, чтобы делать снимки.</string>
     <string name="error.permission_denied_write_storage">Приложению необходимо разрешение на возможность записи на SDCARD, чтобы сохранять снимки.</string>
@@ -75,6 +79,7 @@
     <string name="notify.auth_by_Facebook">Теперь приложение авторизовано для доступа к данным Facebook</string>
     <string name="notify.auth_by_Google">Теперь приложение авторизовано для доступа к данным Google</string>
     <string name="notify.auth_by_VK">Теперь приложение авторизовано для доступа к данным VK</string>
+    <string name="notify.not_implemented">Not implemented yet</string>
 
     <!--Dummies-->
     <string name="app_name">Elena Space DevIntensive</string>
@@ -103,6 +108,7 @@
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
 
+
     <plurals name="projects">
         <item quantity="zero">проектов</item>
         <item quantity="one">проект</item>
@@ -119,5 +125,14 @@
         <item quantity="few">строки кода написаны</item>
         <item quantity="many">строк кода написано</item>
         <item quantity="other">строк кода написано</item>
+    </plurals>
+
+    <plurals name="people">
+        <item quantity="zero">%d человек</item>
+        <item quantity="one">%d человек</item>
+        <item quantity="two">%d человека</item>
+        <item quantity="few">%d человека</item>
+        <item quantity="many">%d человек</item>
+        <item quantity="other">%d человек</item>
     </plurals>
 </resources>

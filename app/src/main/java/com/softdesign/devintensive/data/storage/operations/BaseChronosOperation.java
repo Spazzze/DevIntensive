@@ -20,7 +20,6 @@ public abstract class BaseChronosOperation<Output> extends ChronosOperation<Outp
         CLEAR,
         SAVE,
         LOAD,
-        SWAP,
         RESET,
     }
 }

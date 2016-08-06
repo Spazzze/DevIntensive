@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.data.network;
+package com.softdesign.devintensive.data.providers;
 
 import android.graphics.Bitmap;
 

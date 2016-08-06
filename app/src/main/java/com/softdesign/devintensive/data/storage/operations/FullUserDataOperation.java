@@ -112,8 +112,6 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
                 String photoUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_PHOTO_URI, "");
                 String avatarUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_AVATAR_URI, "");
                 return new ProfileViewModel(userData, photoUri, avatarUri);
-            case SWAP:
-                break;
         }
         return null;
     }

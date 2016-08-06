@@ -20,10 +20,20 @@ public class UserLoginDataOperation extends BaseChronosOperation<String> {
         this.mAction = Action.SAVE;
     }
 
+    public UserLoginDataOperation(Action action) {
+        if (action == Action.SAVE) return; //only CLEAR and LOAD allowed this way
+        this.mAction = action;
+    }
+
     @Nullable
     @Override
     public String run() {
         switch (this.mAction) {
+            case CLEAR:
+                SharedPreferences.Editor edit = SHARED_PREFERENCES.edit();
+                edit.remove(Const.BUILTIN_ACCESS_USER_ID);
+                edit.remove(Const.BUILTIN_ACCESS_TOKEN);
+                return null;
             case SAVE:
                 SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
                 if (mLogin == null) {

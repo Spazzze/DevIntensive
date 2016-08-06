@@ -1,21 +1,30 @@
 package com.softdesign.devintensive.data.binding;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.databinding.BindingAdapter;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextSwitcher;
 
 import com.softdesign.devintensive.BR;
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.network.CustomGlideModule;
+import com.softdesign.devintensive.data.providers.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
+import com.softdesign.devintensive.ui.adapters.RecyclerBindingAdapter;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -23,7 +32,9 @@ import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 
 import java.util.List;
 
+@SuppressWarnings({"unchecked", "unused"})
 public class BindingAdapters {
+
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
     public static final String TAG = Const.TAG_PREFIX + "BindingAdapters";
 
@@ -70,6 +81,17 @@ public class BindingAdapters {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Custom
+    @BindingAdapter({"imageUrl", "placeholder"})
+    public static void loadImage(ImageView view, String url, Drawable placeholder) {
+
+        Pair<String, Drawable> pair = (Pair) view.getTag(R.id.imageUrl_tag);
+
+        if (pair == null || !AppUtils.equals(url, pair.first) || !AppUtils.equals(pair.second, placeholder)) {
+            CustomGlideModule.loadImage(url, placeholder, placeholder, view);
+            view.setTag(R.id.imageUrl_tag, new Pair<>(url, placeholder));
+        }
+    }  //2 params
+
     @BindingAdapter("resize_by_aspect")
     public static void resizeImage(ImageView view, float aspectRatio) {
         int width = view.getMeasuredWidth();
@@ -80,15 +102,6 @@ public class BindingAdapters {
         view.setLayoutParams(layoutParams);
     }
 
-    @BindingAdapter("offsetSystemWindow")
-    public static void offsetSystemWindow(View view, boolean isNeeded) {
-        if (!isNeeded) return;
-        CoordinatorLayout.LayoutParams cl = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
-        if (cl == null) return;
-        cl.topMargin = (int) (AppUtils.getStatusBarHeight() + AppUtils.getAppBarSize());
-        view.setLayoutParams(cl);
-    }
-
     @BindingAdapter("roundedImage")
     public static void setRoundedImage(ImageView view, String url) {
         String tag = (String) view.getTag(R.id.avatar_tag);
@@ -96,17 +109,6 @@ public class BindingAdapters {
         if (tag == null || !AppUtils.equals(url, tag)) {
             CustomGlideModule.loadRoundedImage(url, R.drawable.ic_account_circle_white, R.drawable.ic_account_circle_white, view);
             view.setTag(R.id.avatar_tag, url);
-        }
-    }
-
-    @BindingAdapter("imageUrl")
-    public static void loadImage(ImageView view, String url) {
-
-        String tag = (String) view.getTag(R.id.imageUrl_tag);
-
-        if (tag == null || !AppUtils.equals(url, tag)) {
-            CustomGlideModule.loadImage(url, R.drawable.user_bg, R.drawable.user_bg, view);
-            view.setTag(R.id.imageUrl_tag, url);
         }
     }
 
@@ -139,7 +141,10 @@ public class BindingAdapters {
             if (savedSize == null) {
                 LinearLayoutManager manager = new LinearLayoutManager(recyclerView.getContext());
                 recyclerView.setLayoutManager(manager);
-                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+                if (animator instanceof SimpleItemAnimator) {
+                    ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+                }
             }
             RecyclerBindingAdapter<RepoViewModel> adapter = new RecyclerBindingAdapter<>(
                     R.layout.item_repositories_list,
@@ -147,12 +152,66 @@ public class BindingAdapters {
                     list,
                     (position -> {
                         if (!list.get(position).isEnabled()) {
-                            AppUtils.openWebPage(CONTEXT, "https://" + list.get(position).getRepoUri());
+                            AppUtils.openWebPage(CONTEXT, list.get(position).getRepoUri());
                         }
                     }));
             recyclerView.setTag(R.id.repo_recycleView_tag, list.size());
             recyclerView.swapAdapter(adapter, false);
         }
     }
-    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    @BindingAdapter("changeFABColor")
+    public static void changeFABColor(FloatingActionButton fab, @ColorInt int id) {
+        if (id == 0) return;
+
+        Integer tag = (Integer) fab.getTag(R.id.fab_color_tag);
+
+        if (tag == null || id != tag) {
+            fab.setBackgroundTintList(ColorStateList.valueOf(id));
+            fab.setTag(R.id.fab_color_tag, tag);
+        }
+    }
+
+    //endregion :::::::::::::::::::::::::::::::::::::::::: Custom
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Animations
+    @BindingAdapter("switchText")
+    public static void switchText(TextSwitcher switcher, String text) {
+        if (text == null) return;
+
+        String tag = (String) switcher.getTag(R.id.animText_tag);
+
+        if (tag == null || !AppUtils.equals(tag, text)) {
+            switcher.setText(text);
+            switcher.setTag(R.id.animText_tag, tag);
+        }
+    }
+
+    @BindingAdapter("animateFabAppearance")
+    public static void animateFabAppearance(FloatingActionButton fab, boolean isNeeded) {
+        Pair<Boolean, Float> pair = (Pair) fab.getTag(R.id.fab_appearance_tag);
+
+        if (pair == null || pair.first != isNeeded) {
+            float translation;
+            if (pair == null) {
+                translation = 2 * CONTEXT.getResources().getDimensionPixelOffset(R.dimen.size_medium_56);
+                fab.setTranslationY(translation); //работает некорректно, смещает ресайкл вью?, надо тестить фиксить
+            } else {
+                translation = pair.second;
+            }
+            fab.setTag(R.id.fab_appearance_tag, new Pair<>(isNeeded, translation));
+
+            float neededTranslation = isNeeded ? 0.0f : translation;
+
+            fab.animate()
+                    .translationY(neededTranslation)
+                    .setInterpolator(new OvershootInterpolator(1.f))
+                    .setStartDelay(AppConfig.ANIM_START_DELAY_FAB)
+                    .setDuration(AppConfig.ANIM_DURATION_FAB)
+                    .start();
+        }
+    }
+    //endregion :::::::::::::::::::::::::::::::::::::::::: Animations
 }
+
+

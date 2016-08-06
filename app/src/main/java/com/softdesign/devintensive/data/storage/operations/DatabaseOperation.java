@@ -8,7 +8,6 @@ import android.util.Log;
 import com.redmadrobot.chronos.ChronosOperationResult;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
-import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
 import com.softdesign.devintensive.data.storage.models.LikeEntity;
 import com.softdesign.devintensive.data.storage.models.RepositoryEntity;
@@ -32,15 +31,11 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         FAVOURITES,
     }
 
-    final DaoSession mDaoSession = DATA_MANAGER.getDaoSession();
+    final static DaoSession DAO_SESSION = DATA_MANAGER.getDaoSession();
     Sort mSort = Sort.CUSTOM;
     Action mAction = Action.LOAD;
 
     List<UserListRes> mUserListRes;
-    ProfileValues mLikeResponse;
-    String mLikedUserId;
-
-    String mFirstUserRemoteId, mSecondUserRemoteId;
 
     public DatabaseOperation() {
         this.mAction = Action.LOAD;
@@ -61,18 +56,6 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         this.mAction = action;
     }
 
-    public DatabaseOperation(String firstUserRemoteId, String secondUserRemoteId) {
-        mFirstUserRemoteId = firstUserRemoteId;
-        mSecondUserRemoteId = secondUserRemoteId;
-        this.mAction = Action.SWAP;
-    }
-
-    public DatabaseOperation(String userId, ProfileValues data) {
-        this.mAction = Action.SAVE;
-        this.mLikedUserId = userId;
-        this.mLikeResponse = data;
-    }
-
     @Nullable
     @Override
     public List<UserEntity> run() {
@@ -84,15 +67,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                 return null;
 
             case SAVE:
-                if (mUserListRes != null) {
-                    saveIntoDB(mUserListRes);
-                } else if (mLikeResponse != null && mLikedUserId != null) {
-                    updateUserInDB(mLikedUserId, mLikeResponse);
-                }
-                return null;
-
-            case SWAP:
-                swapEntityInternalIds(mFirstUserRemoteId, mSecondUserRemoteId);
+                saveIntoDB(mUserListRes);
                 return null;
 
             case LOAD:
@@ -105,15 +80,6 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     }
 
     //region :::::::::::::::::::::::::::::::::::::::::: Main methods
-
-    private void updateUserInDB(String likedUserId, ProfileValues values) {
-        UserEntity likedEntity = findUserInDB(likedUserId);
-        if (likedEntity != null) {
-            likedEntity.setRating(values.getIntRating());
-            likedEntity.setLikesBy(values.getLikeEntitiesList(likedUserId));
-            mDaoSession.getUserEntityDao().update(likedEntity);
-        }
-    }
 
     private void saveIntoDB(List<UserListRes> response) {
         List<RepositoryEntity> allRepositories = new ArrayList<>();
@@ -149,12 +115,12 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
                 allLikes.addAll(ll);
             }
         }
-        mDaoSession.getRepositoryEntityDao().deleteAll();
-        mDaoSession.getRepositoryEntityDao().insertInTx(allRepositories);
-        mDaoSession.getUserEntityDao().deleteAll();
-        mDaoSession.getUserEntityDao().insertInTx(allUsers);
-        mDaoSession.getLikeEntityDao().deleteAll();
-        mDaoSession.getLikeEntityDao().insertInTx(allLikes);
+        DAO_SESSION.getRepositoryEntityDao().deleteAll();
+        DAO_SESSION.getRepositoryEntityDao().insertInTx(allRepositories);
+        DAO_SESSION.getUserEntityDao().deleteAll();
+        DAO_SESSION.getUserEntityDao().insertInTx(allUsers);
+        DAO_SESSION.getLikeEntityDao().deleteAll();
+        DAO_SESSION.getLikeEntityDao().insertInTx(allLikes);
 
         SharedPreferences.Editor editor = SHARED_PREFERENCES.edit();
         editor.putLong(Const.DB_UPDATED_TIME_KEY, new Date().getTime());
@@ -176,7 +142,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
 
         if (sorting == Sort.CUSTOM) {
             try {
-                userList = mDaoSession
+                userList = DAO_SESSION
                         .queryBuilder(UserEntity.class)
                         .where(UserEntityDao.Properties.InternalId.gt(0))
                         .orderAsc(sortProperty)
@@ -188,7 +154,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         } else if (sorting == Sort.FAVOURITES) {
             String myId = DataManager.getInstance().getPreferencesManager().loadBuiltInAuthId();
             try {
-                userList = mDaoSession
+                userList = DAO_SESSION
                         .queryBuilder(UserEntity.class)
                         .orderDesc(sortProperty)
                         .build()
@@ -205,7 +171,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             }
         } else {
             try {
-                userList = mDaoSession
+                userList = DAO_SESSION
                         .queryBuilder(UserEntity.class)
                         .orderDesc(sortProperty)
                         .build()
@@ -219,30 +185,10 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
     }
 
     private void clearDB() {
-        mDaoSession.getRepositoryEntityDao().deleteAll();
-        mDaoSession.getUserEntityDao().deleteAll();
-        mDaoSession.getLikeEntityDao().deleteAll();
-        mDaoSession.clear();
-    }
-
-    private void swapEntityInternalIds(@NonNull String firstUserRemoteId, String secondUserRemoteId) {
-        UserEntity firstEntity = findUserInDB(firstUserRemoteId);
-        if (firstEntity == null) return;
-        //swap place
-        if (secondUserRemoteId != null) {
-            int oldInternalId = firstEntity.getInternalId();
-            UserEntity secondEntity = findUserInDB(secondUserRemoteId);
-            if (secondEntity != null) {
-                int newInternalId = secondEntity.getInternalId();
-                firstEntity.setInternalId(newInternalId);
-                secondEntity.setInternalId(oldInternalId);
-                mDaoSession.getUserEntityDao().update(firstEntity);
-                mDaoSession.getUserEntityDao().update(secondEntity);
-            }
-        } else {
-            firstEntity.setInternalId(0);
-            mDaoSession.getUserEntityDao().update(firstEntity);
-        }
+        DAO_SESSION.getRepositoryEntityDao().deleteAll();
+        DAO_SESSION.getUserEntityDao().deleteAll();
+        DAO_SESSION.getLikeEntityDao().deleteAll();
+        DAO_SESSION.clear();
     }
 
     private List<UserEntity> resetCustomSorting() {
@@ -251,7 +197,7 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
             UserEntity user = curDB.get(i);
             user.setInternalId(i + 1);
         }
-        mDaoSession.getUserEntityDao().updateInTx(curDB);
+        DAO_SESSION.getUserEntityDao().updateInTx(curDB);
         return curDB;
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
@@ -265,8 +211,8 @@ public class DatabaseOperation extends BaseChronosOperation<List<UserEntity>> {
         return maxInternalId;
     }
 
-    private UserEntity findUserInDB(String userId) {
-        return mDaoSession
+    public static UserEntity findUserInDB(String userId) {
+        return DAO_SESSION
                 .queryBuilder(UserEntity.class)
                 .where(UserEntityDao.Properties.RemoteId.eq(userId))
                 .build()

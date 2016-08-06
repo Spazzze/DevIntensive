@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.adapters;
+package com.softdesign.devintensive.ui.callbacks;
 
 import android.support.v7.widget.helper.ItemTouchHelper;
 
@@ -9,7 +9,6 @@ public interface ItemTouchHelperViewHolder {
      * Implementations should update the item view to indicate it's active state.
      */
     void onItemSelected();
-
 
     /**
      * Called when the {@link ItemTouchHelper} has completed the move or swipe, and the active item

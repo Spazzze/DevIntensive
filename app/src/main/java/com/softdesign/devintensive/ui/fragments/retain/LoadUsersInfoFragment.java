@@ -3,15 +3,20 @@ package com.softdesign.devintensive.ui.fragments.retain;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
+import com.softdesign.devintensive.data.storage.operations.DBUpdateProfileValuesOperation;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
+import com.softdesign.devintensive.ui.activities.MainActivity;
 import com.softdesign.devintensive.utils.AppUtils;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
 
 /**
  * This Fragment manages a single background task and retains
@@ -28,54 +33,68 @@ public class LoadUsersInfoFragment extends BaseNetworkFragment {
     //region :::::::::::::::::::::::::::::::::::::::::: Requests
     public void downloadUserListIntoDB() {
 
-        if (this.mStatus == Status.RUNNING) {
-            return;
-        } else if (!DATA_MANAGER.getPreferencesManager().isDBNeedsUpdate()) {
-            this.mStatus = Status.FINISHED;
-            return;
-        } else if (!isExecutePossible()) return;
+        final ID reqId = ID.LOAD_DB;
 
-        onRequestStarted();
+        if (!DATA_MANAGER.getPreferencesManager().isDBNeedsUpdate()) {
+            return;
+        } else if (!isExecutePossible(reqId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId);
 
         Log.d(TAG, "downloadUserListIntoDB: ");
 
-        getUserListFromServer();
+        getUserListFromServer(request);
     }
 
     public void forceRefreshUserListIntoDB() {
-        if (this.mStatus == Status.RUNNING) {
-            return;
-        } else if (!isExecutePossible()) return;
 
-        onRequestStarted();
+        final ID reqId = ID.LOAD_DB;
+
+        if (!isExecutePossible(reqId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId);
 
         Log.d(TAG, "forceRefreshUserListIntoDB: ");
 
-        getUserListFromServer();
+        getUserListFromServer(request);
     }
 
-    public void likeUser(final String userId, boolean isLiked) {
+    public void likeUser(final String userId, final boolean isLiked) {
 
-        if (!isExecutePossible()) return;
+        ID reqId;
+        if (isLiked) {
+            reqId = ID.LIKE;
+        } else {
+            reqId = ID.UNLIKE;
+        }
 
-        NetworkCallback<BaseModel<ProfileValues>> callback = new NetworkCallback<BaseModel<ProfileValues>>() {
+        if (!isExecutePossible(reqId, userId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId, userId);
+
+        NetworkCallback<BaseModel<ProfileValues>> callback = new NetworkCallback<BaseModel<ProfileValues>>(request) {
             @Override
             public void onResponse(Call<BaseModel<ProfileValues>> call, Response<BaseModel<ProfileValues>> response) {
                 if (response.isSuccessful()) {
                     if (AppUtils.isEmptyOrNull(response.body())) {
-                        onRequestResponseEmpty();
+                        onRequestResponseEmpty(request);
                     } else {
                         ProfileValues res = response.body().getData();
-                        runOperation(new DatabaseOperation(userId, res));
-                        onRequestComplete(response);
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        if (mainActivity != null) {
+                            mainActivity.runOperation(new DBUpdateProfileValuesOperation(userId, res));
+                            removeRequest(request);
+                        } else {
+                            onRequestComplete(request, response);
+                        }
                     }
                 } else {
-                    onRequestHttpError(AppUtils.parseHttpError(response));
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
                 }
             }
         };
 
-        if (isLiked) {
+        if (!isLiked) {
             DATA_MANAGER.unlikeUser(userId).enqueue(callback);
         } else {
             DATA_MANAGER.likeUser(userId).enqueue(callback);
@@ -84,19 +103,19 @@ public class LoadUsersInfoFragment extends BaseNetworkFragment {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Utils
-    private void getUserListFromServer() {
-        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<BaseListModel<UserListRes>>() {
+    private void getUserListFromServer(NetworkRequest request) {
+        DATA_MANAGER.getUserListFromNetwork().enqueue(new NetworkCallback<BaseListModel<UserListRes>>(request) {
             @Override
             public void onResponse(Call<BaseListModel<UserListRes>> call, Response<BaseListModel<UserListRes>> response) {
                 if (response.isSuccessful()) {
                     if (AppUtils.isEmptyOrNull(response.body())) {
-                        onRequestResponseEmpty();
+                        onRequestResponseEmpty(request);
                     } else {
                         runOperation(new DatabaseOperation(response.body().getData()));
-                        onRequestComplete(response);
+                        onRequestComplete(request, response);
                     }
                 } else {
-                    onRequestHttpError(AppUtils.parseHttpError(response));
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
                 }
             }
         });

@@ -38,6 +38,7 @@ public class UserEntity {
     private String homeTask;
     private String bio;
     private String photo;
+    private String avatar;
     private int internalId;
 
     @ToMany(joinProperties = {
@@ -54,6 +55,7 @@ public class UserEntity {
 
         this.remoteId = user.getId();
         this.photo = user.getPublicInfo().getPhoto();
+        this.avatar = user.getPublicInfo().getAvatar();
         this.fullName = user.getFullName();
         this.searchName = user.getFullName().toUpperCase();
         this.homeTask = user.getProfileValues().getHomeTask();
@@ -187,6 +189,14 @@ public class UserEntity {
         this.repositoryEntities = repositoryEntities;
     }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     /**
@@ -276,9 +286,9 @@ public class UserEntity {
         myDao = daoSession != null ? daoSession.getUserEntityDao() : null;
     }
 
-    @Generated(hash = 1524954784)
+    @Generated(hash = 587082005)
     public UserEntity(Long id, @NotNull String remoteId, @NotNull String fullName, @NotNull String searchName, int rating,
-                      int codeLines, int projects, String homeTask, String bio, String photo, int internalId) {
+            int codeLines, int projects, String homeTask, String bio, String photo, String avatar, int internalId) {
         this.id = id;
         this.remoteId = remoteId;
         this.fullName = fullName;
@@ -289,6 +299,7 @@ public class UserEntity {
         this.homeTask = homeTask;
         this.bio = bio;
         this.photo = photo;
+        this.avatar = avatar;
         this.internalId = internalId;
     }
 

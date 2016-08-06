@@ -47,7 +47,7 @@
 
         <!-- Glide -->
         <meta-data
-            android:name="com.softdesign.devintensive.data.network.CustomGlideModule"
+            android:name="com.softdesign.devintensive.data.providers.CustomGlideModule"
             android:value="GlideModule" />
 
         <activity

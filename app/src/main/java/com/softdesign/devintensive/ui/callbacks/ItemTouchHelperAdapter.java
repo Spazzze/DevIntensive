@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.ui.adapters;
+package com.softdesign.devintensive.ui.callbacks;
 
 import android.support.v7.widget.RecyclerView;
 
@@ -15,12 +15,10 @@ public interface ItemTouchHelperAdapter {
      *
      * @param fromPosition The start position of the moved item.
      * @param toPosition   Then resolved position of the moved item.
-     *
      * @see RecyclerView#getAdapterPositionFor(RecyclerView.ViewHolder)
      * @see RecyclerView.ViewHolder#getAdapterPosition()
      */
     void onItemMove(int fromPosition, int toPosition);
-
 
     /**
      * Called when an item has been dismissed by a swipe.<br/>
@@ -29,7 +27,6 @@ public interface ItemTouchHelperAdapter {
      * adjusting the underlying data to reflect this removal.
      *
      * @param position The position of the item dismissed.
-     *
      * @see RecyclerView#getAdapterPositionFor(RecyclerView.ViewHolder)
      * @see RecyclerView.ViewHolder#getAdapterPosition()
      */

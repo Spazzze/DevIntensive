@@ -11,34 +11,35 @@ import android.util.Log;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.network.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.providers.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
-import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
-import com.softdesign.devintensive.ui.callbacks.BaseTaskCallbacks;
+import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
+import com.softdesign.devintensive.ui.callbacks.BaseNetworkTaskCallbacks;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
+import static com.softdesign.devintensive.data.storage.operations.BaseChronosOperation.Action;
 import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
 import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
 public class AuthNetworkFragment extends BaseNetworkFragment {
 
-    private AuthTaskCallbacks mCallbacks;
-    private volatile int mWrongPasswordCount;
-    private volatile User mUser;
+    private AuthNetworkTaskCallbacks mCallbacks;
+    private int mWrongPasswordCount;
+    private User mUser;
 
-    public interface AuthTaskCallbacks extends BaseTaskCallbacks {
+    public interface AuthNetworkTaskCallbacks extends BaseNetworkTaskCallbacks {
 
         void onErrorCount(int count);
     }
@@ -47,7 +48,6 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mUser = DATA_MANAGER.getPreferencesManager().loadAllUserData();
         if (DATA_MANAGER.isUserAuthenticated()) silentSignIn();
     }
@@ -55,73 +55,49 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (activity instanceof AuthTaskCallbacks) {
-            mCallbacks = (AuthTaskCallbacks) activity;
+        if (activity instanceof AuthNetworkTaskCallbacks) {
+            mCallbacks = (AuthNetworkTaskCallbacks) activity;
         } else {
-            throw new IllegalStateException("Parent activity must implement AuthTaskCallbacks");
+            throw new IllegalStateException("Parent activity must implement AuthNetworkTaskCallbacks");
         }
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Requests Status
     @Override
-    public void onRequestHttpError(AppUtils.BackendHttpError error) {
-
-        mStatus = Status.FINISHED;
-        mCancelled = true;
-
+    public void onRequestHttpError(@NonNull NetworkRequest request, AppUtils.BackendHttpError error) {
         switch (error.getStatusCode()) {
             case Const.HTTP_RESPONSE_NOT_FOUND:
+                error.setErrorMessage(getString(R.string.error_wrong_credentials));
                 synchronized (this) {
-                    mError = getString(R.string.error_wrong_credentials);
                     mWrongPasswordCount++;
                 }
                 if (mUser != null) {
                     if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
-                        runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
-                        runOperation(new FullUserDataOperation(BaseChronosOperation.Action.CLEAR));
+                        runOperation(new DatabaseOperation(Action.CLEAR));
+                        runOperation(new FullUserDataOperation(Action.CLEAR));
                     }
                     if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
                 }
                 break;
-            default:
-                synchronized (this) {
-                    mError = error.getErrorMessage();
-                }
-                break;
         }
-
-        if (mCallbacks != null) mCallbacks.onRequestFailed(mError);
-    }
-
-    public void onRequestComplete(User user) {
-        String photo = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
-        String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
-        BUS.postSticky(new ProfileViewModel(user,
-                !AppUtils.isEmptyOrNull(photo) ? photo : user.getPublicInfo().getPhoto(),
-                !AppUtils.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
-        super.onRequestComplete(null);
-    }
-
-    public void onRequestComplete(User user, Uri photoUri) {
-        String avatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
-        BUS.postSticky(new ProfileViewModel(user, photoUri.toString(),
-                !AppUtils.isEmptyOrNull(avatar) ? avatar : user.getPublicInfo().getAvatar()));
-        super.onRequestComplete(null);
+        super.onRequestHttpError(request, error);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Network Requests
 
-    public void signIn(String id, String pass) {
+    public void signIn(@NonNull String id, @NonNull String pass) {
 
-        if (getStatus() == Status.RUNNING) return;
+        final ID reqId = ID.SILENT_AUTH;
 
-        onRequestStarted();
+        if (!isAuthExecutePossible(reqId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId);
 
         Call<BaseModel<UserAuthRes>> call = DATA_MANAGER.loginUser(new UserLoginReq(id, pass));
 
-        call.enqueue(new Callback<BaseModel<UserAuthRes>>() {
+        call.enqueue(new NetworkCallback<BaseModel<UserAuthRes>>(request) {
             @Override
             public void onResponse(Call<BaseModel<UserAuthRes>> call, Response<BaseModel<UserAuthRes>> response) {
                 if (response.isSuccessful()) {
@@ -129,37 +105,47 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                     UserAuthRes data = response.body().getData();
                     if (!isEmptyOrNull(data)) {
                         saveUserAuthData(response.body());
-                        updateUserInfoFromServer(data.getUser());
+                        updateUserInfoFromServer(request, data.getUser());
                     } else {
-                        onRequestResponseEmpty();
+                        onRequestResponseEmpty(request);
                     }
                 } else {
-                    onRequestHttpError(AppUtils.parseHttpError(response));
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
                 }
-            }
-
-            @Override
-            public void onFailure(Call<BaseModel<UserAuthRes>> call, Throwable t) {
-                onRequestFailure(t);
             }
         });
     }
 
     private void silentSignIn() {
-        if (getStatus() == Status.RUNNING || !isExecutePossible()) return;
 
-        onRequestStarted();
+        final ID reqId = ID.AUTH;
+
+        if (!isAuthExecutePossible(reqId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId);
 
         Call<BaseModel<User>> call = DATA_MANAGER.getUserData(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId());
 
-        call.enqueue(new NetworkCallback<BaseModel<User>>() {
+        call.enqueue(new NetworkCallback<BaseModel<User>>(request) {
             @Override
             public void onResponse(Call<BaseModel<User>> call,
                                    Response<BaseModel<User>> response) {
                 if (response.isSuccessful()) {
-                    if (!isEmptyOrNull(response.body().getData())) {
-                        updateUserInfoFromServer(response.body().getData());
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty(request);
+                    } else {
+                        updateUserInfoFromServer(request, response.body().getData());
                     }
+                } else {
+                    switch (AppUtils.parseHttpError(response).getStatusCode()) {
+                        case Const.HTTP_RESPONSE_NOT_FOUND:
+                        case Const.HTTP_FORBIDDEN:
+                        case Const.HTTP_UNAUTHORIZED:
+                            runOperation(new UserLoginDataOperation(Action.CLEAR));
+                            break;
+                    }
+                    if (mCallbacks != null)
+                        mCallbacks.onNetworkRequestFailed(request);
                 }
             }
         });
@@ -175,22 +161,21 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
         );
     }
 
-    private void updateUserInfoFromServer(User user) {
+    private void updateUserInfoFromServer(final @NonNull NetworkRequest request, @NonNull final User user) {
         if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
-            onRequestComplete(user);
+            onRequestComplete(request, null);
         } else {
             runOperation(new FullUserDataOperation(user));
             if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
                 if (!isEmptyOrNull(user.getPublicInfo().getPhoto()))
-                    downloadUserPhoto(user);
+                    downloadUserPhoto(request, user);
             } else {
-                onRequestComplete(user);
+                onRequestComplete(request, null);
             }
         }
     }
 
-    private void downloadUserPhoto(@NonNull final User user) {
-        Log.d(TAG, "downloadUserPhoto: ");
+    private void downloadUserPhoto(final @NonNull NetworkRequest request, @NonNull final User user) {
         String pathToPhoto = user.getPublicInfo().getPhoto();
 
         int photoWidth = getScreenWidth();
@@ -200,16 +185,15 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
             @Override
             public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                 super.onResourceReady(bitmap, anim);
-                Log.d(TAG, "onResourceReady: Success");
                 runOperation(new FullUserDataOperation(Uri.fromFile(getFile())));
-                onRequestComplete(user, Uri.fromFile(getFile()));
+                onRequestComplete(request, null);
             }
 
             @Override
             public void onLoadFailed(Exception e, Drawable errorDrawable) {
                 Log.e(TAG, "downloadUserPhoto onLoadFailed: " + e.getMessage());
                 runOperation(new FullUserDataOperation(Uri.parse(pathToPhoto)));
-                onRequestComplete(user, Uri.parse(pathToPhoto));
+                onRequestComplete(request, null);
             }
         };
         Glide.with(this)

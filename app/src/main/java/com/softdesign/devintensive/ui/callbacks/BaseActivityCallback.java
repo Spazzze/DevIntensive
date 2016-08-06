@@ -1,25 +1,27 @@
 package com.softdesign.devintensive.ui.callbacks;
 
-import android.support.annotation.MenuRes;
-import android.support.v7.widget.Toolbar;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
 
 public interface BaseActivityCallback {
+
+    String getCurrentFragmentTag();
+
+    Fragment getCurrentFragment();
 
     void showProgressDialog();
 
     void hideProgressDialog();
 
-    void showError(int messageId);
-
-    void showError(int dialogId, int messageId);
+    void showError(@StringRes int messageId);
 
     void showError(String message);
 
-    void showDialogFragment(int dialogId);
-
-    void showDialogFragment(int dialogId, String message);
-
     void showToast(String message);
+
+    void errorAlertExitToMain(String error);
+
+    void errorAlertExitToAuth(String error);
 
     void logout(int mode);
 
@@ -30,10 +32,6 @@ public interface BaseActivityCallback {
     void openAppSettings();
 
     void openAppSettingsForResult(int flag);
-
-    void setupToolbar(Toolbar toolbar, @MenuRes int id);
-
-    void setupToolbarWithoutNavMenu(Toolbar toolbar);
 
     void onBackPressed();
 }

@@ -15,14 +15,11 @@ import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
-import de.greenrobot.event.EventBus;
-
 @SuppressWarnings("deprecation")
 public class BaseViewFragment extends ChronosSupportFragment {
 
     public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
-    public static final EventBus BUS = EventBus.getDefault();
     public static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     public MainActivityCallback mCallbacks;

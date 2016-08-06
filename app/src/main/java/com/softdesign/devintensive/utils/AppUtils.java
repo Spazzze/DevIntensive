@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.utils;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -18,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.DimenRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -29,6 +31,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -51,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,9 +74,16 @@ import retrofit2.Response;
 public class AppUtils {
 
     private static final Context CONTEXT = DevIntensiveApplication.getContext();
+    private static final AccelerateInterpolator ACCELERATE_INTERPOLATOR = new AccelerateInterpolator();
+    private static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(4);
+    private static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
+    private static final BounceInterpolator BOUNCE_INTERPOLATOR = new BounceInterpolator();
+    private static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
 
     private static int screenWidth = 0;
     private static int screenHeight = 0;
+    private static float appBarSize = 0.0f;
+    private static int statusBarSize = 0;
 
     //region :::::::::::::::::::::::::::::::::::::::::: Network
 
@@ -83,8 +97,66 @@ public class AppUtils {
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Animation
+
+    public static ObjectAnimator getFadeXAnimator(View view, int duration) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0.1f);
+        anim.setDuration(duration);
+        anim.setInterpolator(DECELERATE_INTERPOLATOR);
+        return anim;
+    }
+
+    public static ObjectAnimator getFadeYAnimator(View view, int duration) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(view, "scaleY", 1f, 0.1f);
+        anim.setDuration(duration);
+        anim.setInterpolator(DECELERATE_INTERPOLATOR);
+        return anim;
+    }
+
+    @NonNull
+    public static ObjectAnimator getGrowXAnimator(ImageView view, int duration) {
+        ObjectAnimator bounceAnimX = ObjectAnimator.ofFloat(view, "scaleX", 0.2f, 1f);
+        bounceAnimX.setDuration(duration);
+        bounceAnimX.setInterpolator(DECELERATE_INTERPOLATOR);
+        return bounceAnimX;
+    }
+
+    @NonNull
+    public static ObjectAnimator getGrowYAnimator(ImageView view, int duration) {
+        ObjectAnimator bounceAnimY = ObjectAnimator.ofFloat(view, "scaleY", 0.2f, 1f);
+        bounceAnimY.setDuration(duration);
+        bounceAnimY.setInterpolator(DECELERATE_INTERPOLATOR);
+        return bounceAnimY;
+    }
+
+    @NonNull
+    public static ObjectAnimator getBounceXAnimator(ImageView view, int duration) {
+        ObjectAnimator bounceAnimX = ObjectAnimator.ofFloat(view, "scaleX", 0.4f, 1f);
+        bounceAnimX.setDuration(duration);
+        bounceAnimX.setInterpolator(OVERSHOOT_INTERPOLATOR);
+        return bounceAnimX;
+    }
+
+    @NonNull
+    public static ObjectAnimator getBounceYAnimator(ImageView view, int duration) {
+        ObjectAnimator bounceAnimY = ObjectAnimator.ofFloat(view, "scaleY", 0.4f, 1f);
+        bounceAnimY.setDuration(duration);
+        bounceAnimY.setInterpolator(OVERSHOOT_INTERPOLATOR);
+        return bounceAnimY;
+    }
+
+    @NonNull
+    public static ObjectAnimator getRotationAnimator(ImageView view, int duration, float degrees) {
+        ObjectAnimator rotationAnim = ObjectAnimator.ofFloat(view, "rotation", 0f, degrees);
+        rotationAnim.setDuration(duration);
+        rotationAnim.setInterpolator(ACCELERATE_INTERPOLATOR);
+        return rotationAnim;
+    }
+    //endregion :::::::::::::::::::::::::::::::::::::::::: Animation
+
     //region :::::::::::::::::::::::::::::::::::::::::: UI
 
+    //region Calculations
     public static int getScreenOrientation() {
         Display getOrient = DevIntensiveApplication.getCurrentActivity().getWindowManager().getDefaultDisplay();
         if (getOrient.getWidth() < getOrient.getHeight()) {
@@ -96,6 +168,7 @@ public class AppUtils {
 
     public static void openWebPage(@NonNull Context context, @Nullable String url) {
         if (url == null || url.isEmpty()) return;
+        if (!url.startsWith("http")) url = "http://" + url;
         startActivity(context, new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
@@ -103,25 +176,28 @@ public class AppUtils {
      * @return StatusBarHeight in current context
      */
     public static int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = CONTEXT.getResources().getIdentifier("status_bar_height", "dimen", "android");
-
-        if (resourceId > 0) {
-            result = CONTEXT.getResources().getDimensionPixelSize(resourceId);
+        if (statusBarSize == 0) {
+            @DimenRes
+            int resourceId = CONTEXT.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0) {
+                statusBarSize = CONTEXT.getResources().getDimensionPixelSize(resourceId);
+            }
         }
-        return result;
+
+        return statusBarSize;
     }
 
     /**
      * @return Action bar height in current context
      */
     public static float getAppBarSize() {
-        final TypedArray styledAttributes = CONTEXT.getTheme().obtainStyledAttributes(
-                new int[]{android.R.attr.actionBarSize});
-        float mActionBarSize = styledAttributes.getDimension(0, 0);
-        styledAttributes.recycle();
-
-        return mActionBarSize;
+        if (appBarSize == 0.0f) {
+            final TypedArray styledAttributes = CONTEXT.getTheme().obtainStyledAttributes(
+                    new int[]{android.R.attr.actionBarSize});
+            appBarSize = styledAttributes.getDimension(0, 0);
+            styledAttributes.recycle();
+        }
+        return appBarSize;
     }
 
     /**
@@ -189,7 +265,9 @@ public class AppUtils {
         listView.setLayoutParams(params);
         listView.requestLayout();
     }
+    //endregion
 
+    //region Announce
     public static void showSnackbar(Context context, @StringRes int stringRes, boolean isLong) {
         showSnackbar(context, context.getString(stringRes), isLong);
     }
@@ -250,6 +328,7 @@ public class AppUtils {
                 .setAction(actionButtonText, listener)
                 .show();
     }
+    //endregion
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: IO system methods
@@ -399,14 +478,6 @@ public class AppUtils {
         }};
     }
 
-    public static HashMap<String, String> repoModelIntoMap(final List<RepoViewModel> list) {
-        return new HashMap<String, String>() {{
-            for (RepoViewModel r : list) {
-                put(r.getId() + Const.MAP_KEY_GEN + r.getRepoUri(), r.getRepoUri());
-            }
-        }};
-    }
-
     public static ArrayList<String> repoIntoString(final List<Repo> list) {
         return new ArrayList<String>() {{
             for (Repo r : list) {
@@ -414,21 +485,13 @@ public class AppUtils {
             }
         }};
     }
-
-    public static HashMap<String, String> repoIntoMap(final List<Repo> list) {
-        return new HashMap<String, String>() {{
-            for (Repo r : list) {
-                put(r.getId() + Const.MAP_KEY_GEN + r.getGit(), r.getGit());
-            }
-        }};
-    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Comparison
     public static boolean compareRepoModelLists(List<RepoViewModel> list1, List<RepoViewModel> list2) {
-        HashMap<String, String> map1 = repoModelIntoMap(list1);
-        HashMap<String, String> map2 = repoModelIntoMap(list2);
-        return compareMaps(map1, map2);
+        List<String> repoList1 = repoModelIntoString(list1);
+        List<String> repoList2 = repoModelIntoString(list2);
+        return compareLists(repoList1, repoList2);
     }
 
     public static boolean compareRepoLists(List<Repo> list1, List<Repo> list2) {
@@ -512,6 +575,14 @@ public class AppUtils {
 
         public int getStatusCode() {
             return this.statusCode;
+        }
+
+        public void setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+        }
+
+        public void setErrorMessage(String errorMessage) {
+            mErrorMessage = errorMessage;
         }
     }
 

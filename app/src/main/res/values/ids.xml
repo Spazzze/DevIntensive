@@ -5,11 +5,22 @@
     <item type="id" name="et_TextWatcher_tag" />
     <item type="id" name="et_errorHandler_tag" />
     <item type="id" name="repo_recycleView_tag" />
+    <item type="id" name="like_recycleView_tag" />
     <item type="id" name="imageUrl_tag" />
+    <item type="id" name="imageSrc_tag" />
+    <item type="id" name="likeAnimSize_tag" />
+    <item type="id" name="likeAnimL_tag" />
+    <item type="id" name="likeAnimR_tag" />
+    <item type="id" name="animText_tag" />
+    <item type="id" name="fab_color_tag" />
+    <item type="id" name="fab_size_tag" />
+    <item type="id" name="fab_anim_tag" />
+    <item type="id" name="fab_appearance_tag" />
     <item type="id" name="avatar_tag" />
     <item type="id" name="avatarEdit_tag" />
     <item type="id" name="height_tag" />
     <item type="id" name="behavior_tag" />
+    <item type="id" name="behavior_move_tag" />
     <item type="id" name="favourites_menu" />
     <item type="id" name="sortByRating_menu" />
     <item type="id" name="sortByCode_menu" />

@@ -1,31 +1,46 @@
 package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
 import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
 import java.io.File;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
 import static com.softdesign.devintensive.utils.AppUtils.filePathFromUri;
 
 public class UpdateServerDataFragment extends BaseNetworkFragment {
 
+    private Call<BaseModel<UserPhotoRes>> mUploadPhotoCall;
+    private Call<BaseModel<UserPhotoRes>> mUploadAvatarCall;
+    private Call<BaseModel<EditProfileRes>> mUploadDataCall;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     //region :::::::::::::::::::::::::::::::::::::::::: Request status
     @Override
     @SuppressWarnings("unchecked")
-    public void onRequestComplete(Response response) {
-        super.onRequestComplete(response);
+    public void onRequestComplete(@NonNull NetworkRequest request, Response response) {
+        super.onRequestComplete(request, response);
 
         BaseModel bm = (BaseModel) response.body();
 
@@ -42,57 +57,62 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
     //region :::::::::::::::::::::::::::::::::::::::::: Requests
     public void uploadUserPhoto(final String imageUri) {
 
-        if (imageUri == null || imageUri.startsWith("http") || !isExecutePossible()) return;
+        final ID reqId = ID.UPLOAD_PHOTO;
+
+        if (AppUtils.isEmptyOrNull(imageUri) || imageUri.startsWith("http") || !isExecutePossible(reqId, imageUri))
+            return;
 
         Log.d(TAG, "uploadUserPhoto: ");
+        if (mUploadPhotoCall != null) mUploadPhotoCall.cancel();
+        final NetworkRequest request = onRequestStarted(reqId, imageUri);
 
-        synchronized (this) {
-            onRequestStarted();
+        File file = new File(filePathFromUri(Uri.parse(imageUri)));
 
-            File file = new File(filePathFromUri(Uri.parse(imageUri)));
+        final RequestBody requestFile =
+                RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
 
-            final RequestBody requestFile =
-                    RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
 
-            MultipartBody.Part body =
-                    MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-
-            DATA_MANAGER.uploadUserPhoto(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body)
-                    .enqueue(new NetworkCallback<>());
-        }
+        mUploadPhotoCall = DATA_MANAGER.uploadUserPhoto(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body);
+        mUploadPhotoCall.enqueue(new NetworkCallback<>(request));
     }
 
     public void uploadUserAvatar(final String imageUri) {
 
-        if (imageUri == null || imageUri.startsWith("http") || !isExecutePossible()) return;
+        final ID reqId = ID.UPLOAD_AVATAR;
+
+        if (AppUtils.isEmptyOrNull(imageUri) || imageUri.startsWith("http") || !isExecutePossible(reqId, imageUri))
+            return;
 
         Log.d(TAG, "uploadUserAvatar: ");
-        synchronized (this) {
-            onRequestStarted();
+        if (mUploadAvatarCall != null) mUploadAvatarCall.cancel();
+        final NetworkRequest request = onRequestStarted(reqId, imageUri);
 
-            File file = new File(filePathFromUri(Uri.parse(imageUri)));
+        File file = new File(filePathFromUri(Uri.parse(imageUri)));
 
-            final RequestBody requestFile =
-                    RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
+        final RequestBody requestFile =
+                RequestBody.create(Const.MEDIATYPE_MULTIPART_FORM_DATA, file);
 
-            MultipartBody.Part body =
-                    MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
 
-            DATA_MANAGER.uploadUserAvatar(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body)
-                    .enqueue(new NetworkCallback<>());
-        }
+        mUploadAvatarCall = DATA_MANAGER.uploadUserAvatar(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body);
+        mUploadAvatarCall.enqueue(new NetworkCallback<>(request));
     }
 
     public void uploadUserData(ProfileViewModel model) {
 
-        if (model == null || !isExecutePossible()) return;
+        final ID reqId = ID.UPLOAD_DATA;
 
+        if (model == null || !isExecutePossible(reqId, model)) return;
         Log.d(TAG, "uploadUserData: ");
-        synchronized (this) {
-            onRequestStarted();
 
-            DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody()).enqueue(new NetworkCallback<>());
-        }
+        if (mUploadDataCall != null) mUploadDataCall.cancel();
+        final NetworkRequest request = onRequestStarted(reqId, model);
+        printRequestTable(); //// TODO: 06.08.2016 delete 
+        mUploadDataCall = DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody());
+        mUploadDataCall.enqueue(new NetworkCallback<>(request));
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
 import com.softdesign.devintensive.R;
@@ -12,7 +13,7 @@ import com.softdesign.devintensive.ui.callbacks.BaseActivityCallback;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.Const;
 
-public class DialogsFragment extends android.support.v4.app.DialogFragment {
+public class DialogsFragment extends DialogFragment {
 
     private MainActivityCallback mMainActivityCallback;
     private BaseActivityCallback mBaseActivityCallback;
@@ -120,10 +121,10 @@ public class DialogsFragment extends android.support.v4.app.DialogFragment {
     private void choosePhoto(DialogInterface dialogInterface, int i) {
         switch (i) {
             case 0:
-                mMainActivityCallback.loadPhotoFromCamera();
+                mMainActivityCallback.takeSnapshotFromCamera(Const.REQUEST_PHOTO_FROM_CAMERA);
                 break;
             case 1:
-                mMainActivityCallback.loadPhotoFromGallery();
+                mMainActivityCallback.loadImageFromGallery(Const.REQUEST_PHOTO_FROM_GALLERY);
                 break;
             case 2:
                 dialogInterface.cancel();
@@ -134,10 +135,10 @@ public class DialogsFragment extends android.support.v4.app.DialogFragment {
     private void chooseAvatar(DialogInterface dialogInterface, int i) {
         switch (i) {
             case 0:
-                mMainActivityCallback.loadAvatarFromCamera();
+                mMainActivityCallback.takeSnapshotFromCamera(Const.REQUEST_AVATAR_FROM_CAMERA);
                 break;
             case 1:
-                mMainActivityCallback.loadAvatarFromGallery();
+                mMainActivityCallback.loadImageFromGallery(Const.REQUEST_AVATAR_FROM_GALLERY);
                 break;
             case 2:
                 dialogInterface.cancel();

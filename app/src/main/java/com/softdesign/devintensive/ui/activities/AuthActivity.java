@@ -7,18 +7,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 
 import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.AuthViewModel;
 import com.softdesign.devintensive.databinding.ActivityAuthBinding;
 import com.softdesign.devintensive.ui.fragments.retain.AuthNetworkFragment;
 import com.softdesign.devintensive.utils.AppConfig;
-import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
@@ -28,13 +29,13 @@ import com.vk.sdk.api.VKError;
 
 import java.text.MessageFormat;
 
-public class AuthActivity extends BaseActivity implements AuthNetworkFragment.AuthTaskCallbacks, View.OnClickListener {
+public class AuthActivity extends BaseActivity implements AuthNetworkFragment.AuthNetworkTaskCallbacks, View.OnClickListener {
 
     private static final Handler ERROR_STOP_HANDLER = new Handler();
 
     private ActivityAuthBinding mAuthBinding;
     private AuthNetworkFragment mAuthNetworkFragment;
-    private final AuthViewModel mAuthViewModel = new AuthViewModel(AuthActivity.this);
+    private final AuthViewModel mAuthViewModel = new AuthViewModel();
 
     //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Override
@@ -83,22 +84,31 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     //region :::::::::::::::::::::::::::::::::::::::::: TaskCallbacks
 
     @Override
-    public void onRequestStarted() {
-        showProgressDialog();
+    public void onNetworkRequestFailed(@NonNull NetworkRequest request) {
+        hideProgressDialog();
+        Log.e(TAG, "onAuthRequestCancelled: " + request.getError());
+        switch (request.getId()) {
+            case AUTH:
+                if (request.isAnnounceError()) {
+                    errorAnnounce(request.getError());
+                    break;
+                }
+            case SILENT_AUTH:
+                if (request.isErrorCritical()) {
+                    showError(request.getError());
+                }
+                break;
+        }
     }
 
     @Override
-    public void onRequestFinished() {
+    public void onNetworkRequestFinished(@NonNull NetworkRequest request) {
         finishSignIn();
     }
 
     @Override
-    public void onRequestFailed(String error) {
-        hideProgressDialog();
-        if (!AppUtils.isEmptyOrNull(error)) {
-            Log.e(TAG, "onAuthRequestCancelled: " + error);
-            errorAnnounce(error);
-        }
+    public void onNetworkRequestStarted(@NonNull NetworkRequest request) {
+        showProgressDialog();
     }
 
     @Override
@@ -112,10 +122,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     @Override
     public void onClick(View view) {
-        if (!AppUtils.isNetworkAvailable()) {
-            showError(R.string.error_no_network_connection);
-            return;
-        }
         switch (view.getId()) {
             case R.id.login_button:
                 startSignIn();
@@ -125,6 +131,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
                 break;
             case R.id.signIn_vk_icon:
                 VKSdk.login(this, VKScope.PHOTOS, VKScope.NOTIFY);
+                break;
+            case R.id.save_login:
+                saveLoginName();
                 break;
         }
     }
@@ -152,23 +161,29 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region :::::::::::::::::::::::::::::::::::::::::: Background Operation Results
+    //region :::::::::::::::::::::::::::::::::::::::::: Events
     @SuppressWarnings("unused")
     public void onOperationFinished(final UserLoginDataOperation.Result result) {
         if (result.isSuccessful() && result.getOutput() != null) {
             mAuthViewModel.setSavingLogin(true);
             mAuthViewModel.setLoginName(result.getOutput());
-            mAuthBinding.authEmail.setSelection(mAuthViewModel.getLoginName().length());
+            mAuthBinding.authPass.requestFocus();
         }
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Login methods
 
+    public void saveLoginName() {
+        String loginName = null;
+        if (mAuthViewModel.isSavingLogin()) loginName = mAuthViewModel.getLoginName();
+        runOperation(new UserLoginDataOperation(loginName));
+    }
+
     private void startSignIn() {
         if (mAuthNetworkFragment != null)
             mAuthNetworkFragment.signIn(mAuthViewModel.getLoginName(), mAuthViewModel.getPassword());
-        mAuthViewModel.saveLoginName();
+        saveLoginName();
         mAuthViewModel.setPassword("");
     }
 
@@ -179,7 +194,6 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     private void finishSignIn() {
         hideProgressDialog();
-        showToast(getString(R.string.notify_auth_successful));
         startMainActivity();
     }
 

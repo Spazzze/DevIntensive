@@ -39,9 +39,11 @@
     <dimen name="spacing_large_64">64dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
     <dimen name="spacing_larger_80">80dp</dimen>
+    <dimen name="spacing_larger_96">96dp</dimen>
 
     <!-- Corner Radius -->
     <dimen name="corner_radius_2">2dp</dimen>
+    <dimen name="corner_radius_4">4dp</dimen>
     <dimen name="corner_radius_8">8dp</dimen>
 
     <!-- Lines -->
@@ -57,8 +59,7 @@
     <dimen name="button_width_126">126dp</dimen>
 
     <!-- Etc -->
-    <dimen name="toolbar_top_offset">0dp</dimen>
     <dimen name="padding_0">0dp</dimen>
-
+    <dimen name="button.likes_size">96dp</dimen>
 
 </resources>
