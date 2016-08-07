@@ -35,7 +35,7 @@
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
                 app:theme="@style/ToolbarStyle"
-                app:title="@{@string/header_menu_myTeam}" />
+                app:title="@string/header.team" />
 
         </android.support.design.widget.AppBarLayout>
 

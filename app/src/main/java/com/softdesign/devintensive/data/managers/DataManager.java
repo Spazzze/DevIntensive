@@ -1,10 +1,13 @@
 package com.softdesign.devintensive.data.managers;
 
+import android.support.annotation.NonNull;
+
 import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
+import com.softdesign.devintensive.data.network.api.req.UserRestorePassReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
+import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
@@ -60,21 +63,25 @@ public class DataManager {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Network
-    public Call<BaseModel<UserAuthRes>> loginUser(@Body UserLoginReq req) {
+    public Call<BaseModel<UserAuthRes>> loginUser(@NonNull @Body UserLoginReq req) {
         return mRestService.loginUser(req);
     }
 
-    public Call<BaseModel<User>> getUserData(@Path("userId") String userId) {
+    public Call<BaseModel> restoreUserPassword(@NonNull @Body UserRestorePassReq req) {
+        return mRestService.restoreUserPassword(req);
+    }
+
+    public Call<BaseModel<User>> getUserData(@NonNull @Path("userId") String userId) {
         return mRestService.getUserData(userId);
     }
 
-    public Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@Path("userId") String userId,
-                                                         @Part MultipartBody.Part file) {
+    public Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@NonNull @Path("userId") String userId,
+                                                         @NonNull @Part MultipartBody.Part file) {
         return mRestService.uploadUserPhoto(userId, file);
     }
 
-    public Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@Path("userId") String userId,
-                                                          @Part MultipartBody.Part file) {
+    public Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@NonNull @Path("userId") String userId,
+                                                          @NonNull @Part MultipartBody.Part file) {
         return mRestService.uploadUserAvatar(userId, file);
     }
 
@@ -82,15 +89,15 @@ public class DataManager {
         return mRestService.getUserList();
     }
 
-    public Call<BaseModel<EditProfileRes>> uploadUserInfo(@PartMap() Map<String, RequestBody> map) {
+    public Call<BaseModel<UserEditProfileRes>> uploadUserInfo(@NonNull @PartMap() Map<String, RequestBody> map) {
         return mRestService.uploadUserInfo(map);
     }
 
-    public Call<BaseModel<ProfileValues>> likeUser(@Path("userId") String userId) {
+    public Call<BaseModel<ProfileValues>> likeUser(@NonNull @Path("userId") String userId) {
         return mRestService.likeUser(userId);
     }
 
-    public Call<BaseModel<ProfileValues>> unlikeUser(@Path("userId") String userId) {
+    public Call<BaseModel<ProfileValues>> unlikeUser(@NonNull @Path("userId") String userId) {
         return mRestService.unlikeUser(userId);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::

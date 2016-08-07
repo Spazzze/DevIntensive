@@ -28,7 +28,7 @@ import android.view.View;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.NetworkRequest;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
+import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
@@ -198,7 +198,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), intentId);
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choose_photo)), intentId);
         } else {
             mIntentId = intentId;
             ActivityCompat.requestPermissions(this,
@@ -511,8 +511,8 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 break;
             case UPLOAD_DATA:
                 BaseModel bm = (BaseModel) request.getAdditionalInfo();
-                if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
-                    BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) bm;
+                if (bm.getData().getClass().isAssignableFrom(UserEditProfileRes.class)) {
+                    BaseModel<UserEditProfileRes> res = (BaseModel<UserEditProfileRes>) bm;
                     if (findMainProfileFragment() != null) {
                         mMainProfileFragment.getViewModel().updateValues(new ProfileViewModel(res.getData().getUser()));
                     }

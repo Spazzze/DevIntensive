@@ -20,6 +20,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <!-- Fullscreen background img -->
             <ImageView
                 android:layout_width="match_parent"
@@ -62,23 +63,41 @@
                             android:layout_height="match_parent"
                             android:background="@{auth.isWrongPassword ? @color/color_primary_dark : @color/color_accent}" />
 
-                        <!--Text ENTER-->
-                        <com.devspark.robototextview.widget.RobotoTextView
+                        <!-- HEADER Text-->
+                        <RelativeLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="@dimen/spacing_medial_24"
-                            android:layout_marginStart="@dimen/spacing_medial_24"
-                            android:text="@string/header.login"
-                            android:textAllCaps="true"
-                            android:textColor="@color/color_accent"
-                            android:textSize="@dimen/font_medium_20"
-                            app:typeface="roboto_medium" />
+                            android:layout_marginStart="@dimen/spacing_medial_24">
+
+                            <!--Text Forgot pass-->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header.forgot_pass"
+                                android:textColor="@color/color_accent"
+                                android:textSize="@dimen/font_medium_20"
+                                android:visibility="@{auth.forgotPass}" />
+
+                            <!--Text ENTER-->
+                            <com.devspark.robototextview.widget.RobotoTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/header.login"
+                                android:textAllCaps="true"
+                                android:textColor="@color/color_accent"
+                                android:textSize="@dimen/font_medium_20"
+                                android:visibility="@{!auth.forgotPass}"
+                                app:typeface="roboto_medium" />
+
+                        </RelativeLayout>
 
                         <!--Social sign-in buttons-->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="right"
+                            android:visibility="@{!auth.forgotPass}"
                             tools:ignore="RtlHardcoded">
 
                             <!--VK-->
@@ -123,7 +142,9 @@
                         </LinearLayout>
 
                         <!-- Password -->
-                        <LinearLayout style="@style/authorization_LL_infoBox">
+                        <LinearLayout
+                            style="@style/authorization_LL_infoBox"
+                            android:visibility="@{!auth.forgotPass}">
 
                             <android.support.design.widget.TextInputLayout
                                 android:layout_width="match_parent"
@@ -150,8 +171,9 @@
                             android:layout_marginTop="@dimen/spacing_small_8"
                             android:checked="@={auth.savingLogin}"
                             android:fontFamily="sans-serif-condensed"
-                            android:text="@string/header.auth_save_email"
-                            android:textColor="@color/color_grey_light" />
+                            android:text="@string/header.remember_email"
+                            android:textColor="@color/color_grey_light"
+                            android:visibility="@{!auth.forgotPass}" />
 
                         <!-- Button 'ENTER' -->
                         <com.devspark.robototextview.widget.RobotoButton
@@ -162,7 +184,7 @@
                             android:layout_marginTop="@dimen/spacing_normal_16"
                             android:gravity="center"
                             android:minWidth="@dimen/button_width_126"
-                            android:text="@string/header.login"
+                            android:text="@{auth.forgotPass ? @string/header_send : @string/header_login}"
                             android:theme="@style/AppTheme.Button.Red"
                             app:typeface="roboto_medium" />
 
@@ -172,7 +194,8 @@
                             style="@style/authorization_buttonForgotPass"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/header.auth_forgot_password" />
+                            android:text="@string/header.forgot_pass"
+                            android:visibility="@{!auth.forgotPass}" />
 
                     </LinearLayout>
 

@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
+import com.softdesign.devintensive.data.network.api.req.UserRestorePassReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
@@ -58,20 +59,18 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     //region :::::::::::::::::::::::::::::::::::::::::: Requests Status
     @Override
     public void onRequestHttpError(@NonNull NetworkRequest request, AppUtils.BackendHttpError error) {
-        switch (error.getStatusCode()) {
-            case Const.HTTP_RESPONSE_NOT_FOUND:
-                error.setErrorMessage(getString(R.string.error_wrong_credentials));
-                synchronized (this) {
-                    mWrongPasswordCount++;
+        if (request.getId() == ID.AUTH && error.getStatusCode() == Const.HTTP_RESPONSE_NOT_FOUND) {
+            error.setErrorMessage(getString(R.string.error_wrong_credentials));
+            synchronized (this) {
+                mWrongPasswordCount++;
+            }
+            if (mUser != null) {
+                if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
+                    runOperation(new DatabaseOperation(Action.CLEAR));
+                    runOperation(new FullUserDataOperation(Action.CLEAR));
                 }
-                if (mUser != null) {
-                    if (mWrongPasswordCount == AppConfig.MAX_LOGIN_TRIES) {
-                        runOperation(new DatabaseOperation(Action.CLEAR));
-                        runOperation(new FullUserDataOperation(Action.CLEAR));
-                    }
-                    if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
-                }
-                break;
+                if (mCallbacks != null) mCallbacks.onErrorCount(mWrongPasswordCount);
+            }
         }
         super.onRequestHttpError(request, error);
     }
@@ -81,7 +80,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
 
     public void signIn(@NonNull String id, @NonNull String pass) {
 
-        final ID reqId = ID.SILENT_AUTH;
+        final ID reqId = ID.AUTH;
 
         if (!isAuthExecutePossible(reqId)) return;
 
@@ -110,7 +109,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
 
     private void silentSignIn() {
 
-        final ID reqId = ID.AUTH;
+        final ID reqId = ID.SILENT_AUTH;
 
         if (!isAuthExecutePossible(reqId)) return;
 
@@ -129,20 +128,31 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
                         updateUserInfoFromServer(request, response.body().getData());
                     }
                 } else {
-                    switch (AppUtils.parseHttpError(response).getStatusCode()) {
+                    switch (response.code()) {
                         case Const.HTTP_RESPONSE_NOT_FOUND:
                         case Const.HTTP_FORBIDDEN:
                         case Const.HTTP_UNAUTHORIZED:
                             runOperation(new UserLoginDataOperation(Action.CLEAR));
                             break;
                     }
-                    if (mCallbacks != null)
-                        mCallbacks.onNetworkRequestFailed(request);
+                    if (mCallbacks != null) mCallbacks.onNetworkRequestFailed(request);
+                    removeRequest(request);
                 }
             }
         });
     }
 
+    public void forgotPass(String loginName) {
+        final ID reqId = ID.FORGOT_PASS;
+
+        if (!isAuthExecutePossible(reqId)) return;
+
+        final NetworkRequest request = onRequestStarted(reqId);
+
+        Call<BaseModel> call = DATA_MANAGER.restoreUserPassword(new UserRestorePassReq(loginName));
+
+        call.enqueue(new NetworkCallback<>(request));
+    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Utils

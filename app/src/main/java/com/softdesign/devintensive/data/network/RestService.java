@@ -3,8 +3,9 @@ package com.softdesign.devintensive.data.network;
 import android.support.annotation.NonNull;
 
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
+import com.softdesign.devintensive.data.network.api.req.UserRestorePassReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
+import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
@@ -27,31 +28,34 @@ import retrofit2.http.Path;
 
 public interface RestService {
     @POST("login")
-    Call<BaseModel<UserAuthRes>> loginUser(@Body UserLoginReq req);
+    Call<BaseModel<UserAuthRes>> loginUser(@NonNull @Body UserLoginReq req);
+
+    @POST("sendforgot")
+    Call<BaseModel> restoreUserPassword(@NonNull @Body UserRestorePassReq req);
 
     @GET("user/{userId}")
-    Call<BaseModel<User>> getUserData(@Path("userId") String userId);
+    Call<BaseModel<User>> getUserData(@NonNull @Path("userId") String userId);
 
     @Multipart
     @POST("user/{userId}/publicValues/profilePhoto")
-    Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@Path("userId") String userId,
-                                                  @Part MultipartBody.Part file);
+    Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@NonNull @Path("userId") String userId,
+                                                  @NonNull @Part MultipartBody.Part file);
 
     @Multipart
     @POST("user/{userId}/publicValues/profileAvatar")
-    Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@Path("userId") String userId,
-                                                   @Part MultipartBody.Part file);
+    Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@NonNull @Path("userId") String userId,
+                                                   @NonNull @Part MultipartBody.Part file);
 
     @GET("user/list?orderBy=rating")
     Call<BaseListModel<UserListRes>> getUserList();
 
     @Multipart
     @POST("profile/edit")
-    Call<BaseModel<EditProfileRes>> uploadUserInfo(@NonNull @PartMap Map<String, RequestBody> map);
+    Call<BaseModel<UserEditProfileRes>> uploadUserInfo(@NonNull @PartMap Map<String, RequestBody> map);
 
     @POST("user/{userId}/like")
-    Call<BaseModel<ProfileValues>> likeUser(@Path("userId") String userId);
+    Call<BaseModel<ProfileValues>> likeUser(@NonNull @Path("userId") String userId);
 
     @POST("user/{userId}/unlike")
-    Call<BaseModel<ProfileValues>> unlikeUser(@Path("userId") String userId);
+    Call<BaseModel<ProfileValues>> unlikeUser(@NonNull @Path("userId") String userId);
 }

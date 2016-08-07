@@ -3,14 +3,12 @@ package com.softdesign.devintensive.ui.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.util.Log;
 import android.view.View;
 
 import com.softdesign.devintensive.R;
@@ -86,24 +84,33 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     @Override
     public void onNetworkRequestFailed(@NonNull NetworkRequest request) {
         hideProgressDialog();
-        Log.e(TAG, "onAuthRequestCancelled: " + request.getError());
+        if (request.isErrorCritical()) {
+            showError(request.getError());
+            return;
+        }
         switch (request.getId()) {
             case AUTH:
+            case FORGOT_PASS:
                 if (request.isAnnounceError()) {
                     errorAnnounce(request.getError());
                     break;
                 }
-            case SILENT_AUTH:
-                if (request.isErrorCritical()) {
-                    showError(request.getError());
-                }
-                break;
         }
     }
 
     @Override
     public void onNetworkRequestFinished(@NonNull NetworkRequest request) {
-        finishSignIn();
+        hideProgressDialog();
+        switch (request.getId()) {
+            case AUTH:
+            case SILENT_AUTH:
+                startMainActivity();
+                break;
+            case FORGOT_PASS:
+                showToast(R.string.notify_pass_send_to_mail);
+                mAuthViewModel.setForgotPass(false);
+                break;
+        }
     }
 
     @Override
@@ -120,14 +127,28 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
 
     //region :::::::::::::::::::::::::::::::::::::::::: onClick
 
+    //Back button
+    @Override
+    public void onBackPressed() {
+        if (mAuthViewModel.isForgotPass()) {
+            mAuthViewModel.setForgotPass(false);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.login_button:
-                startSignIn();
+                if (mAuthViewModel.isForgotPass()) {
+                    forgotPassword();
+                } else {
+                    startSignIn();
+                }
                 break;
             case R.id.forgot_pass_button:
-                forgotPassword();
+                mAuthViewModel.setForgotPass(true);
                 break;
             case R.id.signIn_vk_icon:
                 VKSdk.login(this, VKScope.PHOTOS, VKScope.NOTIFY);
@@ -188,15 +209,9 @@ public class AuthActivity extends BaseActivity implements AuthNetworkFragment.Au
     }
 
     private void forgotPassword() {
-        Intent forgotPassIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AppConfig.FORGOT_PASS_URL));
-        startActivity(forgotPassIntent);
+        if (mAuthNetworkFragment != null)
+            mAuthNetworkFragment.forgotPass(mAuthViewModel.getLoginName());
     }
-
-    private void finishSignIn() {
-        hideProgressDialog();
-        startMainActivity();
-    }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Ui methods

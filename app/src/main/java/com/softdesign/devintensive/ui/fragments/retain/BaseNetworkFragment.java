@@ -212,7 +212,7 @@ public class BaseNetworkFragment extends ChronosSupportFragment {
                 request.failed(error.getErrorMessage(), true, true);
                 break;
             default:
-                request.failed(error.getErrorMessage(), false, true);
+                request.failed(error.getErrorMessage(), true, false);
                 break;
         }
 

@@ -23,7 +23,6 @@ import com.android.databinding.library.baseAdapters.BR;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.data.storage.operations.ClearGlideCacheOperation;
 import com.softdesign.devintensive.data.storage.operations.DBSelectOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentLikesListBinding;
@@ -222,7 +221,6 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
                 break;
             }
         }
-        runOperation(new ClearGlideCacheOperation());
         mCallbacks.forceRefreshLikesListFromServer(mUserId, isLikedByMe);
     }
 

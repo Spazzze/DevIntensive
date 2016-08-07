@@ -11,8 +11,10 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
 
     private String mLoginName = "";
     private String mPassword;
+
     private boolean isSavingLogin = false;
     private boolean isWrongPassword = false;
+    private boolean isForgotPass = false;
 
     public AuthViewModel() {
     }
@@ -30,6 +32,10 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
 
         if (isSavingLogin() != model.isSavingLogin()) {
             setSavingLogin(model.isSavingLogin());
+        }
+
+        if (isForgotPass() != model.isForgotPass()) {
+            setForgotPass(model.isForgotPass());
         }
     }
 
@@ -54,6 +60,10 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         return isWrongPassword;
     }
 
+    @Bindable
+    public boolean isForgotPass() {
+        return isForgotPass;
+    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Setters
@@ -82,6 +92,11 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         notifyPropertyChanged(BR.loginName);
     }
 
+    public void setForgotPass(boolean forgotPass) {
+        isForgotPass = forgotPass;
+        notifyPropertyChanged(BR.forgotPass);
+    }
+
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Parcel
@@ -90,6 +105,7 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         mPassword = in.readString();
         isSavingLogin = in.readByte() != 0x00;
         isWrongPassword = in.readByte() != 0x00;
+        isForgotPass = in.readByte() != 0x00;
     }
 
     @Override
@@ -103,6 +119,7 @@ public class AuthViewModel extends BaseViewModel implements Parcelable {
         dest.writeString(mPassword);
         dest.writeByte((byte) (isSavingLogin ? 0x01 : 0x00));
         dest.writeByte((byte) (isWrongPassword ? 0x01 : 0x00));
+        dest.writeByte((byte) (isForgotPass ? 0x01 : 0x00));
     }
 
     @SuppressWarnings("unused")

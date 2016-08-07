@@ -46,7 +46,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="@dimen/spacing_small_8"
                 android:gravity="center"
-                android:text="@string/header.profile_loadPhotoDialog_title"
+                android:text="@string/header.change_profile_photo"
                 android:textSize="@dimen/font_medium_20"
                 app:typeface="roboto_medium" />
 

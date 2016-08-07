@@ -12,11 +12,11 @@ import java.util.Map;
 
 import okhttp3.RequestBody;
 
-public class EditProfileReq {
+public class UserEditProfileReq {
     @NonNull
     private final Map<String, String> mParamsMap = new HashMap<>();
 
-    public EditProfileReq(User user) {
+    public UserEditProfileReq(User user) {
         setFirstName(user.getFirstName());
         setLastName(user.getSecondName());
         setPhoneNumber(user.getContacts().getPhone());
@@ -25,7 +25,7 @@ public class EditProfileReq {
         setGithub(AppUtils.repoListIntoJson(user.getRepositories().getRepo()));
     }
 
-    public EditProfileReq(ProfileViewModel model) {
+    public UserEditProfileReq(ProfileViewModel model) {
 
         String[] name = model.getFullName().split("\\s");
         setFirstName(name[0]);

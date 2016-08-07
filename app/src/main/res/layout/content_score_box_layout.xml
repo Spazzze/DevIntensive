@@ -43,7 +43,7 @@
 
             <TextView
                 style="@style/scoreBox_text"
-                android:text="@string/header.scoreBox_ratingText"
+                android:text="@string/header.rating"
                 android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
         </LinearLayout>

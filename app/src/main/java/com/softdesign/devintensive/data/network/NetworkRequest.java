@@ -22,6 +22,7 @@ public class NetworkRequest {
         LOAD_DB,
         SILENT_AUTH,
         AUTH,
+        FORGOT_PASS,
         UPLOAD_PHOTO,
         UPLOAD_AVATAR,
         UPLOAD_DATA,
@@ -155,6 +156,8 @@ public class NetworkRequest {
     public String toString() {
         return MessageFormat.format("Id: {0} Status: {1} Error: {2} \nmCancelled: {3} isAnnounceError: " +
                         "{4} isErrorCritical: {5} \nmAdditionalInfo Class: {6} \nmAdditionalInfo toString: {7}",
-                mId, mStatus, mError, mCancelled, isAnnounceError, isErrorCritical, mAdditionalInfo.getClass(), mAdditionalInfo.toString());
+                mId, mStatus, mError, mCancelled, isAnnounceError, isErrorCritical,
+                mAdditionalInfo != null ? mAdditionalInfo.getClass() : "",
+                mAdditionalInfo != null ? mAdditionalInfo.toString() : "");
     }
 }

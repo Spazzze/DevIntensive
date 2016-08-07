@@ -16,32 +16,33 @@
     <string name="hint.loading">Загрузка…</string>
 
     <!--Headers-->
-    <string name="header.scoreBox_ratingText">Рейтинг</string>
-    <string name="header.scoreBox_codeText">строк кода написано</string>
-    <string name="header.scoreBox_projectsText">Проектов</string>
-    <string name="header.menu_myProfile">Мой профиль</string>
-    <string name="header.menu_myContacts">Контакты</string>
-    <string name="header.menu_myTeam">Команда</string>
-    <string name="header.menu_liked">Оценили</string>
-    <string name="header.menu_myTasks">Задачи</string>
-    <string name="header.menu_myNotifications">Уведомления</string>
-    <string name="header.menu_myBookmarks">Закладки</string>
-    <string name="header.profile_loadPhotoDialog_title">Изменить фотографию профиля</string>
-    <string name="header.profile_loadAvatarDialog_title">Изменить аватар</string>
-    <string name="header.choosePhotoFromGallery">Выберите фотографию</string>
+    <string name="header.rating">Рейтинг</string>
+    <string name="header.codeLines">строк кода написано</string>
+    <string name="header.projects">Проектов</string>
+    <string name="header.my_profile">Мой профиль</string>
+    <string name="header.contacts">Контакты</string>
+    <string name="header.team">Команда</string>
+    <string name="header.liked">Оценили</string>
+    <string name="header.tasks">Задачи</string>
+    <string name="header.notifications">Уведомления</string>
+    <string name="header.bookmarks">Закладки</string>
+    <string name="header.change_profile_photo">Изменить фотографию профиля</string>
+    <string name="header.change_avatar">Изменить аватар</string>
+    <string name="header.choose_photo">Выберите фотографию</string>
     <string name="header.allow">Разрешить</string>
     <string name="header.login">Войти</string>
+    <string name="header.send">Отправить</string>
     <string name="header.logout">Выйти</string>
     <string name="header.refresh">Обновить</string>
     <string name="header.menu">Меню</string>
     <string name="header.sortByRating">Сортировка по рейтингу</string>
     <string name="header.sortByCode">Сортировка по строкам кода</string>
     <string name="header.sortByCustom">Своя сортировка</string>
-    <string name="header.auth_forgot_password">Забыли пароль?</string>
+    <string name="header.forgot_pass">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
-    <string name="header.auth_save_email">Запомнить e-mail</string>
+    <string name="header.remember_email">Запомнить e-mail</string>
     <string name="header.view">Просмотр</string>
-    <string name="header.current_homeTask">Hometask</string>
+    <string name="header.homeTask">Hometask</string>
     <string name="header.like">Любо \u0020</string>
     <string name="header.resetCustomSort">Сбросить свою сортировку</string>
     <string name="header.favourites">Закладки</string>
@@ -80,6 +81,7 @@
     <string name="notify.auth_by_Google">Теперь приложение авторизовано для доступа к данным Google</string>
     <string name="notify.auth_by_VK">Теперь приложение авторизовано для доступа к данным VK</string>
     <string name="notify.not_implemented">Not implemented yet</string>
+    <string name="notify.pass_send_to_mail">Инструкции по восстановлению пароля отправлены вам на почту</string>
 
     <!--Dummies-->
     <string name="app_name">Elena Space DevIntensive</string>

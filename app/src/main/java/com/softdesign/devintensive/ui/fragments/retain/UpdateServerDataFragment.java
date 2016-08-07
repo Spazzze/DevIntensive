@@ -6,8 +6,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.network.NetworkRequest;
-import com.softdesign.devintensive.data.network.api.req.EditProfileReq;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
+import com.softdesign.devintensive.data.network.api.req.UserEditProfileReq;
+import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
@@ -29,7 +29,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
     private Call<BaseModel<UserPhotoRes>> mUploadPhotoCall;
     private Call<BaseModel<UserPhotoRes>> mUploadAvatarCall;
-    private Call<BaseModel<EditProfileRes>> mUploadDataCall;
+    private Call<BaseModel<UserEditProfileRes>> mUploadDataCall;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,8 +47,8 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         if (bm.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
             BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) bm;
             runOperation(new FullUserDataOperation(res.getData()));
-        } else if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
-            BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) bm;
+        } else if (bm.getData().getClass().isAssignableFrom(UserEditProfileRes.class)) {
+            BaseModel<UserEditProfileRes> res = (BaseModel<UserEditProfileRes>) bm;
             runOperation(new FullUserDataOperation(res.getData().getUser()));
         }
     }
@@ -110,7 +110,7 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
         if (mUploadDataCall != null) mUploadDataCall.cancel();
         final NetworkRequest request = onRequestStarted(reqId, model);
-        mUploadDataCall = DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody());
+        mUploadDataCall = DATA_MANAGER.uploadUserInfo(new UserEditProfileReq(model).createReqBody());
         mUploadDataCall.enqueue(new NetworkCallback<>(request));
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::

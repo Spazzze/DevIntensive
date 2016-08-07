@@ -74,13 +74,13 @@ public class DialogsFragment extends DialogFragment {
     //region :::::::::::::::::::::::::::::::::::::::::: Dialogs
     private Dialog loadPhotoDialog() {
         return new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.header_profile_loadPhotoDialog_title))
+                .setTitle(getString(R.string.header_change_profile_photo))
                 .setItems(R.array.profile_placeHolder_loadPhotoDialog, this::choosePhoto).create();
     }
 
     private Dialog loadAvatarDialog() {
         return new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.header_profile_loadAvatarDialog_title))
+                .setTitle(getString(R.string.header_change_avatar))
                 .setItems(R.array.profile_placeHolder_loadPhotoDialog, this::chooseAvatar).create();
     }
 

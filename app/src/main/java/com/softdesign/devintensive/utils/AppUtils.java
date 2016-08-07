@@ -46,6 +46,7 @@ import com.google.gson.GsonBuilder;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.binding.fields.ObservableString;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
+import com.softdesign.devintensive.data.network.api.res.SoftDesignApiErrorRes;
 import com.softdesign.devintensive.data.network.restmodels.AddRepo;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
 import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
@@ -564,11 +565,6 @@ public class AppUtils {
             this.mErrorMessage = message;
         }
 
-        public BackendHttpError(BackendHttpError convert, int statusCode) {
-            this.statusCode = statusCode;
-            this.mErrorMessage = convert.getErrorMessage();
-        }
-
         public String getErrorMessage() {
             return this.mErrorMessage;
         }
@@ -590,15 +586,20 @@ public class AppUtils {
         int errorCode = 0;
         if (!AppUtils.isEmptyOrNull(response)) errorCode = response.code();
 
-        Converter<ResponseBody, BackendHttpError> converter =
+        Converter<ResponseBody, SoftDesignApiErrorRes> converter =
                 ServiceGenerator.getRetrofit()
-                        .responseBodyConverter(BackendHttpError.class, new Annotation[0]);
+                        .responseBodyConverter(SoftDesignApiErrorRes.class, new Annotation[0]);
 
+        SoftDesignApiErrorRes httpError = null;
         try {
-            return new BackendHttpError(converter.convert(response.errorBody()), errorCode);
+            httpError = converter.convert(response.errorBody());
         } catch (IOException e) {
-            return new BackendHttpError("Cannot convert error", errorCode);
+            e.printStackTrace();
         }
+
+        if (httpError == null || isEmptyOrNull(httpError.getError())) {
+            return new BackendHttpError("Error " + errorCode, errorCode);
+        } else return new BackendHttpError(httpError.getError(), errorCode);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

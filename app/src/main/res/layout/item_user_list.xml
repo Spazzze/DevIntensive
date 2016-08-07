@@ -69,7 +69,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="@dimen/spacing_tiny_4"
                         android:layout_marginRight="@dimen/spacing_tiny_4"
-                        android:text="@string/header.current_homeTask"
+                        android:text="@string/header.homeTask"
                         android:textColor="@color/color_grey_lightest"
                         android:textColorHighlight="@color/color_accent" />
 
