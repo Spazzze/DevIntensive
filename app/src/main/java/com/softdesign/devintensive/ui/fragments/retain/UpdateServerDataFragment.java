@@ -110,7 +110,6 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
 
         if (mUploadDataCall != null) mUploadDataCall.cancel();
         final NetworkRequest request = onRequestStarted(reqId, model);
-        printRequestTable(); //// TODO: 06.08.2016 delete 
         mUploadDataCall = DATA_MANAGER.uploadUserInfo(new EditProfileReq(model).createReqBody());
         mUploadDataCall.enqueue(new NetworkCallback<>(request));
     }

@@ -404,7 +404,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             likesListFragment.setArguments(args);
             replaceFragment(likesListFragment, true, LikesListFragment.class.getName() + userId);
         } else {
-            mManager.popBackStack(LikesListFragment.class.getName() + userId, 0);     //// TODO: 04.08.2016 проверить
+            mManager.popBackStack(LikesListFragment.class.getName() + userId, 0);
         }
     }
 

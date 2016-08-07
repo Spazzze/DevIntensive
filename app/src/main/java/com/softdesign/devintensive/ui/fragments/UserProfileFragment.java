@@ -38,12 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.softdesign.devintensive.data.network.NetworkRequest.Status;
+import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
 import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
 @SuppressWarnings("unchecked")
 public class UserProfileFragment extends BaseViewFragment implements View.OnClickListener {
-
-    private static final int FOOTER_ITEMS_COUNT = 7; //// TODO: 03.08.2016 высчитывать и менять.
 
     private ProfileViewModel mProfileViewModel = null;
     private FragmentProfileBinding mProfileBinding;
@@ -256,7 +255,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
             if (mProfileViewModel == null && isEmptyOrNull(mUserId)) {
                 mCallbacks.errorAlertExitToMain(getString(R.string.error_cannot_load_user_profile));
                 return;
-            }  //// TODO: 04.08.2016 else if !isEmptyOrNull(mUserId) запросить инфо с сервера
+            }
         }
         if (mProfileViewModel == null) {
             loadFullUserData();
@@ -384,7 +383,10 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
-        CustomGridLayoutManager glm = new CustomGridLayoutManager(getActivity(), FOOTER_ITEMS_COUNT);
+        int footerItemsCount = (getScreenWidth() - getResources().getDimensionPixelSize(R.dimen.profile_likesBox_size)) /
+                getResources().getDimensionPixelSize(R.dimen.size_normal_40);
+        if (footerItemsCount == 0) footerItemsCount = 7;
+        CustomGridLayoutManager glm = new CustomGridLayoutManager(getActivity(), footerItemsCount);
         glm.setScrollEnabled(false);
         mProfileBinding.mainProfileLayout.likesRV.setLayoutManager(glm);
         mProfileBinding.mainProfileLayout.likesRV.swapAdapter(bindingAdapter, false);

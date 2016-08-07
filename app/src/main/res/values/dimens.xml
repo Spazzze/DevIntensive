@@ -16,7 +16,7 @@
     <dimen name="size_small_8">8dp</dimen>
     <dimen name="size_small_16">16dp</dimen>
     <dimen name="size_small_24">24dp</dimen>
-    <dimen name="size_normal_36">36dp</dimen>
+    <dimen name="size_normal_40">40dp</dimen>
     <dimen name="size_medium_48">48dp</dimen>
     <dimen name="size_medium_56">56dp</dimen>
     <dimen name="size_medium_64">64dp</dimen>
@@ -62,5 +62,6 @@
     <!-- Etc -->
     <dimen name="padding_0">0dp</dimen>
     <dimen name="button.likes_size">96dp</dimen>
+    <dimen name="profile.likesBox_size">76dp</dimen>
 
 </resources>

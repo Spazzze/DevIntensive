@@ -81,11 +81,6 @@ public class AppUtils {
     private static final BounceInterpolator BOUNCE_INTERPOLATOR = new BounceInterpolator();
     private static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
 
-    private static int screenWidth = 0;
-    private static int screenHeight = 0;
-    private static float appBarSize = 0.0f;
-    private static int statusBarSize = 0;
-
     //region :::::::::::::::::::::::::::::::::::::::::: Network
 
     /**
@@ -192,27 +187,23 @@ public class AppUtils {
      * @return StatusBarHeight in current context
      */
     public static int getStatusBarHeight() {
-        if (statusBarSize == 0) {
-            @DimenRes
-            int resourceId = CONTEXT.getResources().getIdentifier("status_bar_height", "dimen", "android");
-            if (resourceId > 0) {
-                statusBarSize = CONTEXT.getResources().getDimensionPixelSize(resourceId);
-            }
+        @DimenRes
+        int resourceId = CONTEXT.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return CONTEXT.getResources().getDimensionPixelSize(resourceId);
         }
-
-        return statusBarSize;
+        return 0;
     }
 
     /**
      * @return Action bar height in current context
      */
     public static float getAppBarSize() {
-        if (appBarSize == 0.0f) {
-            final TypedArray styledAttributes = CONTEXT.getTheme().obtainStyledAttributes(
-                    new int[]{android.R.attr.actionBarSize});
-            appBarSize = styledAttributes.getDimension(0, 0);
-            styledAttributes.recycle();
-        }
+        float appBarSize;
+        final TypedArray styledAttributes = CONTEXT.getTheme().obtainStyledAttributes(
+                new int[]{android.R.attr.actionBarSize});
+        appBarSize = styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
         return appBarSize;
     }
 
@@ -232,27 +223,19 @@ public class AppUtils {
     }
 
     public static int getScreenHeight() {
-        if (screenHeight == 0) {
-            WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            screenHeight = size.y;
-        }
-
-        return screenHeight;
+        WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size.y;
     }
 
     public static int getScreenWidth() {
-        if (screenWidth == 0) {
-            WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            screenWidth = size.x;
-        }
-
-        return screenWidth;
+        WindowManager wm = (WindowManager) CONTEXT.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size.x;
     }
 
     public static boolean isAndroid5() {

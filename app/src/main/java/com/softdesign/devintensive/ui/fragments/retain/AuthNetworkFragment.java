@@ -1,22 +1,15 @@
 package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.providers.GlideTargetIntoBitmap;
 import com.softdesign.devintensive.data.storage.operations.DatabaseOperation;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
@@ -30,7 +23,6 @@ import retrofit2.Response;
 
 import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
 import static com.softdesign.devintensive.data.storage.operations.BaseChronosOperation.Action;
-import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
 import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
 public class AuthNetworkFragment extends BaseNetworkFragment {
@@ -162,46 +154,7 @@ public class AuthNetworkFragment extends BaseNetworkFragment {
     }
 
     private void updateUserInfoFromServer(final @NonNull NetworkRequest request, @NonNull final User user) {
-        if (mUser != null && mUser.getUpdated().equals(user.getUpdated())) {
-            onRequestComplete(request, null);
-        } else {
-            runOperation(new FullUserDataOperation(user));
-            if (mUser == null || !mUser.getPublicInfo().getUpdated().equals(user.getPublicInfo().getUpdated())) {
-                if (!isEmptyOrNull(user.getPublicInfo().getPhoto()))
-                    downloadUserPhoto(request, user);
-            } else {
-                onRequestComplete(request, null);
-            }
-        }
+        runOperation(new FullUserDataOperation(user));
+        onRequestComplete(request, null);
     }
-
-    private void downloadUserPhoto(final @NonNull NetworkRequest request, @NonNull final User user) {
-        String pathToPhoto = user.getPublicInfo().getPhoto();
-
-        int photoWidth = getScreenWidth();
-        int photoHeight = (int) (photoWidth / Const.ASPECT_RATIO_3_2);
-
-        final GlideTargetIntoBitmap photoTarget = new GlideTargetIntoBitmap(photoWidth, photoHeight, "photo") {
-            @Override
-            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                super.onResourceReady(bitmap, anim);
-                runOperation(new FullUserDataOperation(Uri.fromFile(getFile())));
-                onRequestComplete(request, null);
-            }
-
-            @Override
-            public void onLoadFailed(Exception e, Drawable errorDrawable) {
-                Log.e(TAG, "downloadUserPhoto onLoadFailed: " + e.getMessage());
-                runOperation(new FullUserDataOperation(Uri.parse(pathToPhoto)));
-                onRequestComplete(request, null);
-            }
-        };
-        Glide.with(this)
-                .load(pathToPhoto)
-                .asBitmap()
-                .into(photoTarget);
-    }
-    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }
-
-
