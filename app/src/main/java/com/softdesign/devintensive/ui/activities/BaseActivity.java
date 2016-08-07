@@ -195,7 +195,7 @@ public class BaseActivity extends ChronosAppCompatActivity implements BaseActivi
     }
 
     public void startMainActivity() {
-        if (!this.getClass().getName().contains("MainActivity")) {
+        if (!this.getClass().getName().contains(MainActivity.class.getSimpleName())) {
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             this.finish();
         } else {

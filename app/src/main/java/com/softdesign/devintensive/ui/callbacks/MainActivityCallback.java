@@ -38,4 +38,6 @@ public interface MainActivityCallback extends BaseActivityCallback {
     void forceRefreshLikesListFromServer(String userId, boolean isLikedByMe);
 
     void showDialogFragment(int dialogId);
+
+    void setItemMenuChecked(int itemNumber);
 }

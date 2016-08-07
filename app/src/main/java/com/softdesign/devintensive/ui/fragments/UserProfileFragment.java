@@ -181,6 +181,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
             mProfileViewModel.setList(false);
             mCallbacks.setupToolbar(mProfileBinding.toolbar, R.menu.toolbar_menu_main, mProfileViewModel.isAuthorizedUser());
             mProfileBinding.setProfile(model);
+            if (mProfileViewModel.isAuthorizedUser())  mCallbacks.setItemMenuChecked(0);
         } else {
             mProfileViewModel.updateValues(model);
         }

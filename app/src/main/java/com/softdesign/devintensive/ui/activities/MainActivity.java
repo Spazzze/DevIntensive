@@ -31,8 +31,10 @@ import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
 import com.softdesign.devintensive.data.storage.operations.DBUpdateProfileValuesOperation;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.NavHeaderViewModel;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.ActivityMainBinding;
@@ -117,9 +119,6 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mMainProfileFragment.changeEditMode(false);
         } else {
             super.onBackPressed();
-            if (mManager.getBackStackEntryCount() == 0) {
-                mMainBinding.navView.getMenu().getItem(0).setChecked(true);
-            }
         }
     }
 
@@ -259,11 +258,9 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     //endregion ::::::::::::::::::::::::::::::::::::::::::  Events
 
     //region :::::::::::::::::::::::::::::::::: Data
-
     private void loadFullUserData() {
         runOperation(new FullUserDataOperation());
     }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Activity Results
@@ -482,14 +479,16 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     public void onNetworkRequestFailed(@NonNull NetworkRequest request) {
         Log.e(TAG, "onNetworkRequestFailed: " + request.getId() + " " + request.getError());
         hideProgressDialog();
-        if (request.isErrorCritical()) {         //// TODO: 06.08.2016 обработать критикал ошибки
-            showError(request.getError());
+        if (request.isErrorCritical()) {
+            runOperation(new UserLoginDataOperation(BaseChronosOperation.Action.CLEAR));
+            errorAlertExitToAuth(request.getError());
             return;
         }
         switch (request.getId()) {
             case LOAD_DB:
-                if (findUserListFragment() != null && request.isAnnounceError())
+                if (findUserListFragment() != null && request.isAnnounceError()) {
                     mUserListFragment.listLoadingError();
+                }
                 break;
             default:
                 if (request.isAnnounceError()) showError(request.getError());
@@ -514,7 +513,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 BaseModel bm = (BaseModel) request.getAdditionalInfo();
                 if (bm.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
                     BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) bm;
-                    if (findMainProfileFragment() != null){
+                    if (findMainProfileFragment() != null) {
                         mMainProfileFragment.getViewModel().updateValues(new ProfileViewModel(res.getData().getUser()));
                     }
                 }
@@ -528,6 +527,11 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::: Fragments Callbacks
+
+    @Override
+    public void setItemMenuChecked(int itemNumber) {
+        mMainBinding.navView.getMenu().getItem(itemNumber).setChecked(true);
+    }
 
     @Override
     public void setupToolbar(Toolbar toolbar, @MenuRes int id, boolean drawerOpening) {
