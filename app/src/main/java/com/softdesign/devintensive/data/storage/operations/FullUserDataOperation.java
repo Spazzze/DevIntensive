@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 import com.redmadrobot.chronos.ChronosOperationResult;
+import com.softdesign.devintensive.data.network.api.res.UserAvatarRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
@@ -18,6 +19,7 @@ import java.io.File;
 
 import static com.softdesign.devintensive.utils.AppUtils.getJsonFromObject;
 import static com.softdesign.devintensive.utils.AppUtils.getObjectFromJson;
+import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 import static com.softdesign.devintensive.utils.DevIntensiveApplication.getContext;
 
 public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel> {
@@ -53,16 +55,13 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
 
     public FullUserDataOperation(UserPhotoRes data) {
         this.mPublicInfoUpdated = data.getUpdated();
+        this.mPhotoUri = Uri.parse(data.getPhoto());
         this.mAction = Action.SAVE;
     }
 
-    public FullUserDataOperation(Uri photoUri) {
-        this.mPhotoUri = photoUri;
-        this.mAction = Action.SAVE;
-    }
-
-    public FullUserDataOperation(String avatarUri) {
-        this.mAvatarUri = avatarUri;
+    public FullUserDataOperation(UserAvatarRes data) {
+        this.mPublicInfoUpdated = data.getUpdated();
+        this.mAvatarUri = data.getAvatar();
         this.mAction = Action.SAVE;
     }
 
@@ -96,6 +95,16 @@ public class FullUserDataOperation extends BaseChronosOperation<ProfileViewModel
                 }
                 if (mUser != null) {
                     editor.putString(Const.USER_JSON_OBJ, getJsonFromObject(mUser, User.class));
+                    if (mPhotoUri == null) {
+                        String photoUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_PHOTO_URI, "");
+                        if (isEmptyOrNull(photoUri))
+                            editor.putString(Const.USER_PROFILE_PHOTO_URI, mUser.getPublicInfo().getPhoto());
+                    }
+                    if (mAvatarUri == null) {
+                        String avatarUri = SHARED_PREFERENCES.getString(Const.USER_PROFILE_AVATAR_URI, "");
+                        if (isEmptyOrNull(avatarUri))
+                            editor.putString(Const.USER_PROFILE_AVATAR_URI, mUser.getPublicInfo().getAvatar());
+                    }
                 }
                 if (mPhotoUri != null) {
                     editor.putString(Const.USER_PROFILE_PHOTO_URI, mPhotoUri.toString());

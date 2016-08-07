@@ -181,7 +181,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
             mProfileViewModel.setList(false);
             mCallbacks.setupToolbar(mProfileBinding.toolbar, R.menu.toolbar_menu_main, mProfileViewModel.isAuthorizedUser());
             mProfileBinding.setProfile(model);
-            if (mProfileViewModel.isAuthorizedUser())  mCallbacks.setItemMenuChecked(0);
+            if (mProfileViewModel.isAuthorizedUser()) mCallbacks.setItemMenuChecked(0);
         } else {
             mProfileViewModel.updateValues(model);
         }
@@ -306,12 +306,12 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         Log.d(TAG, "saveUserData: ");
 
         String savedPhoto = DATA_MANAGER.getPreferencesManager().loadUserPhoto();
-        if (!AppUtils.isEmptyOrNull(savedPhoto) && !AppUtils.equals(savedPhoto, mProfileViewModel.getUserPhotoUri())) {
+        if (!AppUtils.equals(savedPhoto, mProfileViewModel.getUserPhotoUri())) {
             hasChanges = true;
             mCallbacks.uploadUserPhoto(mProfileViewModel.getUserPhotoUri());   //// TODO: 29.07.2016 в очередь на выполнение
         }
         String savedAvatar = DATA_MANAGER.getPreferencesManager().loadUserAvatar();
-        if (!AppUtils.isEmptyOrNull(savedAvatar) && !AppUtils.equals(savedAvatar, mProfileViewModel.getUserAvatarUri())) {
+        if (!AppUtils.equals(savedAvatar, mProfileViewModel.getUserAvatarUri())) {
             hasChanges = true;
             mCallbacks.uploadUserAvatar((mProfileViewModel.getUserAvatarUri()));
         }

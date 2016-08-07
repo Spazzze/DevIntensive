@@ -2,14 +2,15 @@ package com.softdesign.devintensive.ui.fragments.retain;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.api.req.UserEditProfileReq;
+import com.softdesign.devintensive.data.network.api.res.UserAvatarRes;
 import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.utils.AppUtils;
@@ -36,24 +37,6 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         super.onCreate(savedInstanceState);
     }
 
-    //region :::::::::::::::::::::::::::::::::::::::::: Request status
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onRequestComplete(@NonNull NetworkRequest request, Response response) {
-        super.onRequestComplete(request, response);
-
-        BaseModel bm = (BaseModel) response.body();
-
-        if (bm.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
-            BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) bm;
-            runOperation(new FullUserDataOperation(res.getData()));
-        } else if (bm.getData().getClass().isAssignableFrom(UserEditProfileRes.class)) {
-            BaseModel<UserEditProfileRes> res = (BaseModel<UserEditProfileRes>) bm;
-            runOperation(new FullUserDataOperation(res.getData().getUser()));
-        }
-    }
-    //endregion ::::::::::::::::::::::::::::::::::::::::::
-
     //region :::::::::::::::::::::::::::::::::::::::::: Requests
     public void uploadUserPhoto(final String imageUri) {
 
@@ -63,7 +46,9 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
             return;
 
         Log.d(TAG, "uploadUserPhoto: ");
+
         if (mUploadPhotoCall != null) mUploadPhotoCall.cancel();
+
         final NetworkRequest request = onRequestStarted(reqId, imageUri);
 
         File file = new File(filePathFromUri(Uri.parse(imageUri)));
@@ -75,7 +60,25 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
                 MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
 
         mUploadPhotoCall = DATA_MANAGER.uploadUserPhoto(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body);
-        mUploadPhotoCall.enqueue(new NetworkCallback<>(request));
+        mUploadPhotoCall.enqueue(new NetworkCallback<BaseModel<UserPhotoRes>>(request) {
+
+            @Override
+            public void onResponse(Call<BaseModel<UserPhotoRes>> call, Response<BaseModel<UserPhotoRes>> response) {
+                if (response.isSuccessful()) {
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty(request);
+                    } else {
+                        UserPhotoRes res = new UserPhotoRes((String) request.getAdditionalInfo(),
+                                response.body().getData().getUpdated());
+                        request.setAdditionalInfo(res);
+                        runOperation(new FullUserDataOperation(res));
+                        onRequestComplete(request, response);
+                    }
+                } else {
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
+                }
+            }
+        });
     }
 
     public void uploadUserAvatar(final String imageUri) {
@@ -86,7 +89,9 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
             return;
 
         Log.d(TAG, "uploadUserAvatar: ");
+
         if (mUploadAvatarCall != null) mUploadAvatarCall.cancel();
+
         final NetworkRequest request = onRequestStarted(reqId, imageUri);
 
         File file = new File(filePathFromUri(Uri.parse(imageUri)));
@@ -98,7 +103,25 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
                 MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
 
         mUploadAvatarCall = DATA_MANAGER.uploadUserAvatar(DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId(), body);
-        mUploadAvatarCall.enqueue(new NetworkCallback<>(request));
+        mUploadAvatarCall.enqueue(new NetworkCallback<BaseModel<UserPhotoRes>>(request) {
+
+            @Override
+            public void onResponse(Call<BaseModel<UserPhotoRes>> call, Response<BaseModel<UserPhotoRes>> response) {
+                if (response.isSuccessful()) {
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty(request);
+                    } else {
+                        UserAvatarRes res = new UserAvatarRes((String) request.getAdditionalInfo(),
+                                response.body().getData().getUpdated());
+                        request.setAdditionalInfo(res);
+                        runOperation(new FullUserDataOperation(res));
+                        onRequestComplete(request, response);
+                    }
+                } else {
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
+                }
+            }
+        });
     }
 
     public void uploadUserData(ProfileViewModel model) {
@@ -111,7 +134,25 @@ public class UpdateServerDataFragment extends BaseNetworkFragment {
         if (mUploadDataCall != null) mUploadDataCall.cancel();
         final NetworkRequest request = onRequestStarted(reqId, model);
         mUploadDataCall = DATA_MANAGER.uploadUserInfo(new UserEditProfileReq(model).createReqBody());
-        mUploadDataCall.enqueue(new NetworkCallback<>(request));
+
+        mUploadDataCall.enqueue(new NetworkCallback<BaseModel<UserEditProfileRes>>(request) {
+
+            @Override
+            public void onResponse(Call<BaseModel<UserEditProfileRes>> call, Response<BaseModel<UserEditProfileRes>> response) {
+                if (response.isSuccessful()) {
+                    if (AppUtils.isEmptyOrNull(response.body())) {
+                        onRequestResponseEmpty(request);
+                    } else {
+                        User user = response.body().getData().getUser();
+                        request.setAdditionalInfo(user);
+                        runOperation(new FullUserDataOperation(user));
+                        onRequestComplete(request, response);
+                    }
+                } else {
+                    onRequestHttpError(request, AppUtils.parseHttpError(response));
+                }
+            }
+        });
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

@@ -28,8 +28,7 @@ import android.view.View;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.NetworkRequest;
-import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
-import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
 import com.softdesign.devintensive.data.storage.operations.DBUpdateProfileValuesOperation;
@@ -510,12 +509,9 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
                 }
                 break;
             case UPLOAD_DATA:
-                BaseModel bm = (BaseModel) request.getAdditionalInfo();
-                if (bm.getData().getClass().isAssignableFrom(UserEditProfileRes.class)) {
-                    BaseModel<UserEditProfileRes> res = (BaseModel<UserEditProfileRes>) bm;
-                    if (findMainProfileFragment() != null) {
-                        mMainProfileFragment.getViewModel().updateValues(new ProfileViewModel(res.getData().getUser()));
-                    }
+                User user = (User) request.getAdditionalInfo();
+                if (user != null && findMainProfileFragment() != null) {
+                    mMainProfileFragment.getViewModel().updateValues(new ProfileViewModel(user));
                 }
                 break;
         }
