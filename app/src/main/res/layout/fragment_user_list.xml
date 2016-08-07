@@ -7,6 +7,10 @@
         <variable
             name="scrollPos"
             type="android.databinding.ObservableInt" />
+
+        <variable
+            name="itemsOnList"
+            type="android.databinding.ObservableInt" />
     </data>
 
     <android.support.design.widget.CoordinatorLayout
@@ -59,7 +63,7 @@
             android:layout_gravity="bottom|right"
             android:layout_marginBottom="@dimen/spacing_normal_16"
             android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@{scrollPos.get() &lt; 1 ? @drawable/ic_arrow_down : @drawable/ic_arrow_up}"
+            android:src="@{scrollPos.get() &lt; itemsOnList.get() ? @drawable/ic_arrow_down : @drawable/ic_arrow_up}"
             app:borderWidth="4dp"
             app:elevation="6dp"
             app:pressedTranslationZ="12dp" />

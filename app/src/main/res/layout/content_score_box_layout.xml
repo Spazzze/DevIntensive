@@ -36,6 +36,7 @@
 
                 <TextView
                     style="@style/scoreBox_text.count"
+                    android:text="@{profile.rating}"
                     android:textColor="@{profile.list ? @color/color_black : @color/color_white}" />
 
             </TextSwitcher>

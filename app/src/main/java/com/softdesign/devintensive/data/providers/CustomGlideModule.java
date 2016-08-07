@@ -3,6 +3,7 @@ package com.softdesign.devintensive.data.providers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -48,6 +49,23 @@ public class CustomGlideModule implements GlideModule {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Utils
+    public static void loadImage(String path, ImageView target) {
+        if (AppUtils.isEmptyOrNull(target)) {
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
+        }
+
+        String pathToPhoto = "null";
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
+
+        Glide.with(CONTEXT)
+                .load(pathToPhoto)
+                .dontAnimate()
+                .centerCrop()
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(target);
+    }
 
     public static void loadImage(String path, Drawable placeholder, ImageView target) {
         if (AppUtils.isEmptyOrNull(placeholder, target)) {
@@ -126,6 +144,26 @@ public class CustomGlideModule implements GlideModule {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    public static void loadMaskedImage(String path, ImageView target, @DrawableRes int id) {
+
+        if (AppUtils.isEmptyOrNull(target)) {
+            Log.e(TAG, "loadImage: Some of arguments is null or empty.");
+            return;
+        }
+
+        String pathToPhoto = "null";
+        if (!AppUtils.isEmptyOrNull(path)) pathToPhoto = path;
+
+        Glide.with(CONTEXT)
+                .load(pathToPhoto)
+                .dontAnimate()
+/*                .override(CONTEXT.getResources().getDimensionPixelSize(R.dimen.size_huge_128),
+                        CONTEXT.getResources().getDimensionPixelSize(R.dimen.size_medium_56))*/
+/*                .bitmapTransform(new FitCenter(CONTEXT),
+                        new MaskTransformation(CONTEXT, id))*/
+                .into(target);
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

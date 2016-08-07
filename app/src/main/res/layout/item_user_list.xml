@@ -96,7 +96,7 @@
                 android:orientation="vertical">
 
                 <include
-                    android:id="@+id/score_box_layout"
+                    android:id="@+id/score_box_list_layout"
                     layout="@layout/content_score_box_layout"
                     bind:profile="@{profile}" />
 

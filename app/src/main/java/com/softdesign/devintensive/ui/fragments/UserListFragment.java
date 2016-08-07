@@ -2,10 +2,10 @@ package com.softdesign.devintensive.ui.fragments;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.databinding.DataBindingUtil;
 import android.databinding.ObservableInt;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -13,7 +13,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,6 +35,7 @@ import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperCallback;
 import com.softdesign.devintensive.ui.callbacks.ListFragmentCallback;
 import com.softdesign.devintensive.ui.callbacks.OnStartDragListener;
 import com.softdesign.devintensive.ui.view.behaviors.Animations;
+import com.softdesign.devintensive.ui.view.behaviors.RecyclerItemAnimator;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
@@ -51,18 +51,20 @@ import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
 import static com.softdesign.devintensive.data.storage.operations.BaseChronosOperation.Action;
 
 @SuppressWarnings("deprecation")
-public class UserListFragment extends BaseViewFragment implements OnStartDragListener, OnMenuItemClickListener, UsersAdapter.OnItemClickListener, ListFragmentCallback {
+public class UserListFragment extends BaseViewFragment implements OnStartDragListener, OnMenuItemClickListener, UsersAdapter.OnItemClickListener, ListFragmentCallback, View.OnLongClickListener {
     @StringRes
     private static final int LIST_LOADING_ERROR = R.string.error_cannot_load_user_list;
 
     private FragmentUserListBinding mListBinding;
     private ContextMenuDialogFragment mMenuDialogFragment;
     private ItemTouchHelper mItemTouchHelper;
+    private RecyclerItemAnimator mAnimator = new RecyclerItemAnimator();
 
     private Status mRequestDataFromDBStatus = Status.PENDING;
     private Sort mSort = Sort.CUSTOM;
 
     public final ObservableInt mScrollPosition = new ObservableInt();
+    public final ObservableInt mItemsOnList = new ObservableInt(2);
     private List<ProfileViewModel> mUsers = new ArrayList<>();
     private boolean isStartAnimationFinished = false;
 
@@ -107,7 +109,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
         super.onCreateOptionsMenu(menu, inflater);
     }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Life Cycle
@@ -115,22 +116,13 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (getUsersAdapter() != null) {
+        UsersAdapter adapter;
+        if ((adapter = getUsersAdapter()) != null) {
             if (outState == null) outState = new Bundle();
             outState.putParcelableArrayList(Const.PARCELABLE_KEY_USER_LIST,
-                    (ArrayList<? extends Parcelable>) getUsersAdapter().getItems());
+                    (ArrayList<? extends Parcelable>) adapter.getItems());
+            outState.putSerializable(Const.PARCELABLE_KEY_USER_LIST_SORT, mSort);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
     }
 
     @Override
@@ -147,6 +139,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         setupMenu();
         mCallbacks.setupToolbar(mListBinding.toolbar, R.menu.toolbar_menu_user_list, true);
         mListBinding.setScrollPos(mScrollPosition);
+        mListBinding.setItemsOnList(mItemsOnList);
         mListBinding.swipeRefresh.setOnRefreshListener(this::forceRequestDataFromServer);
         mListBinding.swipeRefresh.setColorSchemeResources(R.color.color_accent);
         mListBinding.fab.setOnClickListener(this::onFABClick);
@@ -218,13 +211,22 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         mMenuDialogFragment.setItemClickListener(this);
     }
 
+    public void listLoadingError() {
+        if (isAdapterEmpty()) {
+            mCallbacks.errorAlertExitToMain(getString(LIST_LOADING_ERROR));
+        } else {
+            mCallbacks.showError(LIST_LOADING_ERROR);
+        }
+    }
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Animation
     private void startIntroAnimation() {
         Log.d(TAG, "startIntroAnimation: ");
         mListBinding.fab.setTranslationY(2 * getResources().getDimensionPixelOffset(R.dimen.size_medium_56));
 
         int actionbarSize = (int) AppUtils.getAppBarSize();
-        mListBinding.appbarLayout.setTranslationY(-actionbarSize);
-        mListBinding.appbarLayout.animate()
+        mListBinding.toolbar.setTranslationY(-actionbarSize);
+        mListBinding.toolbar.animate()
                 .translationY(0)
                 .setDuration(AppConfig.ANIM_DURATION_TOOLBAR)
                 .setStartDelay(AppConfig.ANIM_START_DELAY_TOOLBAR)
@@ -244,25 +246,32 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
                 .setStartDelay(AppConfig.ANIM_START_DELAY_FAB)
                 .setDuration(AppConfig.ANIM_DURATION_FAB)
                 .start();
-        loadItemsIntoAdapter();
+        loadItemsIntoAdapter(mUsers);
         isStartAnimationFinished = true;
     }
+    //endregion :::::::::::::::::::::::::::::::::::::::::: Animation
 
-    public void listLoadingError() {
-        if (isAdapterEmpty()) {
-            mCallbacks.errorAlertExitToMain(getString(LIST_LOADING_ERROR));
-        } else {
-            mCallbacks.showError(LIST_LOADING_ERROR);
-        }
-    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: onClick
+    @Override
+    public boolean onLongClick(View v) {
+        Log.d(TAG, "onLongClick: ");
+        if (mSort != Sort.CUSTOM) return true;
+
+        UsersAdapter adapter = getUsersAdapter();
+        if (adapter == null) return true;
+        List<ProfileViewModel> savedList = new ArrayList<>(mUsers);
+        mListBinding.userList.smoothScrollToPosition(0);
+        adapter.showConfigureView(true);
+        new Handler().postDelayed(() -> loadItemsIntoAdapter(savedList), 500);
+        return true;
+    }
 
     private void onFABClick(View view) {
         LinearLayoutManager llm = (LinearLayoutManager) mListBinding.userList.getLayoutManager();
         if (llm == null) return;
-        if (llm.findFirstVisibleItemPosition() + llm.getChildCount() >= 3) {
+        if (llm.findFirstVisibleItemPosition() >= llm.getChildCount()) {
             llm.scrollToPosition(0);
         } else {
             llm.scrollToPosition(llm.getItemCount() - 1);
@@ -311,10 +320,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     @Override
     public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
         if (mItemTouchHelper != null) mItemTouchHelper.startDrag(viewHolder);
-        UsersAdapter adapter = getUsersAdapter();
-        int position = viewHolder.getAdapterPosition();
-        if (adapter == null || position == -1) return;
-        adapter.getItems().get(position).setMoving(true);
     }
 
     @Override
@@ -337,7 +342,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     @Override
     public void onMoreClick(int position) {
-        Log.d(TAG, "onLikesListClick: ");
         UsersAdapter adapter = getUsersAdapter();
         if (adapter == null || adapter.getItems().size() <= position) return;
 
@@ -350,7 +354,6 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
 
     @Override
     public void onViewProfileClick(int position) {
-        Log.d(TAG, "onViewProfileClick: ");
         UsersAdapter adapter = getUsersAdapter();
         if (adapter == null || adapter.getItems().size() <= position) return;
 
@@ -370,7 +373,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         mRequestDataFromDBStatus = Status.FINISHED;
         if (result.isSuccessful()) {
             if (!AppUtils.isEmptyOrNull(result.getOutput())) {
-                if (mUsers.size() == 0 && !isStartAnimationFinished) {
+                if (mUsers.size() == 0) {
                     initUserList(result.getOutput());
                 } else {
                     updateUserListAdapter(result.getOutput());
@@ -393,6 +396,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
                 add(new ProfileViewModel(u));
             }
         }};
+        if (isStartAnimationFinished) loadItemsIntoAdapter(mUsers);
     }
 
     private void loadUserList(Bundle savedInstanceState) {
@@ -403,6 +407,8 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
         }
         if (savedInstanceState != null) {
             savedList = savedInstanceState.getParcelableArrayList(Const.PARCELABLE_KEY_USER_LIST);
+            mSort = (Sort) savedInstanceState.get(Const.PARCELABLE_KEY_USER_LIST_SORT);
+            Log.d(TAG, "loadUserList: " + mSort);
         }
         if (savedList != null) {
             this.mUsers = savedList;
@@ -434,6 +440,14 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: RecyclerView
+    private int getItemsOnList() {
+        LinearLayoutManager llm = (LinearLayoutManager) mListBinding.userList.getLayoutManager();
+        UsersAdapter adapter = getUsersAdapter();
+        if (adapter == null || llm == null) return 0;
+        mAnimator.setLastAddAnimatedItem(-llm.getChildCount());
+        return llm.getChildCount();
+    }
+
     private UsersAdapter getUsersAdapter() {
         if (mListBinding == null || mListBinding.userList == null) {
             mCallbacks.errorAlertExitToMain(getString(LIST_LOADING_ERROR));
@@ -449,7 +463,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     }
 
     private void initRecycleView() {
-        UsersAdapter adapter = new UsersAdapter(this, this, this, mSort);
+        UsersAdapter adapter = new UsersAdapter(this, this, this, this, mSort);
         mListBinding.userList.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListBinding.userList.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -459,11 +473,7 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
             }
         });
         mListBinding.userList.swapAdapter(adapter, false);
-
-        RecyclerView.ItemAnimator animator = mListBinding.userList.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        mListBinding.userList.setItemAnimator(mAnimator);
 
         ItemTouchHelperCallback touchHelperCallback = new ItemTouchHelperCallback(adapter);
         mItemTouchHelper = new ItemTouchHelper(touchHelperCallback);
@@ -473,21 +483,37 @@ public class UserListFragment extends BaseViewFragment implements OnStartDragLis
     private void updateUserListAdapter(List<UserEntity> userEntities) {
         Log.d(TAG, "updateUserListAdapter: ");
         UsersAdapter adapter = getUsersAdapter();
-        if (adapter != null) adapter.setUsersFromDB(userEntities, mSort);
+        if (adapter == null) return;
+        if (mSort != Sort.CUSTOM && adapter.isConfigure()) {
+            adapter.showConfigureView(false);
+            List<ProfileViewModel> list = new ArrayList<ProfileViewModel>() {{
+                for (UserEntity u : userEntities) {
+                    add(new ProfileViewModel(u));
+                }
+            }};
+            new Handler().postDelayed(() -> loadItemsIntoAdapter(list), 500);
+        } else {
+            adapter.setUsersFromDB(userEntities, mSort);
+        }
+        mUsers = adapter.getItems();
     }
 
     public void updateUserList(UserEntity u) {
         UsersAdapter adapter = getUsersAdapter();
         if (adapter != null && adapter.updateUserList(u) && mSort == Sort.FAVOURITES) {
-            mListBinding.userList.swapAdapter(getUsersAdapter(), true);
+            mListBinding.userList.swapAdapter(adapter, true);
+            mUsers = adapter.getItems();
         }
     }
 
-    public void loadItemsIntoAdapter() {
-        Log.d(TAG, "loadItemsIntoAdapter: ");
-        if (mUsers.size() != 0) {
+    public void loadItemsIntoAdapter(List<ProfileViewModel> savedList) {
+        if (savedList.size() != 0) {
+            Log.d(TAG, "loadItemsIntoAdapter: ");
+            mUsers = savedList;
             UsersAdapter adapter = getUsersAdapter();
-            if (adapter != null) adapter.setUsersFromSavedData(mUsers, adapter.getSort());
+            if (adapter == null) return;
+            adapter.setUsersFromSavedData(mUsers, adapter.getSort(), true);
+            new Handler().postDelayed(() -> mItemsOnList.set(getItemsOnList()), 1000);
         } else if (mCallbacks.isNetworkRequestRunning(ID.LOAD_DB) || mRequestDataFromDBStatus == Status.RUNNING) {
             showProgressDialog();
         }

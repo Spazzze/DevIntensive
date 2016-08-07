@@ -25,6 +25,7 @@
     <dimen name="size_large_80">80dp</dimen>
     <dimen name="size_large_88">88dp</dimen>
     <dimen name="size_huge_112">112dp</dimen>
+    <dimen name="size_huge_128">128dp</dimen>
 
     <!-- Spaces // Determine placement of type and icons from edges of elements. -->
     <!-- The text box offset is set to Leading (Type > Area Type Options).-->

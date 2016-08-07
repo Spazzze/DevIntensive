@@ -13,6 +13,7 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -157,6 +158,21 @@ public class AppUtils {
     //region :::::::::::::::::::::::::::::::::::::::::: UI
 
     //region Calculations
+    public static Drawable getMaskDrawable(Context context, int maskId) {
+        Drawable drawable;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable = context.getDrawable(maskId);
+        } else {
+            drawable = context.getResources().getDrawable(maskId);
+        }
+
+        if (drawable == null) {
+            throw new IllegalArgumentException("maskId is invalid");
+        }
+
+        return drawable;
+    }
+
     public static int getScreenOrientation() {
         Display getOrient = DevIntensiveApplication.getCurrentActivity().getWindowManager().getDefaultDisplay();
         if (getOrient.getWidth() < getOrient.getHeight()) {
@@ -329,6 +345,7 @@ public class AppUtils {
                 .show();
     }
     //endregion
+
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: IO system methods

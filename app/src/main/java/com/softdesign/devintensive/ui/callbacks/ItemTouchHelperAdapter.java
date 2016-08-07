@@ -30,6 +30,6 @@ public interface ItemTouchHelperAdapter {
      */
     void onItemDismiss(int position);
 
-    boolean isMovable();
+    boolean isConfigure();
 }
 

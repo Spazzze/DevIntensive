@@ -1,8 +1,11 @@
 package com.softdesign.devintensive.ui.adapters;
 
 import android.databinding.DataBindingUtil;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -13,6 +16,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.storage.models.UserEntity;
 import com.softdesign.devintensive.data.storage.operations.DBSwapOperation;
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
+import com.softdesign.devintensive.databinding.ItemListConfigureBinding;
 import com.softdesign.devintensive.databinding.ItemUserListBinding;
 import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperAdapter;
 import com.softdesign.devintensive.ui.callbacks.ItemTouchHelperViewHolder;
@@ -26,7 +30,7 @@ import java.util.List;
 import static com.softdesign.devintensive.data.storage.operations.DatabaseOperation.Sort;
 
 @SuppressWarnings({"unused", "all"})
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable, ItemTouchHelperAdapter {
+public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable, ItemTouchHelperAdapter {
 
     public interface OnItemClickListener {
         void onLikeClick(UserViewHolder userViewHolder, int position);
@@ -36,36 +40,61 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         void onViewProfileClick(int position);
     }
 
+    public static final int VIEW_TYPE_DEFAULT = 1;
+    public static final int VIEW_TYPE_CONFIG = 2;
+
     private CustomUserListFilter mFilter;
-    private final OnStartDragListener mDragStartListener;
+    private OnItemClickListener mClickListener;
+    private View.OnLongClickListener mLongClickListener;
+    private OnStartDragListener mDragStartListener;
     private ChronosSupportFragment mFragment;
 
-    private List<ProfileViewModel> mUsers = new ArrayList<>();
-    private OnItemClickListener mClickListener;
     private Sort mSort = Sort.CUSTOM;
-    private boolean isMovable = false;
+    private List<ProfileViewModel> mUsers = new ArrayList<>();
+    private boolean isConfigure = false;
 
     //region :::::::::::::::::::::::::::::::::::::::::: Adapter
 
-    public UsersAdapter(ChronosSupportFragment fragment, OnStartDragListener dragListener, OnItemClickListener cLickListener, Sort sort) {
+    public UsersAdapter(ChronosSupportFragment fragment, OnStartDragListener dragListener,
+                        OnItemClickListener cLickListener, View.OnLongClickListener longClickListener, Sort sort) {
         this.mDragStartListener = dragListener;
+        this.mFragment = fragment;
         this.mFilter = new CustomUserListFilter(UsersAdapter.this);
         this.mClickListener = cLickListener;
+        this.mLongClickListener = longClickListener;
         this.mSort = sort;
-        this.mFragment = fragment;
     }
 
     @Override
-    public UsersAdapter.UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
-
-        return new UserViewHolder(convertView, mDragStartListener, mClickListener);
+    public int getItemViewType(int position) {
+        if (isConfigure) {
+            return VIEW_TYPE_CONFIG;
+        } else {
+            return VIEW_TYPE_DEFAULT;
+        }
     }
 
     @Override
-    public void onBindViewHolder(final UsersAdapter.UserViewHolder holder, int position) {
-        holder.getBinding().setProfile(mUsers.get(position));
-        holder.getBinding().getProfile().setAnimateTextChange(false);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_DEFAULT) {
+            View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_list, parent, false);
+            return new UserViewHolder(convertView, mClickListener, mLongClickListener);
+        } else if (viewType == VIEW_TYPE_CONFIG) {
+            View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_configure, parent, false);
+            return new ConfigViewHolder(convertView, mDragStartListener);
+        }
+        return null;
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+        ProfileViewModel user = mUsers.get(position);
+        if (getItemViewType(position) == VIEW_TYPE_CONFIG) {
+            ((ConfigViewHolder) viewHolder).getBinding().setProfile(user);
+        } else {
+            user.setAnimateTextChange(false);
+            ((UserViewHolder) viewHolder).getBinding().setProfile(user);
+        }
     }
 
     @Override
@@ -78,32 +107,22 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return mFilter;
     }
 
-    @Override
-    public void onItemDismiss(int position) {
-        ProfileViewModel u = removeItem(position);
-        mFragment.runOperation(new DBSwapOperation(u.getRemoteId(), null));
-    }
-
-    @Override
-    public void onItemMove(int fromPosition, int toPosition) {
-        mFragment.runOperation(new DBSwapOperation(mUsers.get(fromPosition).getRemoteId(), mUsers.get(toPosition).getRemoteId()));
-        Collections.swap(mUsers, fromPosition, toPosition);
-        Collections.swap(mFilter.getList(), fromPosition, toPosition);
-        notifyItemMoved(fromPosition, toPosition);
-    }
-
     public List<ProfileViewModel> getItems() {
         return mUsers;
     }
 
-    public void setUsersFromSavedData(List<ProfileViewModel> users, Sort sort) {
-        if (AppUtils.compareLists(users, mUsers)) return;
+    public void setUsersFromSavedData(List<ProfileViewModel> users, Sort sort, boolean animated) {
         synchronized (this) {
             mSort = sort;
-            mUsers = users;
+            mUsers.clear();
+            mUsers.addAll(users);
             this.mFilter = new CustomUserListFilter(UsersAdapter.this);
         }
-        notifyDataSetChanged();
+        if (animated) {
+            notifyItemRangeInserted(0, mUsers.size());
+        } else {
+            notifyDataSetChanged();
+        }
     }
 
     public void setUsersFromDB(final List<UserEntity> users, Sort sort) {
@@ -170,37 +189,48 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return mSort;
     }
 
-    public void setOnItemClickListener(OnItemClickListener cLickListener) {
-        this.mClickListener = cLickListener;
+    public void showConfigureView(boolean show) {
+        mUsers.clear();
+        isConfigure = show;
+        notifyDataSetChanged();
     }
 
-    public boolean isMovable() {
-        return isMovable;
+    @Override
+    public void onItemDismiss(int position) {
+        ProfileViewModel u = removeItem(position);
+        mFragment.runOperation(new DBSwapOperation(u.getRemoteId(), null));
     }
 
-    public void setMovable(boolean movable) {
-        isMovable = movable;
+    @Override
+    public void onItemMove(int fromPosition, int toPosition) {
+        mFragment.runOperation(new DBSwapOperation(mUsers.get(fromPosition).getRemoteId(), mUsers.get(toPosition).getRemoteId()));
+        Collections.swap(mUsers, fromPosition, toPosition);
+        notifyItemMoved(fromPosition, toPosition);
     }
 
+    public boolean isConfigure() {
+        return isConfigure;
+    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region :::::::::::::::::::::::::::::::::::::::::: ViewHolder
-    public static class UserViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
-
+    //region :::::::::::::::::::::::::::::::::::::::::: ViewHolders
+    public static class UserViewHolder extends RecyclerView.ViewHolder {
         private ItemUserListBinding mBinding;
 
-        public UserViewHolder(View itemView, OnStartDragListener dragListener, OnItemClickListener listener) {
+        public UserViewHolder(View itemView, OnItemClickListener listener, View.OnLongClickListener longClickListener) {
             super(itemView);
             mBinding = DataBindingUtil.bind(itemView);
 
-/*
-            mBinding.handle.setOnTouchListener((v, event) -> {
-                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
-                    dragListener.onStartDrag(this);
+            mBinding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (longClickListener != null) {
+                        longClickListener.onLongClick(v);
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
             });
-*/
 
             mBinding.btnViewProfile.setOnClickListener(v -> {
                 if (listener != null) {
@@ -224,9 +254,31 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         public ItemUserListBinding getBinding() {
             return mBinding;
         }
+    }
+
+    public static class ConfigViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
+
+        ItemListConfigureBinding mBinding;
+
+        public ConfigViewHolder(View itemView, OnStartDragListener dragListener) {
+            super(itemView);
+            mBinding = DataBindingUtil.bind(itemView);
+
+            mBinding.handle.setOnTouchListener((v, event) -> {
+                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                    dragListener.onStartDrag(this);
+                }
+                return false;
+            });
+        }
+
+        public ItemListConfigureBinding getBinding() {
+            return mBinding;
+        }
 
         @Override
         public void onItemSelected() {
+            getBinding().getProfile().setMoving(true);
         }
 
         @Override

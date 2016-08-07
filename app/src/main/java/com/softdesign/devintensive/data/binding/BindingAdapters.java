@@ -81,6 +81,28 @@ public class BindingAdapters {
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Custom
+    @BindingAdapter("imageMasked")
+    public static void imageMasked(ImageView view, String url) {
+
+        String tag = (String) view.getTag(R.id.imageUrl_tag);
+
+        if (tag == null || !AppUtils.equals(url, tag)) {
+            CustomGlideModule.loadMaskedImage(url, view, R.drawable.dw_mask_list);
+            view.setTag(R.id.imageUrl_tag, url);
+        }
+    }
+
+    @BindingAdapter("imageUrl")
+    public static void loadImage(ImageView view, String url) {
+
+        String tag = (String) view.getTag(R.id.imageUrl_tag);
+
+        if (tag == null || !AppUtils.equals(url, tag)) {
+            CustomGlideModule.loadImage(url, view);
+            view.setTag(R.id.imageUrl_tag, url);
+        }
+    }
+
     @BindingAdapter({"imageUrl", "placeholder"})
     public static void loadImage(ImageView view, String url, Drawable placeholder) {
 

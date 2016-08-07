@@ -17,6 +17,4 @@ public interface ListFragmentCallback {
     void forceRequestDataFromServer();
 
     boolean isAdapterEmpty();
-
-    void loadItemsIntoAdapter();
 }

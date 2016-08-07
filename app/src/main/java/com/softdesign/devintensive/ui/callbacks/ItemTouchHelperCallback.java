@@ -16,27 +16,24 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isLongPressDragEnabled() {
-        return mAdapter.isMovable();
+        return mAdapter.isConfigure();
     }
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        return mAdapter.isMovable();
+        return mAdapter.isConfigure();
     }
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         // Set movement flags based on the layout manager
-        int dragFlags;
-        int swipeFlags;
-        if (mAdapter.isMovable()) {
-            dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-            swipeFlags = ItemTouchHelper.END;
-        } else {
-            dragFlags = 0;
-            swipeFlags = 0;
+        if (mAdapter.isConfigure()) {
+            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+            int swipeFlags = ItemTouchHelper.END;
+            return makeMovementFlags(dragFlags, swipeFlags);
         }
-        return makeMovementFlags(dragFlags, swipeFlags);
+
+        return makeMovementFlags(0, 0);
     }
 
     @Override
