@@ -57,12 +57,9 @@
             android:id="@+id/scoreBox_layout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/size_huge_112"
-            android:layout_gravity="bottom"
             android:background="@color/color_grey"
             android:gravity="center"
             android:orientation="vertical"
-            app:layout_anchor="@id/appbar_layout"
-            app:layout_anchorGravity="bottom"
             app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
             app:max_collapsed_height="@dimen/size_huge_112"
             app:min_collapsed_height="@dimen/size_medium_56">
