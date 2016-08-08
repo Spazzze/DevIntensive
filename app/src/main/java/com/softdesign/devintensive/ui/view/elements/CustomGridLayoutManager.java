@@ -6,13 +6,9 @@ import android.support.v7.widget.GridLayoutManager;
 public class CustomGridLayoutManager extends GridLayoutManager {
     private boolean isScrollEnabled = true;
 
-    public CustomGridLayoutManager(Context context, int spanCount) {
+    public CustomGridLayoutManager(Context context, int spanCount, boolean isScrollEnabled) {
         super(context, spanCount);
-    }
-
-
-    public void setScrollEnabled(boolean flag) {
-        this.isScrollEnabled = flag;
+        this.isScrollEnabled = isScrollEnabled;
     }
 
     @Override

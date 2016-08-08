@@ -49,6 +49,7 @@ import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.api.res.SoftDesignApiErrorRes;
 import com.softdesign.devintensive.data.network.restmodels.AddRepo;
 import com.softdesign.devintensive.data.network.restmodels.Repo;
+import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
 import com.softdesign.devintensive.databinding.ItemAlertDialogBinding;
 import com.softdesign.devintensive.databinding.ItemInputDialogBinding;
@@ -483,6 +484,14 @@ public class AppUtils {
         return new ArrayList<String>() {{
             for (Repo r : list) {
                 add(r.getGit());
+            }
+        }};
+    }
+
+    public static ArrayList<String> profileModelIntoString(final List<ProfileViewModel> list) {
+        return new ArrayList<String>() {{
+            for (ProfileViewModel r : list) {
+                add(r.getRemoteId());
             }
         }};
     }

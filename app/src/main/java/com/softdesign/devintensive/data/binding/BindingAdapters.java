@@ -14,7 +14,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextSwitcher;
@@ -24,7 +23,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.providers.CustomGlideModule;
 import com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel;
 import com.softdesign.devintensive.ui.adapters.RecyclerBindingAdapter;
-import com.softdesign.devintensive.utils.AppConfig;
+import com.softdesign.devintensive.ui.view.animations.Animations;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -214,23 +213,9 @@ public class BindingAdapters {
         Pair<Boolean, Float> pair = (Pair) fab.getTag(R.id.fab_appearance_tag);
 
         if (pair == null || pair.first != isNeeded) {
-            float translation;
-            if (pair == null) {
-                translation = 2 * CONTEXT.getResources().getDimensionPixelOffset(R.dimen.size_medium_56);
-                fab.setTranslationY(translation); //работает некорректно, смещает ресайкл вью?, надо тестить фиксить
-            } else {
-                translation = pair.second;
-            }
-            fab.setTag(R.id.fab_appearance_tag, new Pair<>(isNeeded, translation));
-
-            float neededTranslation = isNeeded ? 0.0f : translation;
-
-            fab.animate()
-                    .translationY(neededTranslation)
-                    .setInterpolator(new OvershootInterpolator(1.f))
-                    .setStartDelay(AppConfig.ANIM_START_DELAY_FAB)
-                    .setDuration(AppConfig.ANIM_DURATION_FAB)
-                    .start();
+            float neededTranslation = isNeeded ? 0.0f : 2 * CONTEXT.getResources().getDimensionPixelOffset(R.dimen.size_medium_56);
+            Animations.animateFabAppearance(fab, neededTranslation);
+            fab.setTag(R.id.fab_appearance_tag, new Pair<>(isNeeded, neededTranslation));
         }
     }
     //endregion :::::::::::::::::::::::::::::::::::::::::: Animations

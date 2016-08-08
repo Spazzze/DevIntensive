@@ -3,7 +3,6 @@ package com.softdesign.devintensive.ui.adapters;
 import android.databinding.DataBindingUtil;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -81,7 +80,7 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             return new UserViewHolder(convertView, mClickListener, mLongClickListener);
         } else if (viewType == VIEW_TYPE_CONFIG) {
             View convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_configure, parent, false);
-            return new ConfigViewHolder(convertView, mDragStartListener);
+            return new ConfigViewHolder(convertView, mDragStartListener, mClickListener);
         }
         return null;
     }
@@ -111,17 +110,17 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return mUsers;
     }
 
-    public void setUsersFromSavedData(List<ProfileViewModel> users, Sort sort, boolean animated) {
+    public void setUsersList(List<ProfileViewModel> users, Sort sort) {
         synchronized (this) {
-            mSort = sort;
-            mUsers.clear();
-            mUsers.addAll(users);
+            if (mUsers.size() == 0) {
+                mUsers.addAll(users);
+                notifyItemRangeInserted(0, mUsers.size());
+            } else {
+                mUsers = users;
+                notifyDataSetChanged();
+            }
+            this.mSort = sort;
             this.mFilter = new CustomUserListFilter(UsersAdapter.this);
-        }
-        if (animated) {
-            notifyItemRangeInserted(0, mUsers.size());
-        } else {
-            notifyDataSetChanged();
         }
     }
 
@@ -190,7 +189,6 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public void showConfigureView(boolean show) {
-        mUsers.clear();
         isConfigure = show;
         notifyDataSetChanged();
     }
@@ -226,9 +224,8 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 public boolean onLongClick(View v) {
                     if (longClickListener != null) {
                         longClickListener.onLongClick(v);
-                        return true;
                     }
-                    return false;
+                    return true;
                 }
             });
 
@@ -260,7 +257,7 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         ItemListConfigureBinding mBinding;
 
-        public ConfigViewHolder(View itemView, OnStartDragListener dragListener) {
+        public ConfigViewHolder(View itemView, OnStartDragListener dragListener, OnItemClickListener listener) {
             super(itemView);
             mBinding = DataBindingUtil.bind(itemView);
 
@@ -269,6 +266,12 @@ public class UsersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     dragListener.onStartDrag(this);
                 }
                 return false;
+            });
+
+            mBinding.userPhotoImg.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onViewProfileClick(getAdapterPosition());
+                }
             });
         }
 

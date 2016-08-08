@@ -614,4 +614,9 @@ public class ProfileViewModel extends BaseViewModel implements Parcelable {
         }
     };
     //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    @Override
+    public String toString() {
+        return "ProfileViewModel{" + "mRemoteId='" + mRemoteId + '}';
+    }
 }

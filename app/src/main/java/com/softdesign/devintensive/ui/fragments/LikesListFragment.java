@@ -3,14 +3,14 @@ package com.softdesign.devintensive.ui.fragments;
 import android.databinding.DataBindingUtil;
 import android.databinding.ObservableInt;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +28,7 @@ import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentLikesListBinding;
 import com.softdesign.devintensive.ui.adapters.RecyclerBindingAdapter;
 import com.softdesign.devintensive.ui.callbacks.ListFragmentCallback;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 
@@ -42,14 +43,16 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
     @StringRes
     private static final int LIST_LOADING_ERROR = R.string.error_cannot_load_likes_list;
     private static final String AUTH_USER_ID = DataManager.getInstance().getPreferencesManager().loadBuiltInAuthId();
+    private static final Handler ITEM_LOADING_HANDLER = new Handler();
 
     private FragmentLikesListBinding mListBinding;
 
     private String mUserId;
 
     private Status mRequestDataFromDBStatus = Status.PENDING;
+    private Status mLoading = Status.PENDING;
     private ObservableInt likesCount = new ObservableInt();
-    private List<ProfileViewModel> mUsers = new ArrayList<>();
+    private List<ProfileViewModel> mSavedList = new ArrayList<>();
 
     //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Nullable
@@ -64,9 +67,8 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         loadUserList(savedInstanceState);
-        initRecycleView();
         initFields();
-        loadItemsIntoAdapter();
+        initRecycleView();
     }
 
     @Override
@@ -84,7 +86,8 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                getUsersAdapter().getFilter().filter(newText);
+                RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
+                if (adapter != null) adapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -162,40 +165,38 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Events
-
     @SuppressWarnings("unused")
     public void onOperationFinished(final DBSelectOperation.Result result) {
         hideProgressDialog();
         mRequestDataFromDBStatus = Status.FINISHED;
         if (result.isSuccessful()) {
-            updateUserListAdapter(result.getOutput());
+            updateAdapterFromDb(result.getOutput());
         } else {
             listLoadingError();
         }
     }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::   Events
 
     //region :::::::::::::::::::::::::::::::::::::::::: Data
-
     private void loadUserList(Bundle savedInstanceState) {
         Log.d(TAG, "loadUserList: ");
         List<ProfileViewModel> savedList = null;
+        List<String> usersIds = null;
         if (savedInstanceState != null) {
             savedList = savedInstanceState.getParcelableArrayList(Const.PARCELABLE_KEY_LIKES);
         }
         if (savedList != null) {
-            this.mUsers = savedList;
+            this.mSavedList = savedList;
         } else if (getArguments() != null) {
             mUserId = getArguments().getString(Const.PARCELABLE_KEY_USER_ID);
             savedList = getArguments().getParcelableArrayList(Const.PARCELABLE_KEY_LIKES_MODEL);
-            if (savedList == null) {
-                List<String> usersIds = getArguments().getStringArrayList(Const.PARCELABLE_KEY_LIKES);
-                requestDataFromDB(usersIds);
-            } else {
-                Log.d(TAG, "loadUserList: 2");
-                this.mUsers = savedList;
-            }
+            usersIds = getArguments().getStringArrayList(Const.PARCELABLE_KEY_LIKES);
+        }
+
+        if (savedList != null) {
+            this.mSavedList = savedList;
+        } else if (!AppUtils.isEmptyOrNull(usersIds)) {
+            requestDataFromDB(usersIds);
         } else if (!AppUtils.isEmptyOrNull(mUserId)) {
             requestDataFromDB(mUserId);
         } else {
@@ -214,8 +215,8 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
         RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
         if (adapter == null) return;
         boolean isLikedByMe = false;
-        mUsers = adapter.getItems();
-        for (ProfileViewModel p : mUsers) {
+        mSavedList = adapter.getItems();
+        for (ProfileViewModel p : mSavedList) {
             if (AppUtils.equals(p.getRemoteId(), AUTH_USER_ID)) {
                 isLikedByMe = true;
                 break;
@@ -231,36 +232,18 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
             runOperation(new DBSelectOperation(list));
         }
     }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::  Data
 
     //region :::::::::::::::::::::::::::::::::::::::::: RecyclerView
-    public RecyclerBindingAdapter<ProfileViewModel> getUsersAdapter() {
-        if (mListBinding == null || mListBinding.userList == null) {
-            mCallbacks.errorAlertExitToMain(getString(LIST_LOADING_ERROR));
-            return null;
-        } else
-            return (RecyclerBindingAdapter<ProfileViewModel>) mListBinding.userList.getAdapter();
-    }
-
-    @Override
-    public boolean isAdapterEmpty() {
-        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-        return adapter == null || adapter.getItems().size() == 0;
-    }
-
     private void initRecycleView() {
-        RecyclerBindingAdapter<ProfileViewModel> bindingAdapter = new RecyclerBindingAdapter<>(
-                R.layout.item_likes_list,
-                BR.profile,
-                new ArrayList<>(),
-                this::onViewProfileClick);
+        Log.d(TAG, "initRecycleView: ");
+        mListBinding.userList.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        RecyclerView.ItemAnimator animator = mListBinding.userList.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        mListBinding.userList.setItemAnimator(AppConfig.LL_ANIMATION.getAnimator());
+        mListBinding.userList.getItemAnimator().setAddDuration(AppConfig.LL_ANIM_DURATION_ITEM_ADD);
+        mListBinding.userList.getItemAnimator().setRemoveDuration(AppConfig.LL_ANIM_DURATION_ITEM_REMOVE);
 
+        RecyclerBindingAdapter<ProfileViewModel> bindingAdapter = createAdapter(mSavedList);
         bindingAdapter.setFilter(new RecyclerBindingAdapter.CustomBindingFilter<ProfileViewModel>(bindingAdapter) {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
@@ -276,44 +259,74 @@ public class LikesListFragment extends BaseViewFragment implements ListFragmentC
                 } else {
                     tempList = this.getList();
                 }
-                Log.d(TAG, "performFiltering: " + tempList.size());
                 this.mAdapter.setListFromFilter(tempList);
                 return null;
             }
         });
-        mListBinding.userList.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         mListBinding.userList.swapAdapter(bindingAdapter, false);
     }
 
-    private void updateUserListAdapter(List<UserEntity> userEntities) {
-        Log.d(TAG, "updateUserListAdapter: ");
-        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-        if (adapter != null) {
-            adapter.setUsersFromDB(new ArrayList<ProfileViewModel>() {{
-                for (UserEntity u : userEntities) {
-                    add(new ProfileViewModel(u));
-                }
-            }});
-            likesCount.set(adapter.getItems().size());
-        }
+    private RecyclerBindingAdapter<ProfileViewModel> createAdapter(List<ProfileViewModel> list) {
+        return new RecyclerBindingAdapter<>(
+                R.layout.item_likes_list,
+                BR.profile,
+                list,
+                this::onViewProfileClick);
     }
 
-    public void loadItemsIntoAdapter() {
-        Log.d(TAG, "loadItemsIntoAdapter: ");
-        if (mUsers.size() != 0) {
-            RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-            if (adapter != null) {
-                adapter.setUsersFromDB(mUsers);
-                likesCount.set(mUsers.size());
+    private void loadItemsIntoAdapter(@NonNull RecyclerBindingAdapter<ProfileViewModel> adapter,
+                                      List<ProfileViewModel> savedList, boolean animated) {
+        if (savedList != null && mLoading != Status.RUNNING) {
+            mLoading = Status.RUNNING;
+            mSavedList = savedList;
+            if (animated) {
+                adapter.getItems().clear();
+                ITEM_LOADING_HANDLER.removeCallbacksAndMessages(null);
+                ITEM_LOADING_HANDLER.postDelayed(() -> {
+                    adapter.setUsersFromDB(mSavedList);
+                    mLoading = Status.FINISHED;
+                }, AppConfig.RECYCLER_ANIM_DELAY);
+            } else {
+                adapter.setUsersFromDB(mSavedList);
+                mLoading = Status.FINISHED;
             }
+            likesCount.set(savedList.size());
         } else if (mCallbacks.isNetworkRequestRunning(ID.LOAD_DB) || mRequestDataFromDBStatus == Status.RUNNING) {
             showProgressDialog();
         }
+    }
+
+    private void updateAdapterFromDb(List<UserEntity> userEntities) {
+        Log.d(TAG, "updateAdapterFromDb: ");
+
+        mSavedList = new ArrayList<ProfileViewModel>() {{
+            for (UserEntity u : userEntities) {
+                add(new ProfileViewModel(u));
+            }
+        }};
+
+        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
+        if (adapter != null && mLoading != Status.RUNNING)
+            loadItemsIntoAdapter(adapter, mSavedList, false);
     }
 
     public void updateLikesList(UserEntity u) {
         requestDataFromDB(u.getLikesList());
     }
 
+    private RecyclerBindingAdapter<ProfileViewModel> getUsersAdapter() {
+        if (mListBinding == null || mListBinding.userList == null) {
+            mCallbacks.errorAlertExitToMain(getString(LIST_LOADING_ERROR));
+            return null;
+        } else
+            return (RecyclerBindingAdapter<ProfileViewModel>) mListBinding.userList.getAdapter();
+    }
+
+    @Override
+    public boolean isAdapterEmpty() {
+        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
+        return adapter == null || adapter.getItems().size() == 0;
+    }
     //endregion ::::::::::::::::::::::::::::::::::::::::::  RecyclerView
 }

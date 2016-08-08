@@ -1,69 +1,29 @@
-package com.softdesign.devintensive.ui.view.behaviors;
+package com.softdesign.devintensive.ui.view.animations;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.util.Pair;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
+import com.softdesign.devintensive.ui.view.animations.internal.BaseItemAnimator;
 import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
+import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 @SuppressWarnings("unchecked")
 public class Animations {
-
-/*    android:src="@{profile.authorizedUser ? (profile.editMode ? @drawable/ic_done_white : @drawable/ic_edit_white) : (profile.liked ? @drawable/ic_heart_accent : @drawable/ic_heart_outline_accent)}"
-    app:changeFABColor="@{profile.authorizedUser ? @color/color_accent : @color/color_white}"*/
-
-    public static void animateFABLikeButton(final FloatingActionButton fab, boolean isLiked) {
-
-        Pair<Integer, Integer> imageSize = (Pair) fab.getTag(R.id.fab_size_tag);
-        Pair<Boolean, AnimatorSet> tag = (Pair) fab.getTag(R.id.fab_anim_tag);
-
-        if (imageSize == null) {
-            imageSize = new Pair<>(fab.getMeasuredWidth(), fab.getMeasuredHeight());
-            fab.setTag(R.id.likeAnimSize_tag, imageSize);
-            fab.setPivotX(imageSize.first / 2);
-            fab.setPivotY(imageSize.second / 2);
-        }
-
-        if (tag == null || tag.first != isLiked) {
-            if (tag != null && tag.second != null) {
-                tag.second.end();
-            }
-
-            fab.setImageResource(!isLiked ? R.drawable.ic_heart_accent : R.drawable.ic_heart_broken);
-
-            AnimatorSet animatorSet = new AnimatorSet();
-
-            ObjectAnimator AnimX = AppUtils.getBounceXAnimator(fab, AppConfig.ANIM_DURATION_FAB_LIKE);
-            ObjectAnimator AnimY = AppUtils.getBounceYAnimator(fab, AppConfig.ANIM_DURATION_FAB_LIKE);
-
-            if (isLiked) {
-                AnimY.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        fab.setImageResource(R.drawable.ic_heart_outline_accent);
-                    }
-                });
-            }
-
-            animatorSet
-                    .play(AnimX)
-                    .with(AnimY);
-
-            fab.setTag(R.id.fab_anim_tag, new Pair<>(isLiked, animatorSet));
-
-            animatorSet.start();
-        }
-    }
+    private static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     public static void animateLikeButton(final ImageView likeImageLeft, ImageView likeImageRight, boolean isLiked) {
+        if (likeImageLeft == null || likeImageRight == null) return;
 
         Pair<Integer, Integer> imageSize = (Pair) likeImageLeft.getTag(R.id.likeAnimSize_tag);
         Pair<Boolean, AnimatorSet> pairL = (Pair) likeImageLeft.getTag(R.id.likeAnimL_tag);
@@ -151,11 +111,49 @@ public class Animations {
     }
 
     public static void animateLikeButton(final UsersAdapter.UserViewHolder holder) {
+        if (holder == null || holder.getBinding() == null) return;
 
         ImageView likeImageLeft = holder.getBinding().buttonLikesLayout.btnLikeImgL;
         ImageView likeImageRight = holder.getBinding().buttonLikesLayout.btnLikeImgR;
         boolean isLiked = holder.getBinding().getProfile().isLiked();
 
         animateLikeButton(likeImageLeft, likeImageRight, isLiked);
+    }
+
+    public static void animateFabAppearance(FloatingActionButton fab, float translation) {
+        if (fab == null) return;
+
+        if (fab.getTranslationY() != translation) fab.setTranslationY(translation);
+
+        float neededTranslation = (translation == 0.0f) ?
+                (2 * CONTEXT.getResources().getDimensionPixelOffset(R.dimen.size_medium_56)) : 0.0f;
+
+        fab.animate()
+                .translationY(neededTranslation)
+                .setInterpolator(new OvershootInterpolator(1.f))
+                .setStartDelay(AppConfig.UL_ANIM_START_DELAY_FAB)
+                .setDuration(AppConfig.UL_ANIM_DURATION_FAB)
+                .start();
+    }
+
+    public enum AnimationType {
+
+        FadeInUp(new FadeInUpAnimator(new OvershootInterpolator(1f))),
+        FadeInRight(new FadeInRightAnimator(new OvershootInterpolator(1f))),
+        Landing(new LandingAnimator(new OvershootInterpolator(1f))),
+        ScaleInTop(new ScaleInTopAnimator(new OvershootInterpolator(1f))),
+        FlipInRightY(new FlipInRightYAnimator(new OvershootInterpolator(1f))),
+        SlideInUp(new SlideInUpAnimator(new OvershootInterpolator(1f))),
+        OvershootInRight(new OvershootInRightAnimator(1.0f));
+
+        private BaseItemAnimator mAnimator;
+
+        AnimationType(BaseItemAnimator animator) {
+            mAnimator = animator;
+        }
+
+        public BaseItemAnimator getAnimator() {
+            return mAnimator;
+        }
     }
 }

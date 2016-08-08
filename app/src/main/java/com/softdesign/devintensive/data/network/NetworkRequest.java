@@ -4,8 +4,6 @@ import android.support.annotation.StringRes;
 
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
-import java.text.MessageFormat;
-
 @SuppressWarnings("unused")
 public class NetworkRequest {
 
@@ -154,10 +152,15 @@ public class NetworkRequest {
 
     @Override
     public String toString() {
-        return MessageFormat.format("Id: {0} Status: {1} Error: {2} \nmCancelled: {3} isAnnounceError: " +
-                        "{4} isErrorCritical: {5} \nmAdditionalInfo Class: {6} \nmAdditionalInfo toString: {7}",
-                mId, mStatus, mError, mCancelled, isAnnounceError, isErrorCritical,
-                mAdditionalInfo != null ? mAdditionalInfo.getClass() : "",
-                mAdditionalInfo != null ? mAdditionalInfo.toString() : "");
+        return "NetworkRequest{" +
+                "mStatus=" + mStatus +
+                ", mId=" + mId +
+                ", mError='" + mError + '\'' +
+                ", mCancelled=" + mCancelled +
+                ", isAnnounceError=" + isAnnounceError +
+                ", isErrorCritical=" + isErrorCritical +
+                ", mAdditionalInfo class =" + (mAdditionalInfo != null ? mAdditionalInfo.getClass() : "") +
+                ", mAdditionalInfo=" + mAdditionalInfo +
+                '}';
     }
 }

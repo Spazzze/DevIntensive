@@ -77,10 +77,33 @@ public class RecyclerBindingAdapter<T> extends RecyclerView.Adapter<RecyclerBind
     //region :::::::::::::::::::::::::::::::::::::::::: Adapter Utils
     public void setUsersFromDB(List<T> userEntities) {
         synchronized (this) {
-            items = userEntities;
+            if (items.size() > 0) {
+                List<String> newItems = new ArrayList<String>() {{
+                    for (T u : userEntities) add(u.toString());
+                }};
+                List<String> currentItems = new ArrayList<String>() {{
+                    for (T u : items) add(u.toString());
+                }};
+
+                for (int i = 0; i < currentItems.size(); i++) {
+                    if (!newItems.contains(currentItems.get(i))) {
+                        T model = items.get(i);
+                        if (items.remove(model)) notifyItemRemoved(i);
+                    }
+                }
+
+                for (int i = 0; i < newItems.size(); i++) {
+                    if (!currentItems.contains(newItems.get(i))) {
+                        items.add(userEntities.get(i));
+                        notifyItemInserted(items.size() - 1);
+                    }
+                }
+            } else {
+                items.addAll(userEntities);
+                notifyItemRangeInserted(0, items.size());
+            }
             if (mFilter != null) mFilter.setList(userEntities);
         }
-        notifyDataSetChanged();
     }
 
     public void setListFromFilter(List<T> newList) {   //only for mFilter use

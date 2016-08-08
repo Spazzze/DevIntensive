@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.ui.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -13,14 +12,12 @@ import com.redmadrobot.chronos.gui.fragment.ChronosSupportFragment;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
 @SuppressWarnings("deprecation")
 public class BaseViewFragment extends ChronosSupportFragment {
 
     public final String TAG = Const.TAG_PREFIX + getClass().getSimpleName();
     public static final DataManager DATA_MANAGER = DataManager.getInstance();
-    public static final Context CONTEXT = DevIntensiveApplication.getContext();
 
     public MainActivityCallback mCallbacks;
 

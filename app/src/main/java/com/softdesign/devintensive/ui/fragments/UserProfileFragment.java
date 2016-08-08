@@ -5,11 +5,10 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,8 +26,8 @@ import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation
 import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
 import com.softdesign.devintensive.databinding.FragmentProfileBinding;
 import com.softdesign.devintensive.ui.adapters.RecyclerBindingAdapter;
-import com.softdesign.devintensive.ui.view.behaviors.Animations;
 import com.softdesign.devintensive.ui.view.elements.CustomGridLayoutManager;
+import com.softdesign.devintensive.utils.AppConfig;
 import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.softdesign.devintensive.data.network.NetworkRequest.Status;
+import static com.softdesign.devintensive.ui.view.animations.Animations.animateLikeButton;
 import static com.softdesign.devintensive.utils.AppUtils.getScreenWidth;
 import static com.softdesign.devintensive.utils.AppUtils.isEmptyOrNull;
 
@@ -48,9 +48,11 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     private FragmentProfileBinding mProfileBinding;
     private String mUserId;
     private File mPhotoFile = null;
+    private List<ProfileViewModel> mSavedList = new ArrayList<>();
 
     private Status mRequestDataFromDBStatus = Status.PENDING;
-    private Status mReqListFromNetworkStatus = Status.PENDING;
+    private Status mLoading = Status.PENDING;
+    private static final Handler ITEM_LOADING_HANDLER = new Handler();
 
     //region :::::::::::::::::::::::::::::::::::::::::: onCreate
     @Nullable
@@ -65,7 +67,6 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initFields(savedInstanceState);
-        loadLikesList(savedInstanceState);
         initRecycleView();
     }
 
@@ -83,15 +84,14 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         super.onSaveInstanceState(outState);
         if (outState == null) outState = new Bundle();
         outState.putParcelable(Const.PARCELABLE_KEY_PROFILE, mProfileViewModel);
-        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-        if (adapter == null) return;
         outState.putParcelableArrayList(Const.PARCELABLE_KEY_LIKES,
-                (ArrayList<? extends Parcelable>) adapter.getItems());
+                (ArrayList<? extends Parcelable>) mSavedList);
     }
 
     @Override
     public void onPause() {
         saveUserData();
+        if (mProfileViewModel != null) mProfileViewModel.setAnimateTextChange(false);
         super.onPause();
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
@@ -114,9 +114,6 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.likes_RV:
-                onLikesListClick(0);
-                break;
             case R.id.floating_action_button:
                 if (mProfileViewModel.isAuthorizedUser()) {
                     changeEditMode(!mProfileViewModel.isEditMode());
@@ -154,7 +151,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
 
         mProfileViewModel.changeLiked(!isLiked);
 
-        Animations.animateLikeButton(
+        animateLikeButton(
                 mProfileBinding.mainProfileLayout.buttonLikesLayout.btnLikeImgL,
                 mProfileBinding.mainProfileLayout.buttonLikesLayout.btnLikeImgR,
                 !isLiked);
@@ -175,6 +172,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
 
     //region :::::::::::::::::::::::::::::::::::::::::: UI
     private void setProfileView(@NonNull ProfileViewModel model) {
+        Log.d(TAG, "setProfileView: ");
         if (mProfileBinding.getProfile() == null) {
             mUserId = model.getRemoteId();
             mProfileViewModel = model;
@@ -185,9 +183,7 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         } else {
             mProfileViewModel.updateValues(model);
         }
-        if (mReqListFromNetworkStatus != Status.RUNNING) {
-            updateLikesList();
-        }
+        updateLikesList();
     }
 
     public boolean isEditing() {
@@ -204,25 +200,16 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         mProfileViewModel.setEditMode(mode);
         mCallbacks.updateNavViewModel(mProfileViewModel);
         if (mode) {  //editing
-            collapseAppBar();
             mProfileBinding.mainProfileLayout.phoneEditText.requestFocus();
         } else {    //stop edit mode
             saveUserData();
         }
-    }
-
-    private void collapseAppBar() {
-/*        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        if (displayMetrics.densityDpi < DisplayMetrics.DENSITY_XXHIGH) {
-            mProfileBinding.appBarLayout.setExpanded(false, true);
-        }*/
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: Events
     @SuppressWarnings("unused")
     public void onOperationFinished(final FullUserDataOperation.Result result) {
-        mReqListFromNetworkStatus = Status.FINISHED;
         if (result.isSuccessful()) {
             if (result.getOutput() != null) { //only Loading
                 setProfileView(result.getOutput());
@@ -239,16 +226,20 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     public void onOperationFinished(final DBSelectOperation.Result result) {
         mRequestDataFromDBStatus = Status.FINISHED;
         if (result.isSuccessful()) {
-            updateUserListAdapter(result.getOutput());
+            updateAdapterFromDb(result.getOutput());
+        } else {
+            if (!isEmptyOrNull(mSavedList)) {
+                initLoadItemsIntoAdapter();
+            }
         }
     }
-
     //endregion ::::::::::::::::::::::::::::::::::::::::::   Events
 
     //region :::::::::::::::::::::::::::::::::::::::::: Data
     private void initFields(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mProfileViewModel = savedInstanceState.getParcelable(Const.PARCELABLE_KEY_PROFILE);
+            mSavedList = savedInstanceState.getParcelableArrayList(Const.PARCELABLE_KEY_LIKES);
         }
         if (mProfileViewModel == null && getArguments() != null) {
             mUserId = getArguments().getParcelable(Const.PARCELABLE_KEY_USER_ID);
@@ -269,23 +260,6 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         mProfileBinding.mainProfileLayout.makeCallImg.setOnClickListener(this);
         mProfileBinding.mainProfileLayout.sendEmailImg.setOnClickListener(this);
         mProfileBinding.mainProfileLayout.openVKImg.setOnClickListener(this);
-        mProfileBinding.mainProfileLayout.likesRV.setOnClickListener(this);
-    }
-
-    private void loadLikesList(Bundle savedInstanceState) {
-        Log.d(TAG, "loadLikesList: ");
-        List<ProfileViewModel> savedList = null;
-        if (savedInstanceState != null) {
-            savedList = savedInstanceState.getParcelableArrayList(Const.PARCELABLE_KEY_LIKES);
-        }
-        if (savedList != null) {
-            if (savedList.size() > 0) {
-                RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-                if (adapter != null) adapter.setUsersFromDB(savedList);
-            }
-        } else if (mRequestDataFromDBStatus != Status.RUNNING) {
-            updateLikesList();
-        }
     }
 
     private void requestLikeListFromDB(List<String> list) {
@@ -367,39 +341,80 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     //endregion ::::::::::::::::::::::::::::::::::::::::::
 
     //region :::::::::::::::::::::::::::::::::::::::::: RecyclerView
-    private RecyclerBindingAdapter<ProfileViewModel> getUsersAdapter() {
-        if (mProfileBinding == null || mProfileBinding.mainProfileLayout.likesRV == null) {
-            return null;
-        } else
-            return (RecyclerBindingAdapter<ProfileViewModel>) mProfileBinding.mainProfileLayout.likesRV.getAdapter();
-    }
-
     private void initRecycleView() {
-        RecyclerBindingAdapter<ProfileViewModel> bindingAdapter = new RecyclerBindingAdapter<>(
-                R.layout.item_likes_footer,
-                BR.profile,
-                new ArrayList<>(),
-                this::onLikesListClick);
-        RecyclerView.ItemAnimator animator = mProfileBinding.mainProfileLayout.likesRV.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        Log.d(TAG, "initRecycleView: ");
         int footerItemsCount = (getScreenWidth() - getResources().getDimensionPixelSize(R.dimen.profile_likesBox_size)) /
                 getResources().getDimensionPixelSize(R.dimen.size_normal_40);
         if (footerItemsCount == 0) footerItemsCount = 7;
-        CustomGridLayoutManager glm = new CustomGridLayoutManager(getActivity(), footerItemsCount);
-        glm.setScrollEnabled(false);
-        mProfileBinding.mainProfileLayout.likesRV.setLayoutManager(glm);
+
+        mProfileBinding.mainProfileLayout.likesRV.setItemAnimator(AppConfig.LF_ANIMATION.getAnimator());
+        mProfileBinding.mainProfileLayout.likesRV.getItemAnimator().setAddDuration(AppConfig.LF_ANIM_DURATION_ITEM_ADD);
+        mProfileBinding.mainProfileLayout.likesRV.getItemAnimator().setRemoveDuration(AppConfig.LF_ANIM_DURATION_ITEM_REMOVE);
+
+        mProfileBinding.mainProfileLayout.likesRV.setLayoutManager(new CustomGridLayoutManager(getActivity(), footerItemsCount, false));
+
+        RecyclerBindingAdapter<ProfileViewModel> bindingAdapter = createAdapter(mSavedList);
         mProfileBinding.mainProfileLayout.likesRV.swapAdapter(bindingAdapter, false);
     }
 
-    private void updateUserListAdapter(List<UserEntity> userEntities) {
+    private RecyclerBindingAdapter<ProfileViewModel> createAdapter(List<ProfileViewModel> list) {
+        return new RecyclerBindingAdapter<>(
+                R.layout.item_likes_footer,
+                BR.profile,
+                list,
+                this::onLikesListClick);
+    }
+
+    private void initLoadItemsIntoAdapter() {
         RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-        if (adapter != null) adapter.setUsersFromDB(new ArrayList<ProfileViewModel>() {{
+        if (adapter != null && mLoading != Status.RUNNING)
+            loadItemsIntoAdapter(adapter, mSavedList, true);
+    }
+
+    private void loadItemsIntoAdapter(@NonNull RecyclerBindingAdapter<ProfileViewModel> adapter,
+                                      List<ProfileViewModel> savedList, boolean animated) {
+        if (savedList != null && mLoading != Status.RUNNING) {
+            mLoading = Status.RUNNING;
+            mSavedList = savedList;
+            if (animated) {
+                adapter.getItems().clear();
+                ITEM_LOADING_HANDLER.removeCallbacksAndMessages(null);
+                ITEM_LOADING_HANDLER.postDelayed(() -> {
+                    adapter.setUsersFromDB(mSavedList);
+                    mLoading = Status.FINISHED;
+                }, AppConfig.RECYCLER_ANIM_DELAY);
+            } else {
+                adapter.setUsersFromDB(mSavedList);
+                mLoading = Status.FINISHED;
+            }
+        }
+    }
+
+    private void updateAdapterFromDb(List<UserEntity> userEntities) {
+        Log.d(TAG, "updateAdapterFromDb: ");
+
+        mSavedList = new ArrayList<ProfileViewModel>() {{
             for (UserEntity u : userEntities) {
                 add(new ProfileViewModel(u));
             }
-        }});
+        }};
+
+        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
+        if (adapter != null && mLoading != Status.RUNNING)
+            loadItemsIntoAdapter(adapter, mSavedList, false);
+    }
+
+    public boolean isAdapterEmpty() {
+        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
+        return adapter == null || adapter.getItems().size() == 0;
+    }
+
+    private RecyclerBindingAdapter<ProfileViewModel> getUsersAdapter() {
+        if (mProfileBinding == null || mProfileBinding.mainProfileLayout.likesRV == null) {
+            mCallbacks.errorAlertExitToMain(getString(R.string.error_ui));
+            return null;
+        } else
+            return (RecyclerBindingAdapter<ProfileViewModel>) mProfileBinding.mainProfileLayout.likesRV.getAdapter();
     }
     //endregion ::::::::::::::::::::::::::::::::::::::::::  RecyclerView
 
@@ -408,15 +423,16 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
         return mProfileViewModel;
     }
 
-    public void updateLikesList() {
+    public void forceUpdateLikesList() {
         Log.d(TAG, "updateLikesList: ");
         if (mProfileViewModel != null)
             requestLikeListFromDB(new ArrayList<>(mProfileViewModel.getLikesBy()));
     }
 
-    public boolean isAdapterEmptyOrNull() {
-        RecyclerBindingAdapter<ProfileViewModel> adapter = getUsersAdapter();
-        return adapter == null || adapter.getItems().size() == 0;
+    public void updateLikesList() {
+        Log.d(TAG, "updateLikesList: ");
+        if (mProfileViewModel != null && mRequestDataFromDBStatus != Status.RUNNING)
+            requestLikeListFromDB(new ArrayList<>(mProfileViewModel.getLikesBy()));
     }
 
     public void updateUserProfile(UserEntity u) {
@@ -429,5 +445,10 @@ public class UserProfileFragment extends BaseViewFragment implements View.OnClic
     public void denySaving() {
         mProfileViewModel = null;
     }
+
+    public Status getRequestDataFromDBStatus() {
+        return mRequestDataFromDBStatus;
+    }
+
     //endregion :::::::::::::::::::::::::::::::::::::::::: Communication with Activity
 }

@@ -114,8 +114,10 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
     public void onBackPressed() {
         if (mMainBinding.navView != null && mMainBinding.drawer.isDrawerOpen(GravityCompat.START)) {
             mMainBinding.drawer.closeDrawer(GravityCompat.START);
-        } else if (findMainProfileFragment() != null && mMainProfileFragment.isEditing()) {
+        } else if (findMainProfileFragment() != null && mMainProfileFragment.isVisible() && mMainProfileFragment.isEditing()) {
             mMainProfileFragment.changeEditMode(false);
+        } else if (findUserListFragment() != null && mUserListFragment.isVisible() && mUserListFragment.isConfiguring()) {
+            mUserListFragment.configureMode(false);
         } else {
             super.onBackPressed();
         }
@@ -434,8 +436,10 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
             mUserListFragment = new UserListFragment();
             replaceFragment(mUserListFragment, true, UserListFragment.class.getName());
         } else {
-            mManager.popBackStackImmediate(UserListFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            replaceFragment(mUserListFragment, true, UserListFragment.class.getName());
+            if (!mUserListFragment.isVisible()) {
+                mManager.popBackStackImmediate(UserListFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                replaceFragment(mUserListFragment, true, UserListFragment.class.getName());
+            }
         }
     }
 
@@ -503,9 +507,11 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         switch (request.getId()) {
             case LOAD_DB:
                 if (findUserListFragment() != null) mUserListFragment.requestDataFromDB(null);
-                if (findMainProfileFragment() != null && mMainProfileFragment.isVisible() &&
-                        mMainProfileFragment.isAdapterEmptyOrNull()) {
-                    new Handler().postDelayed(() -> mMainProfileFragment.updateLikesList(), 1000);
+                if (findMainProfileFragment() != null &&
+                        mMainProfileFragment.isVisible() &&
+                        mMainProfileFragment.isAdapterEmpty() &&
+                        mMainProfileFragment.getRequestDataFromDBStatus() == Status.FINISHED) {
+                    new Handler().postDelayed(() -> mMainProfileFragment.forceUpdateLikesList(), 1000);
                 }
                 break;
             case UPLOAD_DATA:
@@ -605,7 +611,7 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
         if (fragment instanceof LikesListFragment && fragment.getTag().contains(userId)) {
             ((LikesListFragment) fragment).updateLikesList(output);
         } else if (fragment instanceof UserListFragment) {
-            ((UserListFragment) fragment).updateUserList(output);
+            ((UserListFragment) fragment).updateUserListEntity(output);
         } else if (fragment instanceof UserProfileFragment &&
                 (fragment.getTag().contains(userId) ||
                         (AppUtils.equals(fragment.getTag(), UserProfileFragment.class.getName()) &&
