@@ -1,9 +1,8 @@
 package com.yalantis.contextmenu.lib;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.view.View;
-
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
 
 public class AnimatorUtils {
 

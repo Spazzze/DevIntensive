@@ -1,14 +1,13 @@
 package com.yalantis.contextmenu.lib;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
 import com.yalantis.contextmenu.lib.interfaces.OnItemClickListener;
 import com.yalantis.contextmenu.lib.interfaces.OnItemLongClickListener;
 
