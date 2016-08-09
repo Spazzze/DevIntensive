@@ -1,22 +1,22 @@
 package com.softdesign.devintensive.data.managers;
 
+import android.support.annotation.NonNull;
+
 import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.api.req.UserLoginReq;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
+import com.softdesign.devintensive.data.network.api.req.UserRestorePassReq;
 import com.softdesign.devintensive.data.network.api.res.UserAuthRes;
+import com.softdesign.devintensive.data.network.api.res.UserEditProfileRes;
 import com.softdesign.devintensive.data.network.api.res.UserListRes;
 import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
 import com.softdesign.devintensive.data.network.restmodels.BaseListModel;
 import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.restmodels.ProfileValues;
 import com.softdesign.devintensive.data.network.restmodels.User;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
-import com.softdesign.devintensive.data.storage.models.UserEntity;
-import com.softdesign.devintensive.data.storage.models.UserEntityDao;
 import com.softdesign.devintensive.utils.DevIntensiveApplication;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import okhttp3.MultipartBody;
@@ -36,14 +36,15 @@ public class DataManager {
     private final RestService mRestService;
     private final DaoSession mDaoSession;
 
-    public static DataManager getInstance() {
-        return INSTANCE;
-    }
-
     private DataManager() {
         this.mPreferencesManager = new PreferencesManager();
         this.mRestService = ServiceGenerator.createService(RestService.class);
         this.mDaoSession = DevIntensiveApplication.getDaoSession();
+    }
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
+    public static DataManager getInstance() {
+        return INSTANCE;
     }
 
     public DaoSession getDaoSession() {
@@ -53,30 +54,34 @@ public class DataManager {
     public PreferencesManager getPreferencesManager() {
         return mPreferencesManager;
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //endregion
-    //region ========== Auth ===========
+    //region :::::::::::::::::::::::::::::::::::::::::: Auth
     public boolean isUserAuthenticated() {
         return !mPreferencesManager.loadBuiltInAuthId().isEmpty() && !mPreferencesManager.loadBuiltInAuthToken().isEmpty();
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region ========== Network ===========
-    public Call<BaseModel<UserAuthRes>> loginUser(@Body UserLoginReq req) {
+    //region :::::::::::::::::::::::::::::::::::::::::: Network
+    public Call<BaseModel<UserAuthRes>> loginUser(@NonNull @Body UserLoginReq req) {
         return mRestService.loginUser(req);
     }
 
-    public Call<BaseModel<User>> getUserData(@Path("userId") String userId) {
+    public Call<BaseModel> restoreUserPassword(@NonNull @Body UserRestorePassReq req) {
+        return mRestService.restoreUserPassword(req);
+    }
+
+    public Call<BaseModel<User>> getUserData(@NonNull @Path("userId") String userId) {
         return mRestService.getUserData(userId);
     }
 
-    public Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@Path("userId") String userId,
-                                                         @Part MultipartBody.Part file) {
+    public Call<BaseModel<UserPhotoRes>> uploadUserPhoto(@NonNull @Path("userId") String userId,
+                                                         @NonNull @Part MultipartBody.Part file) {
         return mRestService.uploadUserPhoto(userId, file);
     }
 
-    public Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@Path("userId") String userId,
-                                                          @Part MultipartBody.Part file) {
+    public Call<BaseModel<UserPhotoRes>> uploadUserAvatar(@NonNull @Path("userId") String userId,
+                                                          @NonNull @Part MultipartBody.Part file) {
         return mRestService.uploadUserAvatar(userId, file);
     }
 
@@ -84,56 +89,16 @@ public class DataManager {
         return mRestService.getUserList();
     }
 
-    public Call<BaseModel<EditProfileRes>> uploadUserInfo(@PartMap() Map<String, RequestBody> map) {
+    public Call<BaseModel<UserEditProfileRes>> uploadUserInfo(@NonNull @PartMap() Map<String, RequestBody> map) {
         return mRestService.uploadUserInfo(map);
     }
-    //endregion
 
-    //region ========== DataBase ==========
-    public List<UserEntity> getUserListFromDb() {
-        List<UserEntity> userList = new ArrayList<>();
-
-        try {
-            userList = mDaoSession.queryBuilder(UserEntity.class)
-                    .orderDesc(UserEntityDao.Properties.Rating)
-                    .build()
-                    .list();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return userList;
+    public Call<BaseModel<ProfileValues>> likeUser(@NonNull @Path("userId") String userId) {
+        return mRestService.likeUser(userId);
     }
 
-    public void changeUserInternalId(int oldInternalId, int newInternalId) {
-        UserEntity firstEntity = null;
-        try {
-            firstEntity = mDaoSession.queryBuilder(UserEntity.class)
-                    .where(UserEntityDao.Properties.InternalId.eq(oldInternalId))
-                    .build()
-                    .unique();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        UserEntity secondEntity = null;
-        try {
-            secondEntity = mDaoSession.queryBuilder(UserEntity.class)
-                    .where(UserEntityDao.Properties.InternalId.eq(newInternalId))
-                    .build()
-                    .unique();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (firstEntity != null) {
-            firstEntity.setInternalId(newInternalId);
-            mDaoSession.getUserEntityDao().update(firstEntity);
-        }
-
-        if (secondEntity != null) {
-            secondEntity.setInternalId(oldInternalId);
-            mDaoSession.getUserEntityDao().update(secondEntity);
-        }
+    public Call<BaseModel<ProfileValues>> unlikeUser(@NonNull @Path("userId") String userId) {
+        return mRestService.unlikeUser(userId);
     }
-
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

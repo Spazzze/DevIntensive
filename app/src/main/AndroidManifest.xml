@@ -14,7 +14,6 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -28,9 +27,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
 
-        <!-- BaseActivity -->
-        <activity android:name=".ui.activities.BaseActivity" />
-
         <!-- AuthActivity -->
         <activity
             android:name=".ui.activities.AuthActivity"
@@ -42,17 +38,6 @@
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
-        <!-- UserListActivity -->
-        <activity
-            android:name=".ui.activities.UserListActivity"
-            android:launchMode="singleTask" />
-
-        <!-- UserProfileActivity -->
-        <activity
-            android:name=".ui.activities.UserProfileActivity"
-            android:launchMode="singleTask"
-            android:parentActivityName=".ui.activities.UserListActivity" />
-
         <!-- VKServiceActivity -->
         <activity
             android:name="com.vk.sdk.VKServiceActivity"
@@ -62,7 +47,7 @@
 
         <!-- Glide -->
         <meta-data
-            android:name="com.softdesign.devintensive.data.network.CustomGlideModule"
+            android:name="com.softdesign.devintensive.data.providers.CustomGlideModule"
             android:value="GlideModule" />
 
         <activity

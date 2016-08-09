@@ -1,5 +1,6 @@
 package com.softdesign.devintensive.utils;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,8 +19,8 @@ import com.vk.sdk.VKSdk;
 public class DevIntensiveApplication extends Application {
     private static SharedPreferences sSharedPreferences;
     private static Context sContext;
+    private static Activity sActivity;
     private static DaoSession sDaoSession;
-    private static int sScreenWidth;
 
     public static Context getContext() {
         return sContext;
@@ -43,7 +44,6 @@ public class DevIntensiveApplication extends Application {
         super.onCreate();
         sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sContext = this;
-        sScreenWidth = UiHelper.getScreenWidth();
 
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
@@ -62,7 +62,11 @@ public class DevIntensiveApplication extends Application {
         return sDaoSession;
     }
 
-    public static int getScreenWidth() {
-        return sScreenWidth;
+    public static void setCurrentActivity(Activity currentActivity) {
+        sActivity = currentActivity;
+    }
+
+    public static Activity getCurrentActivity() {
+        return sActivity;
     }
 }

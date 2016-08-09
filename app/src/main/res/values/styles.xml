@@ -19,10 +19,21 @@
     <style name="AppTheme.Button.Red" parent="Base.Widget.AppCompat.Button">
         <item name="colorButtonNormal">@color/color_accent</item>
         <item name="android:textColor">@color/color_white</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
+
+    <style name="AppTheme.Button.White" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@color/color_grey_light</item>
+        <item name="android:textColor">@color/color_accent</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColorPrimary">@color/color_accent</item>
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">@drawable/background_splash</item>
+        <item name="android:windowBackground">@drawable/dw_background_splash</item>
     </style>
 
     <!-- Toolbar -->
@@ -30,6 +41,14 @@
         <item name="android:textColorPrimary">@color/color_white</item>
         <item name="android:textColorSecondary">@color/color_white</item>
         <item name="android:actionMenuTextColor">@color/color_white</item>
+    </style>
+
+    <style name="UserListMenuText" parent="TextView.DefaultStyle">
+        <item name="android:textSize">@dimen/font_normal_16</item>
+        <item name="android:shadowColor">@color/color_black</item>
+        <item name="android:shadowDx">4</item>
+        <item name="android:shadowDy">4</item>
+        <item name="android:shadowRadius">10</item>
     </style>
 
     <!-- ProgressBar -->
@@ -46,14 +65,9 @@
         <item name="android:shadowRadius">20</item>
     </style>
 
-    <!--ProfilePhoto placeholder shadowed text-->
-    <style name="Placeholder_profilePhoto_OverlayText">
-        <item name="android:textColor">@color/color_white</item>
-        <item name="android:textSize">@dimen/font_medium_20</item>
-        <item name="android:shadowColor">@color/color_black</item>
-        <item name="android:shadowDx">8</item>
-        <item name="android:shadowDy">8</item>
-        <item name="android:shadowRadius">20</item>
+    <style name="AppCompatAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/color_accent</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
     </style>
 
 </resources>

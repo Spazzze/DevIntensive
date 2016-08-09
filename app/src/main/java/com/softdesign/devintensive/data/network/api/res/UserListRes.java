@@ -37,6 +37,7 @@ public class UserListRes extends BaseResponse{
     @Expose
     private String updated;
 
+    //region :::::::::::::::::::::::::::::::::::::::::: Getters
     public String getId() {
         return id;
     }
@@ -76,4 +77,43 @@ public class UserListRes extends BaseResponse{
     public String getFullName() {
         return String.format("%s %s", firstName, secondName);
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Setters
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
+    public void setV(Integer v) {
+        this.v = v;
+    }
+
+    public void setRepositories(Repositories repositories) {
+        this.repositories = repositories;
+    }
+
+    public void setProfileValues(ProfileValues profileValues) {
+        this.profileValues = profileValues;
+    }
+
+    public void setPublicInfo(PublicInfo publicInfo) {
+        this.publicInfo = publicInfo;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

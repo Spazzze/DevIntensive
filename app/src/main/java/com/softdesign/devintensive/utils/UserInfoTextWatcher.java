@@ -25,7 +25,7 @@ public class UserInfoTextWatcher implements TextWatcher {
     private final EditText mEditText;
     private final TextInputLayout mTextInputLayout;
 
-    //region inheritable methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Inheritable methods
     public UserInfoTextWatcher(EditText editText, TextInputLayout textInputLayout) {
         this.mResources = editText.getContext().getResources();
         this.mEditText = editText;
@@ -58,9 +58,9 @@ public class UserInfoTextWatcher implements TextWatcher {
                 break;
         }
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Main check methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Main check methods
 
     /**
      * validates and reformats cellphone number into ru.locale format
@@ -88,7 +88,7 @@ public class UserInfoTextWatcher implements TextWatcher {
         /////////// Reformatting section ///////////
 
         int a = 0;
-        if (!phone.startsWith("+")) a = 1;
+        if (!phone.startsWith("+")) a = 2;
         //Убираем превышение по количеству символов
         if (phone.length() > MAX_SYMBOLS_COUNT - a) {
             if (setCursorPosToEnd || cursorPosition == 0 ||
@@ -180,9 +180,9 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         errorHandler(!isValid, mResources.getString(R.string.error_editText_gitHub));
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    //region Simple validation methods
+    //region :::::::::::::::::::::::::::::::::::::::::: Simple validation methods
 
     /**
      * validates cellphone number if it matches ru.locale format
@@ -241,7 +241,9 @@ public class UserInfoTextWatcher implements TextWatcher {
         String pattern = Const.PATTERN_GITHUB_LINK;
         return !TextUtils.isEmpty(s) && s.matches(pattern);
     }
-    //endregion
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::::::::::: Utils
 
     /**
      * displays or removes error at current TextInputLayout
@@ -250,8 +252,9 @@ public class UserInfoTextWatcher implements TextWatcher {
      * @param errorType - error message
      */
     private void errorHandler(Boolean isError, final String errorType) {
-        if (!mEditText.isFocusable() && !mEditText.isEnabled()) return;
+        if (!mEditText.isEnabled() || !mEditText.isFocusable()) return;
         if (isError) {
+            mTextInputLayout.setError(null);
             mTextInputLayout.setErrorEnabled(true);
             mTextInputLayout.setError(errorType);
 
@@ -329,4 +332,5 @@ public class UserInfoTextWatcher implements TextWatcher {
         }
         return stringBuilder.toString();
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 }

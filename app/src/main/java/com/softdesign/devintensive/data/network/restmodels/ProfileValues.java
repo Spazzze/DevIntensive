@@ -1,29 +1,72 @@
 package com.softdesign.devintensive.data.network.restmodels;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.softdesign.devintensive.data.network.api.res.BaseResponse;
+import com.softdesign.devintensive.data.storage.models.LikeEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("unused")
-public class ProfileValues {
+public class ProfileValues extends BaseResponse implements Parcelable {
 
     @SerializedName("homeTask")
     @Expose
-    private int homeTask;
+    public int homeTask;
     @SerializedName("projects")
     @Expose
-    private int projects;
+    public int projects;
     @SerializedName("linesCode")
     @Expose
-    private int linesCode;
+    public int codeLines;
+    @SerializedName("likesBy")
+    @Expose
+    public List<String> likesBy = new ArrayList<>();
     @SerializedName("rait")
     @Expose
-    private int rating;
+    public int ratingByAdmin;
+    @SerializedName("rating")
+    @Expose
+    public int rating;
     @SerializedName("updated")
     @Expose
-    private String updated;
+    public String updated;
+
+    public List<LikeEntity> getLikeEntitiesList(final String userId) {
+        return new ArrayList<LikeEntity>() {{
+            for (String l : likesBy) {
+                add(new LikeEntity(l, userId));
+            }
+        }};
+    }
+
+    public int getIntRating() {
+        return rating;
+    }
+
+    public int getIntСodeLines() {
+        return codeLines;
+    }
+
+    public int getIntProjects() {
+        return projects;
+    }
+
+    //region Getters
+    public List<String> getLikesBy() {
+        return likesBy;
+    }
+
+    public String getRatingByAdmin() {
+        return String.valueOf(ratingByAdmin);
+    }
 
     public String getCodeLines() {
-        return String.valueOf(linesCode);
+        return String.valueOf(codeLines);
     }
 
     public String getRating() {
@@ -34,15 +77,93 @@ public class ProfileValues {
         return String.valueOf(projects);
     }
 
+    public String getHomeTask() {
+        return String.valueOf(homeTask);
+    }
+
     public String getUpdated() {
         return updated;
     }
+    //endregion
 
-    public String getHomeTask() {
-        return String.valueOf(homeTask);
+    //region Setters
+    public void setHomeTask(int homeTask) {
+        this.homeTask = homeTask;
+    }
+
+    public void setProjects(int projects) {
+        this.projects = projects;
+    }
+
+    public void setCodeLines(int codeLines) {
+        this.codeLines = codeLines;
+    }
+
+    public void setLikesBy(List<String> likesBy) {
+        this.likesBy = likesBy;
+    }
+
+    public void setRatingByAdmin(int ratingByAdmin) {
+        this.ratingByAdmin = ratingByAdmin;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     public void setUpdated(String updated) {
         this.updated = updated;
     }
+    //endregion
+
+    //region Parcel
+    protected ProfileValues(Parcel in) {
+        homeTask = in.readInt();
+        projects = in.readInt();
+        codeLines = in.readInt();
+        if (in.readByte() == 0x01) {
+            likesBy = new ArrayList<>();
+            in.readList(likesBy, String.class.getClassLoader());
+        } else {
+            likesBy.clear();
+        }
+        ratingByAdmin = in.readInt();
+        rating = in.readInt();
+        updated = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(homeTask);
+        dest.writeInt(projects);
+        dest.writeInt(codeLines);
+        if (likesBy == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeList(likesBy);
+        }
+        dest.writeInt(ratingByAdmin);
+        dest.writeInt(rating);
+        dest.writeString(updated);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<ProfileValues> CREATOR = new Parcelable.Creator<ProfileValues>() {
+        @Override
+        public ProfileValues createFromParcel(Parcel in) {
+            return new ProfileValues(in);
+        }
+
+        @Override
+        public ProfileValues[] newArray(int size) {
+            return new ProfileValues[size];
+        }
+    };
+    //endregion
 }

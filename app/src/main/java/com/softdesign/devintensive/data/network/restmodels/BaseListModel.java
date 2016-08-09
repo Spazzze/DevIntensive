@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class BaseListModel<T extends BaseResponse> {
+public class BaseListModel<T> extends BaseResponse {
 
     @SerializedName("success")
     @Expose

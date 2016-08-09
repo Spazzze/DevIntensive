@@ -5,7 +5,7 @@
     <style name="scoreBox_sectionLayout">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:gravity">center</item>
+        <item name="android:gravity">center_horizontal</item>
         <item name="android:orientation">vertical</item>
     </style>
 
@@ -19,16 +19,9 @@
     </style>
 
     <style name="scoreBox_text.count" parent="scoreBox_text">
+        <item name="android:layout_gravity">center</item>
         <item name="android:text">@string/dummy.scoreBox_zero_text</item>
         <item name="android:textSize">@dimen/font_medium_24</item>
-    </style>
-
-    <style name="scoreBox_text.black" parent="scoreBox_text">
-        <item name="android:textColor">@color/color_black</item>
-    </style>
-
-    <style name="scoreBox_text.count.black" parent="scoreBox_text.count">
-        <item name="android:textColor">@color/color_black</item>
     </style>
 
     <style name="scoreBox_lineSeparator">

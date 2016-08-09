@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
+    </data>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- AppBar -->
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_grey"
+            android:fitsSystemWindows="true"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/collapsing_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:contentScrim="@color/color_grey"
+                app:expandedTitleTextAppearance="@{profile.editMode ? @android:color/transparent : @android:color/white}"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                app:title="@{profile.fullName}">
+
+                <!-- Photo -->
+                <include
+                    android:id="@+id/profile_photo_layout"
+                    layout="@layout/content_profile_photo"
+                    bind:profile="@{profile}" />
+
+                <!-- Toolbar -->
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:theme="@style/AppTheme.PopupOverlay"
+                    app:layout_collapseMode="pin" />
+
+            </android.support.design.widget.CollapsingToolbarLayout>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <!-- ScoreBox -->
+        <LinearLayout
+            android:id="@+id/scoreBox_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_huge_112"
+            android:background="@color/color_grey"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_behavior=".ui.view.behaviors.CustomLinearLayoutBehavior"
+            app:max_collapsed_height="@dimen/size_huge_112"
+            app:min_collapsed_height="@dimen/size_medium_56">
+
+            <include
+                android:id="@+id/score_box_layout"
+                layout="@layout/content_score_box_layout"
+                bind:profile="@{profile}" />
+
+        </LinearLayout>
+
+        <!-- NestedScrollView with User Info inside -->
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_anchor="@id/scoreBox_layout"
+            app:layout_behavior=".ui.view.behaviors.CustomNestedScrollViewBehavior">
+
+            <include
+                android:id="@+id/main_profile_layout"
+                layout="@layout/content_main_profile_layout"
+                bind:profile="@{profile}" />
+
+        </android.support.v4.widget.NestedScrollView>
+
+        <!-- FloatingActionButton -->
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floating_action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/fab_right_space"
+            android:layout_marginRight="@dimen/fab_right_space"
+            android:src="@{profile.editMode ? @drawable/ic_done_white : @drawable/ic_edit_white}"
+            android:visibility="@{profile.authorizedUser}"
+            app:layout_anchor="@id/appbar_layout"
+            app:layout_anchorGravity="bottom|right" />
+
+    </android.support.design.widget.CoordinatorLayout>
+
+</layout>

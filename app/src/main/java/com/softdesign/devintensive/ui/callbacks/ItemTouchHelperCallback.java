@@ -4,39 +4,36 @@ import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.softdesign.devintensive.ui.adapters.ItemTouchHelperAdapter;
-import com.softdesign.devintensive.ui.adapters.ItemTouchHelperViewHolder;
-
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    public static final float ALPHA_FULL = 1.0f;
+    private static final float ALPHA_FULL = 1.0f;
 
     private ItemTouchHelperAdapter mAdapter;
 
     public ItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
-        mAdapter = adapter;
-    }
-
-    public void swapAdapter(ItemTouchHelperAdapter adapter) {
-        mAdapter = adapter;
+        this.mAdapter = adapter;
     }
 
     @Override
     public boolean isLongPressDragEnabled() {
-        return true;
+        return mAdapter.isConfigure();
     }
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        return true;
+        return mAdapter.isConfigure();
     }
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         // Set movement flags based on the layout manager
-        final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-        final int swipeFlags = ItemTouchHelper.END;
-        return makeMovementFlags(dragFlags, swipeFlags);
+        if (mAdapter.isConfigure()) {
+            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+            int swipeFlags = ItemTouchHelper.END;
+            return makeMovementFlags(dragFlags, swipeFlags);
+        }
+
+        return makeMovementFlags(0, 0);
     }
 
     @Override

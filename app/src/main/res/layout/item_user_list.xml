@@ -1,195 +1,178 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/spacing_small_8"
-    app:cardBackgroundColor="@color/color_white"
-    app:cardCornerRadius="@dimen/corner_radius_2">
+    tools:ignore="contentDescription">
 
-    <LinearLayout
+    <data>
+
+        <variable
+            name="profile"
+            type="com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel" />
+    </data>
+
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginTop="@dimen/spacing_small_8"
+        app:cardBackgroundColor="@color/color_white"
+        app:cardCornerRadius="@dimen/corner_radius_4">
 
-        <!-- PhotoHolder -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <!--Photo-->
-            <com.softdesign.devintensive.ui.view.elements.AspectRatioImageView
-                android:id="@+id/list_userPhoto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scaleType="centerCrop"
-                android:src="@drawable/user_bg"
-                app:aspect_ratio="1.78" />
-
-            <!--FullName-->
-            <com.devspark.robototextview.widget.RobotoTextView
-                android:id="@+id/list_user_full_name_text"
-                style="@style/Shadowed_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:paddingBottom="@dimen/spacing_medial_24"
-                android:paddingLeft="@dimen/spacing_normal_16"
-                android:paddingRight="@dimen/spacing_normal_16"
-                android:text="@string/dummy.fullName_text"
-                android:textColor="@color/color_white"
-                android:textSize="@dimen/font_medium_24"
-                app:typeface="roboto_medium" />
-
-            <ImageView
-                android:id="@+id/handle"
-                android:layout_width="?listPreferredItemHeight"
-                android:layout_height="match_parent"
-                android:layout_gravity="top|right"
-                android:scaleType="center"
-                android:src="@drawable/ic_menu_black_24dp"
-                tools:ignore="ContentDescription,RtlHardcoded" />
-
-        </FrameLayout>
-
-        <!--ScoreBox-->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/size_large_72"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <!--Rating-->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.25"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/list_rating_count"
-                    style="@style/scoreBox_text.count.black" />
-
-                <TextView
-                    style="@style/scoreBox_text.black"
-                    android:text="@string/header.scoreBox_ratingText" />
-
-            </LinearLayout>
-
-            <!--CodeLines-->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/list_codeLines_count"
-                    style="@style/scoreBox_text.count.black" />
-
-                <TextView
-                    style="@style/scoreBox_text.black"
-                    android:text="@string/header.scoreBox_codeText" />
-
-            </LinearLayout>
-
-            <!--Projects-->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.25"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/list_projects_count"
-                    style="@style/scoreBox_text.count.black" />
-
-                <TextView
-                    style="@style/scoreBox_text.black"
-                    android:text="@string/header.scoreBox_projectsText" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!--Bio-->
-        <TextView
-            android:id="@+id/list_bio_txt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
-            android:maxLines="3"
-            android:paddingBottom="@dimen/spacing_normal_16"
-            android:paddingLeft="@dimen/spacing_normal_16"
-            android:paddingRight="@dimen/spacing_normal_16"
-            android:paddingTop="@dimen/spacing_small_8"
-            android:text="@string/dummy.profile_about"
-            android:textColor="@color/color_grey_light"
-            android:textSize="@dimen/font_normal_14" />
-
-        <!-- LineSeparator -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="@dimen/spacing_small_8"
-            android:background="@color/color_grey_light" />
-
-        <!--Button View & HomeTask-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/spacing_small_8"
-            android:layout_marginRight="@dimen/spacing_small_8"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <!--Button view-->
-            <Button
-                android:id="@+id/list_more_info_btn"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/spacing_normal_16"
-                android:paddingRight="@dimen/spacing_normal_16"
-                android:text="@string/header.view"
-                android:textColor="@color/color_accent" />
-
-            <!--HomeTask-->
-            <LinearLayout
+            <!-- PhotoHolder -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/spacing_normal_16"
-                android:layout_marginRight="@dimen/spacing_normal_16"
-                android:gravity="right"
-                android:orientation="horizontal"
-                tools:ignore="RtlHardcoded">
+                android:layout_height="wrap_content">
 
-                <TextView
-                    style="@style/scoreBox_text"
+                <!--Photo-->
+                <com.softdesign.devintensive.ui.view.elements.AspectRatioImageView
+                    android:id="@+id/user_photo_img"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerCrop"
+                    app:aspect_ratio="1.78"
+                    app:imageUrl="@{profile.userPhotoUri}"
+                    app:placeholder="@{@drawable/user_bg}" />
+
+                <!--FullName-->
+                <com.devspark.robototextview.widget.RobotoTextView
+                    style="@style/Shadowed_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:paddingBottom="@dimen/spacing_medial_24"
+                    android:paddingLeft="@dimen/spacing_normal_16"
+                    android:paddingRight="@dimen/spacing_normal_16"
+                    android:text="@{profile.fullName}"
+                    android:textColor="@color/color_white"
+                    android:textSize="@dimen/font_medium_24"
+                    app:typeface="roboto_medium" />
+
+                <!-- Hometask -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|right"
+                    android:layout_marginBottom="@dimen/spacing_tiny_4"
                     android:layout_marginEnd="@dimen/spacing_tiny_4"
                     android:layout_marginRight="@dimen/spacing_tiny_4"
-                    android:text="@string/header.current_homeTask"
-                    android:textColor="@color/color_grey_light" />
+                    android:orientation="horizontal"
+                    tools:ignore="RtlHardcoded">
 
-                <TextView
-                    android:id="@+id/cur_homeTask_txt"
-                    style="@style/scoreBox_text.count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/color_grey_light"
-                    android:textSize="@dimen/font_normal_14" />
+                    <TextView
+                        style="@style/Shadowed_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_tiny_4"
+                        android:layout_marginRight="@dimen/spacing_tiny_4"
+                        android:text="@string/header.homeTask"
+                        android:textColor="@color/color_grey_lightest"
+                        android:textColorHighlight="@color/color_accent" />
+
+                    <TextView
+                        style="@style/Shadowed_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{profile.hometask}"
+                        android:textColor="@color/color_grey_lightest"
+                        android:textSize="@dimen/font_normal_14" />
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <!-- ScoreBox -->
+            <LinearLayout
+                android:id="@+id/scoreBox_layout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/size_large_68"
+                android:layout_gravity="bottom"
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/score_box_list_layout"
+                    layout="@layout/content_score_box_layout"
+                    bind:profile="@{profile}" />
 
             </LinearLayout>
 
+            <!--Bio-->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:maxLines="3"
+                android:paddingBottom="@dimen/spacing_normal_16"
+                android:paddingLeft="@dimen/spacing_normal_16"
+                android:paddingRight="@dimen/spacing_normal_16"
+                android:paddingTop="@dimen/spacing_small_8"
+                android:text="@{profile.bio}"
+                android:textColor="@color/color_grey_light"
+                android:textSize="@dimen/font_normal_14"
+                android:visibility="@{!profile.bio.isEmpty()}" />
+
+            <!-- LineSeparator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/line_size_1"
+                android:layout_marginBottom="@dimen/spacing_small_8"
+                android:background="@color/color_grey_light" />
+
+            <!--Button View & Likes-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <!--Button View-->
+                <Button
+                    android:id="@+id/btn_view_profile"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginRight="@dimen/spacing_large_64"
+                    android:paddingLeft="@dimen/spacing_normal_16"
+                    android:paddingRight="@dimen/spacing_normal_16"
+                    android:text="@string/header.view"
+                    android:textColor="@color/color_accent"
+                    bind:ignore="RelativeOverlap" />
+
+                <!--likersList-->
+                <ImageButton
+                    android:id="@+id/btn_more_info"
+                    android:layout_width="@dimen/size_medium_48"
+                    android:layout_height="@dimen/size_medium_48"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/dw_button_feed_action"
+                    android:src="@drawable/ic_more_vert" />
+
+                <!--Button Likes-->
+                <RelativeLayout
+                    android:id="@+id/btn_like"
+                    android:layout_width="80dp"
+                    android:layout_height="@dimen/size_medium_48"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="@dimen/size_medium_48">
+
+                    <include
+                        android:id="@+id/button_likes_layout"
+                        layout="@layout/content_button_likes"
+                        bind:profile="@{profile}" />
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
         </LinearLayout>
 
-    </LinearLayout>
+    </android.support.v7.widget.CardView>
 
-</android.support.v7.widget.CardView>
+</layout>

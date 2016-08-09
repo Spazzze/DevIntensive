@@ -1,33 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/size_large_72"
     tools:ignore="contentDescription">
 
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/gitHub_TextInputLayout"
+    <data>
+
+        <variable
+            name="repoItem"
+            type="com.softdesign.devintensive.data.storage.viewmodels.RepoViewModel" />
+    </data>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="@dimen/spacing_larger_72"
-        android:layout_marginRight="@dimen/spacing_larger_72">
+        android:minHeight="@dimen/size_large_72">
 
-        <EditText
-            android:id="@+id/gitHub_EditText"
-            style="@style/profileItem_editText"
-            android:hint="@string/hint.profile_gitHubRepo"
-            android:inputType="textUri" />
-    </android.support.design.widget.TextInputLayout>
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/gitHub_TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:paddingRight="@{repoItem.enabled ? @dimen/spacing_medium_32 :@dimen/spacing_larger_72}">
 
-    <ImageView
-        android:id="@+id/openGitHub_img"
-        style="@style/profileItem_icon"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/spacing_medium_32"
-        android:layout_marginRight="@dimen/spacing_medium_32"
-        android:src="@drawable/ic_remove_red_eye_black_24dp" />
+            <EditText
+                android:id="@+id/gitHub_EditText"
+                style="@style/profileItem_editText"
+                android:enabled="@{repoItem.enabled}"
+                android:focusable="@{repoItem.enabled}"
+                android:focusableInTouchMode="@{repoItem.enabled}"
+                android:hint="@string/hint.profile_gitHubRepo"
+                android:inputType="textUri"
+                android:text="@={repoItem.repoUri}"
+                app:userInfoTextWatcher="@{repoItem.canBeEdit}" />
+        </android.support.design.widget.TextInputLayout>
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/openGitHub_img"
+            style="@style/profileItem_icon"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/spacing_medium_32"
+            android:layout_marginRight="@dimen/spacing_medium_32"
+            android:src="@drawable/ic_eye_grey"
+            android:visibility="@{!repoItem.enabled}" />
+
+    </RelativeLayout>
+</layout>

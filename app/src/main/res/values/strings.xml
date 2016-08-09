@@ -1,7 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <integer name="com_vk_sdk_AppId" tools:ignore="UnusedResources">5535661</integer>
-    <string name="facebook_app_id" tools:ignore="UnusedResources">1741889442760936</string>
-
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
     <string-array name="profile_placeHolder_loadPhotoDialog">
         <item>Сделать снимок</item>
         <item>Выбрать из галереи</item>
@@ -16,36 +13,44 @@
     <string name="hint.profile_about">О себе</string>
     <string name="hint.authorization_password">Пароль</string>
     <string name="hint.search">Поиск</string>
-    <string name="hint.loading" tools:ignore="UnusedResources">Загрузка…</string>
+    <string name="hint.loading">Загрузка…</string>
 
     <!--Headers-->
-    <string name="header.scoreBox_ratingText">Рейтинг</string>
-    <string name="header.scoreBox_codeText">Написано строк кода</string>
-    <string name="header.scoreBox_projectsText">Проектов</string>
-    <string name="header.menu_myProfile">Мой профиль</string>
-    <string name="header.menu_myContacts">Контакты</string>
-    <string name="header.menu_myTeam">Команда</string>
-    <string name="header.menu_myTasks">Задачи</string>
-    <string name="header.menu_myNotifications">Уведомления</string>
-    <string name="header.menu_myBookmarks">Закладки</string>
-    <string name="header.profile_placeHolder">Изменить фотографию профиля</string>
-    <string name="header.profile_placeHolder_loadPhotoDialog_title">Изменить фотографию профиля</string>
-    <string name="header.choosePhotoFromGallery">Выберите фотографию</string>
+    <string name="header.rating">Рейтинг</string>
+    <string name="header.codeLines">строк кода написано</string>
+    <string name="header.projects">Проектов</string>
+    <string name="header.my_profile">Мой профиль</string>
+    <string name="header.contacts">Контакты</string>
+    <string name="header.team">Команда</string>
+    <string name="header.liked">Оценили</string>
+    <string name="header.tasks">Задачи</string>
+    <string name="header.notifications">Уведомления</string>
+    <string name="header.bookmarks">Закладки</string>
+    <string name="header.change_profile_photo">Изменить фотографию профиля</string>
+    <string name="header.change_avatar">Изменить аватар</string>
+    <string name="header.choose_photo">Выберите фотографию</string>
     <string name="header.allow">Разрешить</string>
     <string name="header.login">Войти</string>
+    <string name="header.send">Отправить</string>
     <string name="header.logout">Выйти</string>
-    <string name="header.refresh">Обновить с сервера</string>
+    <string name="header.refresh">Обновить</string>
+    <string name="header.menu">Меню</string>
     <string name="header.sortByRating">Сортировка по рейтингу</string>
     <string name="header.sortByCode">Сортировка по строкам кода</string>
     <string name="header.sortByCustom">Своя сортировка</string>
-    <string name="header.auth_forgot_password">Забыли пароль?</string>
+    <string name="header.forgot_pass">Забыли пароль?</string>
     <string name="header.options">Настройки</string>
-    <string name="header.auth_save_email">Сохранять e-mail</string>
+    <string name="header.remember_email">Запомнить e-mail</string>
     <string name="header.view">Просмотр</string>
-    <string name="header.current_homeTask">Hometask</string>
+    <string name="header.homeTask">Hometask</string>
+    <string name="header.like">Любо \u0020</string>
+    <string name="header.resetCustomSort">Сбросить свою сортировку</string>
+    <string name="header.favourites">Закладки</string>
 
     <!--Errors-->
     <string name="error">Ошибка</string>
+    <string name="error.ui">Произошла ошибка интерфейса</string>
+    <string name="error.user_not_authenticated">Ошибка доступа. Необходима повторная авторизация.</string>
     <string name="error.access_permissions_needed">Для корректной работы приложения необходимо дать требуемые разрешения</string>
     <string name="error.cannot_save_file">"Проблема при сохранении файла: "</string>
     <string name="error.editText_email">Введите существующий e-mail</string>
@@ -62,21 +67,28 @@
     <string name="error.unknown_response">Возникла ошибка при обращении к серверу</string>
     <string name="error.current_user_data_erased">Данные текущего пользователя удалены.</string>
     <string name="error.cannot_load_user_list">Список пользователей не может быть загружен</string>
+    <string name="error.cannot_load_user_profile">Профиль пользователя не может быть загружен</string>
+    <string name="error.cannot_load_likes_list">Список не может быть загружен</string>
     <string name="error.response_is_empty">Получен пустой ответ от сервера</string>
+    <string name="error.permission_denied_camera">Приложению необходимо разрешение на пользование камерой, чтобы делать снимки.</string>
+    <string name="error.permission_denied_write_storage">Приложению необходимо разрешение на возможность записи на SDCARD, чтобы сохранять снимки.</string>
+    <string name="error.permission_denied_read_storage">Приложению необходимо разрешение на возможность чтения с SDCARD, чтобы загружать снимки.</string>
 
     <!--Notify-->
     <string name="notify.auth_successful">Авторизация прошла успешно</string>
-    <string name="notify.google_silent_auth_request_permission" tools:ignore="UnusedResources">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
-    <string name="notify.auth_by_Facebook" tools:ignore="UnusedResources">Теперь приложение авторизовано для доступа к данным Facebook</string>
-    <string name="notify.auth_by_Google" tools:ignore="UnusedResources">Теперь приложение авторизовано для доступа к данным Google</string>
+    <string name="notify.google_silent_auth_request_permission">Для быстрой авторизации через Google необходимо дать приложению доступ к контактам</string>
+    <string name="notify.auth_by_Facebook">Теперь приложение авторизовано для доступа к данным Facebook</string>
+    <string name="notify.auth_by_Google">Теперь приложение авторизовано для доступа к данным Google</string>
     <string name="notify.auth_by_VK">Теперь приложение авторизовано для доступа к данным VK</string>
+    <string name="notify.not_implemented">Not implemented yet</string>
+    <string name="notify.pass_send_to_mail">Инструкции по восстановлению пароля отправлены вам на почту</string>
 
     <!--Dummies-->
     <string name="app_name">Elena Space DevIntensive</string>
-    <string name="dummy.profile_phone" tools:ignore="UnusedResources">71234567890</string>
-    <string name="dummy.profile_email" tools:ignore="UnusedResources">example@mail.com</string>
-    <string name="dummy.profile_vk" tools:ignore="UnusedResources">vk.com/id00000000</string>
-    <string name="dummy.profile_gitHubRepo" tools:ignore="UnusedResources">github.com/Example/ExampleRepo</string>
+    <string name="dummy.profile_phone">71234567890</string>
+    <string name="dummy.profile_email">example@mail.com</string>
+    <string name="dummy.profile_vk">vk.com/id00000000</string>
+    <string name="dummy.profile_gitHubRepo">github.com/Example/ExampleRepo</string>
     <string name="dummy.profile_about">Lorem ipsum dolor sit amet, ius libris definiebas no, cum
         natum denique philosophia ut, corpora adipisci qui id. Ad vix suas enim sententiae, cu eos
         nusquam commune, an autem reprimique deterruisset nec. Purto aliquip in vim, te usu sale
@@ -98,4 +110,31 @@
     <string name="dummy.scoreBox_zero_text">0</string>
     <string name="dummy.fullName_text">Фамилия Имя</string>
 
+
+    <plurals name="projects">
+        <item quantity="zero">проектов</item>
+        <item quantity="one">проект</item>
+        <item quantity="two">проекта</item>
+        <item quantity="few">проекта</item>
+        <item quantity="many">проектов</item>
+        <item quantity="other">проектов</item>
+    </plurals>
+
+    <plurals name="codeLines">
+        <item quantity="zero">строк кода написано</item>
+        <item quantity="one">строка кода написана</item>
+        <item quantity="two">строки кода написаны</item>
+        <item quantity="few">строки кода написаны</item>
+        <item quantity="many">строк кода написано</item>
+        <item quantity="other">строк кода написано</item>
+    </plurals>
+
+    <plurals name="people">
+        <item quantity="zero">%d человек</item>
+        <item quantity="one">%d человек</item>
+        <item quantity="two">%d человека</item>
+        <item quantity="few">%d человека</item>
+        <item quantity="many">%d человек</item>
+        <item quantity="other">%d человек</item>
+    </plurals>
 </resources>

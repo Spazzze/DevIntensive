@@ -3,6 +3,7 @@
 
     <declare-styleable name="CustomLinearLayoutBehavior">
         <attr name="min_collapsed_height" format="dimension" />
+        <attr name="max_collapsed_height" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="AspectRatioImageView">

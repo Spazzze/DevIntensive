@@ -1,585 +1,308 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.app.FragmentManager;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.Settings;
+import android.support.annotation.MenuRes;
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.CustomGlideModule;
-import com.softdesign.devintensive.data.network.api.res.EditProfileRes;
-import com.softdesign.devintensive.data.network.api.res.UserPhotoRes;
-import com.softdesign.devintensive.data.network.restmodels.BaseModel;
+import com.softdesign.devintensive.data.network.NetworkRequest;
 import com.softdesign.devintensive.data.network.restmodels.User;
-import com.softdesign.devintensive.data.operations.BaseChronosOperation;
-import com.softdesign.devintensive.data.operations.DatabaseOperation;
-import com.softdesign.devintensive.data.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.models.UserEntity;
+import com.softdesign.devintensive.data.storage.operations.BaseChronosOperation;
+import com.softdesign.devintensive.data.storage.operations.DBUpdateProfileValuesOperation;
+import com.softdesign.devintensive.data.storage.operations.FullUserDataOperation;
+import com.softdesign.devintensive.data.storage.operations.UserLoginDataOperation;
+import com.softdesign.devintensive.data.storage.viewmodels.NavHeaderViewModel;
+import com.softdesign.devintensive.data.storage.viewmodels.ProfileViewModel;
+import com.softdesign.devintensive.databinding.ActivityMainBinding;
+import com.softdesign.devintensive.databinding.ItemNavHeaderMainBinding;
+import com.softdesign.devintensive.ui.callbacks.BaseNetworkTaskCallbacks;
 import com.softdesign.devintensive.ui.callbacks.MainActivityCallback;
-import com.softdesign.devintensive.ui.events.UpdateDBEvent;
-import com.softdesign.devintensive.ui.fragments.LoadUsersIntoDBFragment;
-import com.softdesign.devintensive.ui.fragments.UpdateServerDataFragment;
-import com.softdesign.devintensive.ui.view.elements.GlideTargetIntoBitmap;
+import com.softdesign.devintensive.ui.fragments.LikesListFragment;
+import com.softdesign.devintensive.ui.fragments.UserListFragment;
+import com.softdesign.devintensive.ui.fragments.UserProfileFragment;
+import com.softdesign.devintensive.ui.fragments.retain.BaseNetworkFragment;
+import com.softdesign.devintensive.ui.fragments.retain.LoadUsersInfoFragment;
+import com.softdesign.devintensive.ui.fragments.retain.UpdateServerDataFragment;
+import com.softdesign.devintensive.utils.AppUtils;
 import com.softdesign.devintensive.utils.Const;
-import com.softdesign.devintensive.utils.NetworkUtils;
-import com.softdesign.devintensive.utils.UiHelper;
-import com.softdesign.devintensive.utils.UserInfoTextWatcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import butterknife.BindView;
-import butterknife.BindViews;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+import static com.softdesign.devintensive.data.network.NetworkRequest.ID;
+import static com.softdesign.devintensive.data.network.NetworkRequest.Status;
 
-import static com.softdesign.devintensive.utils.UiHelper.createImageFile;
-import static com.softdesign.devintensive.utils.UiHelper.openApplicationSetting;
-import static com.softdesign.devintensive.utils.UiHelper.queryIntentActivities;
+@SuppressWarnings({"unused", "deprecation"})
+public class MainActivity extends BaseActivity implements MainActivityCallback, BaseNetworkTaskCallbacks,
+        NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-public class MainActivity extends BaseActivity implements MainActivityCallback, UpdateServerDataFragment.UploadToServerCallbacks {
+    private ActivityMainBinding mMainBinding;
+    private ItemNavHeaderMainBinding mNavHeaderBinding;
+    private NavHeaderViewModel mNavHeaderViewModel;
 
-    private static final String TAG = Const.TAG_PREFIX + "Main Activity";
-
-    @BindViews({R.id.scoreBox_rating, R.id.scoreBox_codeLines, R.id.scoreBox_projects}) List<TextView> mTextViews_userProfileValues;
-
-    @BindViews({R.id.phone_EditText, R.id.email_EditText, R.id.vk_EditText, R.id.gitHub_EditText, R.id.about_EditText})
-    List<EditText> mEditTexts_userInfoList;
-
-    @BindViews({R.id.phone_TextInputLayout, R.id.email_TextInputLayout, R.id.vk_TextInputLayout, R.id.gitHub_TextInputLayout})
-    List<TextInputLayout> mTextInputLayouts_userInfoList;
-
-    @BindView(R.id.navigation_drawerLayout) DrawerLayout mDrawerLayout;
-    @BindView(R.id.main_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.floating_action_button) FloatingActionButton mFloatingActionButton;
-    @BindView(R.id.placeholder_profilePhoto) RelativeLayout mPlaceholder_profilePhoto;
-    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarLayout;
-    @BindView(R.id.appbar_layout) AppBarLayout mAppBarLayout;
-    @BindView(R.id.user_photo_img) ImageView mImageView_profilePhoto;
-
-    private Boolean mCurrentEditMode = false;
-    private Boolean mNotSavingUserValues = false;
-    private DataManager mDataManager;
-    private File mPhotoFile = null;
-    private Uri mUri_SelectedProfileImage = null;
-    private String mUri_SelectedAvatarImage = null;
-    private User mUserData = null;
-    private FragmentManager mFragmentManager = getFragmentManager();
-    private LoadUsersIntoDBFragment mDbNetworkFragment;
+    private LoadUsersInfoFragment mLoadUsersInfoFragment;
     private UpdateServerDataFragment mDataFragment;
+    private UserProfileFragment mMainProfileFragment;
+    private UserListFragment mUserListFragment;
 
-    //region OnCreate
+    private File mPhotoFile = null;
+    private int mIntentId;
+
+    //region :::::::::::::::::::::::::::::::::: OnCreate 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d(TAG, "onCreate");
+
+        mMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mNavHeaderBinding = DataBindingUtil.bind(mMainBinding.navView.getHeaderView(0));
+
+        init(savedInstanceState);
 
         attachDataFragment();
         attachLoadIntoDBFragment();
-
-        ButterKnife.bind(this);
-
-        mDataManager = DataManager.getInstance();
-
-        if (savedInstanceState != null && mUserData != null) {
-            mCurrentEditMode = savedInstanceState.getBoolean(Const.EDIT_MODE_KEY);
-            changeEditMode(mCurrentEditMode);
-        }
+        attachMainProfileFragment();
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::: Life Cycle 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (outState == null) outState = new Bundle();
+        outState.putParcelable(Const.PARCELABLE_KEY_NAV_VIEW, mNavHeaderViewModel);
+        super.onSaveInstanceState(outState);
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::: OnClick
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu_main, menu);
-        return true;
-    }
-
-    //endregion
-
-    //region Fragments
-    private void attachDataFragment() {
-        mDataFragment = (UpdateServerDataFragment) mFragmentManager.findFragmentByTag(UpdateServerDataFragment.class.getName());
-        if (mDataFragment == null) {
-            mDataFragment = new UpdateServerDataFragment();
-            mFragmentManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
-        }
-    }
-
-    private void attachLoadIntoDBFragment() {
-        mDbNetworkFragment = (LoadUsersIntoDBFragment) mFragmentManager.findFragmentByTag(LoadUsersIntoDBFragment.class.getName());
-        if (mDbNetworkFragment == null) {
-            mDbNetworkFragment = new LoadUsersIntoDBFragment();
-            mFragmentManager.beginTransaction().add(mDbNetworkFragment, LoadUsersIntoDBFragment.class.getName()).commit();
-        }
-    }
-    //endregion
-
-    //region TaskCallbacks
-    @Override
-    public void onRequestStarted() {
-
-    }
-
-    @Override
-    public void onRequestFinished() {
-
-    }
-
-    @Override
-    public void onRequestFailed(String error) {
-
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onRequestFinished(BaseModel<?> result) {
-        if (result.getData().getClass().isAssignableFrom(UserPhotoRes.class)) {
-            BaseModel<UserPhotoRes> res = (BaseModel<UserPhotoRes>) result;
-            mUserData.getPublicInfo().setUpdated(res.getData().getUpdated());
-            saveFullUserData();
-        }
-        if (result.getData().getClass().isAssignableFrom(EditProfileRes.class)) {
-            BaseModel<EditProfileRes> res = (BaseModel<EditProfileRes>) result;
-            mUserData = res.getData().getUser();
-            saveFullUserData();
-        }
-    }
-    //endregion
-
-    //region Events
-    @SuppressWarnings("unused")
-    public void onEvent(User event) {
-        if (event != null) {
-            if (mUserData == null) {
-                mUserData = event;
-                initUI();
-            } else mUserData = event;
-        } else {
-            loadFullUserData();
-        }
-    }
-
-    @SuppressWarnings("unused")
-    public void onEvent(UpdateDBEvent event) {
-        if (mDbNetworkFragment != null) mDbNetworkFragment.downloadUserListIntoDB();
-    }
-    //endregion
-
-    //region OnClick
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-            case R.id.toolbar_logout:
-                logout(1);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    @OnClick({R.id.floating_action_button, R.id.placeholder_profilePhoto, R.id.makeCall_img,
-                     R.id.sendEmail_img, R.id.openVK_img, R.id.openGitHub_img})
-    void submitButton(View view) {
-        switch (view.getId()) {
-            case R.id.floating_action_button:
-                changeEditMode(!mCurrentEditMode);
-                break;
-            case R.id.placeholder_profilePhoto:
-                showDialogFragment(Const.DIALOG_LOAD_PROFILE_PHOTO);
-                break;
-            case R.id.makeCall_img:
-                startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mEditTexts_userInfoList.get(0).getText().toString(), null)));
-                break;
-            case R.id.sendEmail_img:
-                Intent sendEmail = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", mEditTexts_userInfoList.get(1).getText().toString(), null));
-                if (queryIntentActivities(this, sendEmail)) {
-                    startActivity(sendEmail);
-                } else {
-                    showError(getString(R.string.error_email_client_not_configured));
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.avatar_edit:
+                if (mNavHeaderViewModel.isEditing()) {
+                    showDialogFragment(Const.DIALOG_LOAD_PROFILE_AVATAR);
                 }
                 break;
-            case R.id.openVK_img:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(2).getText().toString())));
-                break;
-            case R.id.openGitHub_img:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + mEditTexts_userInfoList.get(3).getText().toString())));
-                break;
         }
     }
 
+    //Back button
     @Override
     public void onBackPressed() {
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else if (mCurrentEditMode) {
-            changeEditMode(false);
+        if (mMainBinding.navView != null && mMainBinding.drawer.isDrawerOpen(GravityCompat.START)) {
+            mMainBinding.drawer.closeDrawer(GravityCompat.START);
+        } else if (findMainProfileFragment() != null && mMainProfileFragment.isVisible() && mMainProfileFragment.isEditing()) {
+            mMainProfileFragment.changeEditMode(false);
+        } else if (findUserListFragment() != null && mUserListFragment.isVisible() && mUserListFragment.isConfiguring()) {
+            mUserListFragment.configureMode(false);
         } else {
             super.onBackPressed();
         }
     }
-    //endregion
 
-    //region Activity's LifeCycle
-
+    //Nav menu
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d(TAG, "onSaveInstanceState " + mCurrentEditMode);
-
-        outState.putBoolean(Const.EDIT_MODE_KEY, mCurrentEditMode);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d(TAG, "onRestart");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume");
-        BUS.registerSticky(this);
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause");
-        BUS.unregister(this);
-        saveUserInfoData();
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy");
-    }
-    //endregion
-
-    //region Setup Ui Items
-
-    private void initUI() {
-        Log.d(TAG, "initUI");
-        setupTitle();
-        setupEditTexts();
-        setupPhoto();
-        setupProfileValues();
-        setupToolbar();
-        setupUserInfoLayout();
-        setupDrawer();
-    }
-
-    private void setupTitle() {
-        String userFullName = String.format("%s %s", mUserData.getSecondName(), mUserData.getFirstName());
-        MainActivity.this.setTitle(userFullName);
-    }
-
-    private void setupProfileValues() {
-        String[] userProfileValuesList = {
-                mUserData.getProfileValues().getRating(),
-                mUserData.getProfileValues().getCodeLines(),
-                mUserData.getProfileValues().getProjects()};
-
-        ButterKnife.apply(mTextViews_userProfileValues, setTextViews, userProfileValuesList);
-    }
-
-    private void setupEditTexts() {
-        List<String> userProfileDataList = new ArrayList<>();
-
-        userProfileDataList.add(mUserData.getContacts().getPhone());
-        userProfileDataList.add(mUserData.getContacts().getEmail());
-        userProfileDataList.add(mUserData.getContacts().getVk());
-        userProfileDataList.add(mUserData.getRepositories().getRepo().get(0).getGit());
-        userProfileDataList.add(mUserData.getPublicInfo().getBio());
-
-        ButterKnife.apply(mEditTexts_userInfoList, setTextViews, userProfileDataList.toArray(new String[userProfileDataList.size()]));
-    }
-
-    private void setupPhoto() {
-        mUri_SelectedAvatarImage = mDataManager.getPreferencesManager().loadUserAvatar();
-        mUri_SelectedProfileImage = mDataManager.getPreferencesManager().loadUserPhoto();
-        placeProfilePicture(mUri_SelectedProfileImage);
-    }
-
-    private void setupToolbar() {
-        setSupportActionBar(mToolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            mToolbar.inflateMenu(R.menu.toolbar_menu_main);
+    public boolean onNavigationItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.navMenu_userProfile:
+                startMainActivity();
+                break;
+            case R.id.navMenu_team:
+                attachUserListFragment();
+                break;
+            case R.id.navMenu_options:
+                openAppSettings();
+                break;
+            case R.id.navMenu_logout:
+                logout(1);
+                break;
+            default:
+                showToast(R.string.notify_not_implemented);
+                break;
         }
+        item.setChecked(true);
+        mMainBinding.drawer.closeDrawer(GravityCompat.START);
+        return false;
     }
 
-    private void setupDrawer() {
-        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-            }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                updateDrawerItems();
-            }
+    //region :::::::::::::::::::::::::::::::::: UI
 
-            @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-            }
-        });
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
-            setupDrawerItems(navigationView);
-            navigationView.setNavigationItemSelectedListener(item -> {
-                switch (item.getItemId()) {
-                    case R.id.navMenu_team:
-                        startActivity(new Intent(MainActivity.this, UserListActivity.class));
-                        break;
-                    case R.id.navMenu_options:
-                        startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
-                        break;
-                    case R.id.navMenu_logout:
-                        logout(1);
-                        break;
-                    default:
-                        showToast(item.getTitle().toString());
-                        item.setChecked(true);
-                        break;
-                }
-                mDrawerLayout.closeDrawer(GravityCompat.START);
-                return false;
-            });
+    private void init(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mNavHeaderViewModel = savedInstanceState.getParcelable(Const.PARCELABLE_KEY_NAV_VIEW);
         }
-    }
-
-    private void updateDrawerItems() {  //redraw navigation view items
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        if (navigationView != null) {
-            TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-            TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-            ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-            mTextView_menuUserName.setText(this.getTitle());
-
-            mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-            Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-            if (src == null) {
-                loadUserAvatarFromServer();
-            } else {
-                RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-                dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-                mRoundedAvatar_img.setImageDrawable(dr);
-            }
-        }
-    }
-
-    private void setupDrawerItems(@NonNull NavigationView navigationView) {  //draw navigation view items
-
-        TextView mTextView_menuUserName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userName_txt);
-        TextView mTextView_menuUserEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.menu_userEmail_txt);
-        ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-
-        mTextView_menuUserName.setText(this.getTitle());
-
-        mTextView_menuUserEmail.setText(mUserData.getContacts().getEmail());
-
-        Bitmap src = BitmapFactory.decodeFile(mDataManager.getPreferencesManager().loadUserAvatar());
-        if (src == null) {
-            loadUserAvatarFromServer();
+        if (mNavHeaderViewModel == null) {
+            loadFullUserData();
         } else {
-            RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), src);
-            dr.setCornerRadius(Math.max(src.getWidth(), src.getHeight()) / 2.0f);
-            mRoundedAvatar_img.setImageDrawable(dr);
+            mNavHeaderBinding.setNavProfile(mNavHeaderViewModel);
+        }
+        mMainBinding.navView.setNavigationItemSelectedListener(this);
+        mNavHeaderBinding.avatarEdit.setOnClickListener(this);
+    }
+
+    public void setNavView(@NonNull ProfileViewModel model) {
+        if (mNavHeaderViewModel == null) {
+            mNavHeaderViewModel = new NavHeaderViewModel(model);
+            mNavHeaderBinding.setNavProfile(mNavHeaderViewModel);
+        } else mNavHeaderViewModel.updateValues(model);
+    }
+
+    @Override
+    public void showProgressDialog() {
+        Fragment fragment = getCurrentFragment();
+        if (findUserListFragment() == fragment) {
+            mUserListFragment.showProgressDialog();
+        } else if (fragment instanceof LikesListFragment) {
+            ((LikesListFragment) fragment).showProgressDialog();
+        } else {
+            super.showProgressDialog();
         }
     }
 
-    private void setupUserInfoLayout() {
+    @Override
+    public void hideProgressDialog() {
+        if (findUserListFragment() != null) mUserListFragment.hideProgressDialog();
+        super.hideProgressDialog();
+    }
 
-        final View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
-            if (hasFocus) {
-                if (v instanceof EditText) {
-                    EditText et = (EditText) v;
-                    if (!et.isEnabled() && !et.isFocusable()) return;
-                    et.setSelection(et.getText().length());
-                }
-            } else {
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)) //this is needed to fix bug with sometimes appearing soft keyboard after onStop() is called
-                        .hideSoftInputFromWindow(v.getWindowToken(), 0);
+    private void lockDrawer(boolean b) {
+        if (b) mMainBinding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        else mMainBinding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+    }
+
+    public void loadImageFromGallery(int intentId) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            takeFromGalleryIntent.setType("image/*");
+            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choose_photo)), intentId);
+        } else {
+            mIntentId = intentId;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    Const.REQUEST_PERMISSIONS_READ_SDCARD);
+        }
+    }
+
+    public void takeSnapshotFromCamera(int intentId) {
+        Log.d(TAG, "takeSnapshotFromCamera: " + intentId);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            try {
+                mPhotoFile = AppUtils.createImageFile();
+            } catch (IOException e) {
+                showError(getString(R.string.error_cannot_save_file) + e.getMessage());
             }
-        };
+            if (mPhotoFile != null) {
+                takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
+                startActivityForResult(takeCaptureIntent, intentId);
+            }
+        } else {
+            mIntentId = intentId;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Const.REQUEST_PERMISSIONS_CAMERA);
+        }
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-        for (int i = 0; i < mEditTexts_userInfoList.size() - 1; i++) {
-            mEditTexts_userInfoList.get(i).addTextChangedListener(
-                    new UserInfoTextWatcher(mEditTexts_userInfoList.get(i), mTextInputLayouts_userInfoList.get(i)));
-            mEditTexts_userInfoList.get(i).setOnFocusChangeListener(focusListener);
+    //region :::::::::::::::::::::::::::::::::: Events
+
+    @SuppressWarnings("unused")
+    public void onOperationFinished(final FullUserDataOperation.Result result) {
+        if (result.isSuccessful()) {
+            if (result.getOutput() != null) { //only Loading
+                setNavView(result.getOutput());
+            } else {
+                if (mNavHeaderViewModel == null) logout(0);
+            }
+        } else {
+            Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
+            if (mNavHeaderViewModel == null) logout(0);
         }
     }
 
-    private void placeProfilePicture(Uri selectedImage) {
-        Log.d(TAG, "placeProfilePicture: " + selectedImage);
-        CustomGlideModule.loadImage(selectedImage.toString(), R.drawable.user_bg, R.drawable.user_bg, mImageView_profilePhoto);
+    @SuppressWarnings("unused")
+    public void onOperationFinished(final DBUpdateProfileValuesOperation.Result result) {  //like response
+        if (result.isSuccessful() && result.getOutput() != null) {
+            updateProfileValuesFromServer(result.getOutput());
+        } else {
+            Log.e(TAG, "onOperationFinished: DBUpdateProfileValuesOperation.Result Данные из памяти не были загружены");
+        }
     }
 
-    static final ButterKnife.Setter<TextView, String[]> setTextViews = (view, value, index) -> view.setText(value[index]);
+    //endregion ::::::::::::::::::::::::::::::::::::::::::  Events
 
-    static final ButterKnife.Setter<View, Boolean> setEnabledViews = (view, value, index) -> {
-        view.setEnabled(value);
-        view.setFocusable(value);
-        view.setFocusableInTouchMode(value);
-    };
-
-    //endregion
-
-    //region Save and Load preferences and current state
-
+    //region :::::::::::::::::::::::::::::::::: Data
     private void loadFullUserData() {
-        Log.d(TAG, "loadFullUserData: ");
         runOperation(new FullUserDataOperation());
     }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
 
-    private void saveFullUserData() {
-        Log.d(TAG, "saveFullUserData: ");
-        runOperation(new FullUserDataOperation(mUserData));
-    }
-
-    private void onUserDataChanged(User savedUser) {
-        Log.d(TAG, "onUserDataChanged: ");
-        String jsonSavedUser = UiHelper.getJsonFromObject(savedUser, User.class);
-        String currentData = UiHelper.getJsonFromObject(mUserData, User.class);
-        if (!jsonSavedUser.equals(currentData)) {
-            mDataFragment.uploadUserData(mUserData);
-        }
-    }
-
-    private void saveUserInfoData() {
-
-        if (mNotSavingUserValues) return;
-
-        Log.d(TAG, "saveUserInfoData");
-        saveAvatar();
-        savePhoto();
-        updateUserInfo();
-    }
-
-    private void updateUserInfo() {
-        readUserInfoFromViews();
-        loadFullUserData(); //compare data in SP with current, if data was changed, it will be initiated upload to server
-    }
-
-    private void readUserInfoFromViews() {
-        mUserData.getContacts().setPhone(mEditTexts_userInfoList.get(0).getText().toString());
-        mUserData.getContacts().setEmail(mEditTexts_userInfoList.get(1).getText().toString());
-        mUserData.getContacts().setVk(mEditTexts_userInfoList.get(2).getText().toString());
-        mUserData.getRepositories().getRepo().get(0).setGit(mEditTexts_userInfoList.get(3).getText().toString());
-        mUserData.getPublicInfo().setBio(mEditTexts_userInfoList.get(mEditTexts_userInfoList.size() - 1).getText().toString());
-    }
-
-    private void savePhoto() {
-        if (mUri_SelectedProfileImage != null &&
-                !mDataManager.getPreferencesManager().loadUserPhoto().equals(mUri_SelectedProfileImage)) {
-            mDataFragment.uploadUserPhoto(mUri_SelectedProfileImage);
-            mDataManager.getPreferencesManager().saveUserPhoto(mUri_SelectedProfileImage);
-        }
-    }
-
-    private void saveAvatar() {
-        if (mUri_SelectedAvatarImage != null &&
-                !mDataManager.getPreferencesManager().loadUserAvatar().equals(mUri_SelectedAvatarImage)) {
-            mDataFragment.uploadUserAvatar(mUri_SelectedAvatarImage);
-            mDataManager.getPreferencesManager().saveUserAvatar(mUri_SelectedAvatarImage);
-        }
-    }
-    //endregion
-
-    //region Activity Results
+    //region :::::::::::::::::::::::::::::::::: Activity Results
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case Const.REQUEST_GALLERY_PICTURE:
-                if (resultCode == RESULT_OK && data != null) {
-                    mUri_SelectedProfileImage = data.getData();
-                    placeProfilePicture(mUri_SelectedProfileImage);
-                }
-                break;
-            case Const.REQUEST_CAMERA_PICTURE:
-                if (resultCode == RESULT_OK && mPhotoFile != null) {
-                    mUri_SelectedProfileImage = Uri.fromFile(mPhotoFile);
-                    placeProfilePicture(mUri_SelectedProfileImage);
-                }
-                break;
             case Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
+                    if (mIntentId != 0) takeSnapshotFromCamera(mIntentId);
                 }
                 break;
             case Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
+                    if (mIntentId != 0) loadImageFromGallery(mIntentId);
+                }
+                break;
+            case Const.REQUEST_PHOTO_FROM_GALLERY:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    if (findMainProfileFragment() != null)
+                        mMainProfileFragment.getViewModel().setUserPhotoUri(data.getData().toString());
+                }
+                break;
+            case Const.REQUEST_PHOTO_FROM_CAMERA:
+                if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
+                    if (findMainProfileFragment() != null)
+                        mMainProfileFragment.getViewModel().setUserPhotoUri(Uri.fromFile(mPhotoFile).toString());
+                }
+                break;
+            case Const.REQUEST_AVATAR_FROM_GALLERY:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    if (findMainProfileFragment() != null)
+                        mMainProfileFragment.getViewModel().setUserAvatarUri(data.getData().toString());
+                    mNavHeaderViewModel.setUserAvatarUri(data.getData().toString());
+                }
+                break;
+            case Const.REQUEST_AVATAR_FROM_CAMERA:
+                if (resultCode == Activity.RESULT_OK && mPhotoFile != null) {
+                    if (findMainProfileFragment() != null)
+                        mMainProfileFragment.getViewModel().setUserAvatarUri(Uri.fromFile(mPhotoFile).toString());
+                    mNavHeaderViewModel.setUserAvatarUri(Uri.fromFile(mPhotoFile).toString());
                 }
                 break;
         }
@@ -587,185 +310,315 @@ public class MainActivity extends BaseActivity implements MainActivityCallback, 
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults.length == 0) return; //cancelled
         switch (requestCode) {
             case Const.REQUEST_PERMISSIONS_CAMERA:
                 if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromCamera();
-                }
+                    if (mIntentId != 0) takeSnapshotFromCamera(mIntentId);
+                } else
+                    onPermissionsDenied(permissions, grantResults, Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
                 break;
             case Const.REQUEST_PERMISSIONS_READ_SDCARD:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadPhotoFromGallery();
+                    if (mIntentId != 0) loadImageFromGallery(mIntentId);
+                } else
+                    onPermissionsDenied(permissions, grantResults, Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
+                break;
+        }
+    }
+
+    private void onPermissionsDenied(@NonNull String[] permissions, @NonNull int[] grantResults, int permissionFlag) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        for (int i = 0; i < permissions.length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_DENIED) continue;
+            if (!shouldShowRequestPermissionRationale(permissions[i])) {
+                AppUtils.showSnackbar(mMainBinding.container, R.string.error_access_permissions_needed,
+                        true, R.string.header_allow,
+                        (v) -> openAppSettingsForResult(permissionFlag));
+            } else {
+                switch (permissions[i]) {
+                    case Manifest.permission.CAMERA:
+                        showError(R.string.error_permission_denied_camera);
+                        break;
+                    case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+                        showError(R.string.error_permission_denied_write_storage);
+                        break;
+                    case Manifest.permission.READ_EXTERNAL_STORAGE:
+                        showError(R.string.error_permission_denied_read_storage);
+                        break;
+                }
+            }
+        }
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region  :::::::::::::::::::::::::::::::::: Fragments
+    public UserProfileFragment findMainProfileFragment() {
+        if (mMainProfileFragment == null)
+            mMainProfileFragment = findFragment(UserProfileFragment.class);
+        return mMainProfileFragment;
+    }
+
+    public UpdateServerDataFragment findDataFragment() {
+        if (mDataFragment == null) mDataFragment = findFragment(UpdateServerDataFragment.class);
+        return mDataFragment;
+    }
+
+    public LoadUsersInfoFragment findLoadUsersInfoFragment() {
+        if (mLoadUsersInfoFragment == null)
+            mLoadUsersInfoFragment = findFragment(LoadUsersInfoFragment.class);
+        return mLoadUsersInfoFragment;
+    }
+
+    public UserListFragment findUserListFragment() {
+        if (mUserListFragment == null) mUserListFragment = findFragment(UserListFragment.class);
+        return mUserListFragment;
+    }
+
+    public BaseNetworkFragment findNetworkFragment() {
+        for (Fragment f : mManager.getFragments()) {
+            if (f instanceof BaseNetworkFragment) return (BaseNetworkFragment) f;
+        }
+        return null;
+    }
+
+    public UserProfileFragment findOtherProfileFragment(String userId) {
+        return (UserProfileFragment) mManager.findFragmentByTag(UserProfileFragment.class.getSimpleName() + userId);
+    }
+
+    public LikesListFragment findLikesListFragment(String userId) {
+        return (LikesListFragment) mManager.findFragmentByTag(LikesListFragment.class.getName() + userId);
+    }
+
+    @Override
+    public void attachLikesListFragment(Bundle args) {
+        String userId;
+        if (args == null || (userId = args.getString(Const.PARCELABLE_KEY_USER_ID)) == null) return;
+
+        LikesListFragment likesListFragment = findLikesListFragment(userId);
+        if (likesListFragment == null) {
+            likesListFragment = new LikesListFragment();
+            likesListFragment.setArguments(args);
+            replaceFragment(likesListFragment, true, LikesListFragment.class.getName() + userId);
+        } else {
+            mManager.popBackStack(LikesListFragment.class.getName() + userId, 0);
+        }
+    }
+
+    @Override
+    public void attachOtherUserFragment(Bundle args) {
+        String userId;
+        if (args == null || (userId = args.getString(Const.PARCELABLE_KEY_USER_ID)) == null) return;
+
+        UserProfileFragment userProfileFragment = findOtherProfileFragment(userId);
+        if (userProfileFragment == null) {
+            userProfileFragment = new UserProfileFragment();
+            userProfileFragment.setArguments(args);
+            replaceFragment(userProfileFragment, true, UserProfileFragment.class.getSimpleName() + userId);
+        } else {
+            mManager.popBackStack(UserProfileFragment.class.getSimpleName() + userId, 0);
+        }
+    }
+
+    private void attachMainProfileFragment() {
+        String authId = DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId();
+        if (findMainProfileFragment() == null) {
+            mMainProfileFragment = new UserProfileFragment();
+            replaceFragment(mMainProfileFragment, false, UserProfileFragment.class.getName());
+        } else {
+            mManager.popBackStack(UserProfileFragment.class.getName(), 0);
+        }
+    }
+
+    private void attachUserListFragment() {
+        if (findUserListFragment() == null) {
+            mUserListFragment = new UserListFragment();
+            replaceFragment(mUserListFragment, true, UserListFragment.class.getName());
+        } else {
+            if (!mUserListFragment.isVisible()) {
+                mManager.popBackStackImmediate(UserListFragment.class.getName(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                replaceFragment(mUserListFragment, true, UserListFragment.class.getName());
+            }
+        }
+    }
+
+    private void attachDataFragment() {
+        if (findDataFragment() == null) {
+            mDataFragment = new UpdateServerDataFragment();
+            mManager.beginTransaction().add(mDataFragment, UpdateServerDataFragment.class.getName()).commit();
+        }
+    }
+
+    private void attachLoadIntoDBFragment() {
+        if (findLoadUsersInfoFragment() == null) {
+            mLoadUsersInfoFragment = new LoadUsersInfoFragment();
+            mManager.beginTransaction().add(mLoadUsersInfoFragment, LoadUsersInfoFragment.class.getName()).commit();
+        }
+    }
+
+    private void removeFragment(Fragment fragment) {
+        FragmentTransaction transaction = mManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.remove(fragment);
+        transaction.commit();
+    }
+
+    private void replaceFragment(Fragment fragment, boolean addToBackStack, String tag) {
+        FragmentTransaction transaction = mManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.replace(R.id.container, fragment, tag);
+        if (addToBackStack) {
+            transaction.addToBackStack(tag);
+        }
+        transaction.commit();
+    }
+
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::: Task Callbacks
+
+    @Override
+    public void onNetworkRequestFailed(@NonNull NetworkRequest request) {
+        Log.e(TAG, "onNetworkRequestFailed: " + request.getId() + " " + request.getError());
+        hideProgressDialog();
+        if (request.isErrorCritical()) {
+            runOperation(new UserLoginDataOperation(BaseChronosOperation.Action.CLEAR));
+            errorAlertExitToAuth(request.getError());
+            return;
+        }
+        switch (request.getId()) {
+            case LOAD_DB:
+                if (findUserListFragment() != null && request.isAnnounceError()) {
+                    mUserListFragment.listLoadingError();
+                }
+                break;
+            default:
+                if (request.isAnnounceError()) showError(request.getError());
+                break;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onNetworkRequestFinished(@NonNull NetworkRequest request) {
+        Log.d(TAG, "onNetworkRequestFinished: " + request.getId());
+        hideProgressDialog();
+        switch (request.getId()) {
+            case LOAD_DB:
+                if (findUserListFragment() != null) mUserListFragment.requestDataFromDB(null);
+                if (findMainProfileFragment() != null &&
+                        mMainProfileFragment.isVisible() &&
+                        mMainProfileFragment.isAdapterEmpty() &&
+                        mMainProfileFragment.getRequestDataFromDBStatus() == Status.FINISHED) {
+                    new Handler().postDelayed(() -> mMainProfileFragment.forceUpdateLikesList(), 1000);
+                }
+                break;
+            case UPLOAD_DATA:
+                User user = (User) request.getAdditionalInfo();
+                if (user != null && findMainProfileFragment() != null) {
+                    mMainProfileFragment.getViewModel().updateValues(new ProfileViewModel(user));
                 }
                 break;
         }
     }
-    //endregion
 
-    //region Background Operation Results
-    @SuppressWarnings("unused")
-    public void onOperationFinished(final FullUserDataOperation.Result result) {
-        if (result.isSuccessful()) {
-            if (result.getOutput() != null) {//only Loading
-                if (mUserData == null) { //init info onCreate
-                    mUserData = result.getOutput();
-                    initUI();
-                } else {
-                    onUserDataChanged(result.getOutput());
-                }
-            }
-        } else {
-            Log.e(TAG, "onOperationFinished: Данные из памяти не были загружены");
-            if (mUserData == null) logout(0);
+    @Override
+    public void onNetworkRequestStarted(@NonNull NetworkRequest request) {
+    }
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::: Fragments Callbacks
+
+    @Override
+    public void setItemMenuChecked(int itemNumber) {
+        mMainBinding.navView.getMenu().getItem(itemNumber).setChecked(true);
+    }
+
+    @Override
+    public void setupToolbar(Toolbar toolbar, @MenuRes int id, boolean drawerOpening) {
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            if (drawerOpening) actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            toolbar.inflateMenu(id);
+        }
+        lockDrawer(!drawerOpening);
+    }
+
+    @Override
+    public void openDrawer() {
+        mMainBinding.drawer.openDrawer(GravityCompat.START);
+    }
+
+    @Override
+    public void uploadUserData(ProfileViewModel model) {
+        if (model == null) return;
+        mNavHeaderViewModel.updateValues(model);
+        if (findDataFragment() != null) mDataFragment.uploadUserData(model);
+    }
+
+    @Override
+    public void uploadUserPhoto(String uri) {
+        if (findDataFragment() != null) mDataFragment.uploadUserPhoto(uri);
+    }
+
+    @Override
+    public void uploadUserAvatar(String uri) {
+        mNavHeaderViewModel.setUserAvatarUri(uri);
+        if (findDataFragment() != null) mDataFragment.uploadUserAvatar(uri);
+    }
+
+    @Override
+    public void updateNavViewModel(ProfileViewModel model) {
+        mNavHeaderViewModel.updateValues(model);
+    }
+
+    @Override
+    public void forceRefreshUserListFromServer() {
+        showProgressDialog();
+        if (findLoadUsersInfoFragment() != null)
+            mLoadUsersInfoFragment.forceRefreshUserListIntoDB();
+    }
+
+    @Override
+    public void forceRefreshLikesListFromServer(String userId, boolean isLikedByMe) {
+        showProgressDialog();
+        likeUser(userId, isLikedByMe);
+    }
+
+    @Override
+    public void likeUser(String remoteId, boolean liked) {
+        if (findLoadUsersInfoFragment() != null) mLoadUsersInfoFragment.likeUser(remoteId, liked);
+    }
+
+    @Override
+    public boolean isNetworkRequestRunning(ID id) {
+        BaseNetworkFragment fragment = findNetworkFragment();
+        return fragment != null && fragment.getStatus(id) == Status.RUNNING;
+    }
+
+    //endregion ::::::::::::::::::::::::::::::::::::::::::
+
+    //region :::::::::::::::::::::::::::::::::: Data Communication to Fragments
+
+    private void updateProfileValuesFromServer(UserEntity output) {
+        Fragment fragment = getCurrentFragment();
+        if (fragment == null) return;
+        String userId = output.getRemoteId();
+
+        if (fragment instanceof LikesListFragment && fragment.getTag().contains(userId)) {
+            ((LikesListFragment) fragment).updateLikesList(output);
+        } else if (fragment instanceof UserListFragment) {
+            ((UserListFragment) fragment).updateUserListEntity(output);
+        } else if (fragment instanceof UserProfileFragment &&
+                (fragment.getTag().contains(userId) ||
+                        (AppUtils.equals(fragment.getTag(), UserProfileFragment.class.getName()) &&
+                                AppUtils.equals(userId, DATA_MANAGER.getPreferencesManager().loadBuiltInAuthId())))) {
+            ((UserProfileFragment) fragment).updateUserProfile(output);
         }
     }
 
-    //endregion
-
-    //region functional methods
-
-    //region Network
-    @SuppressWarnings("all")
-    private void loadUserAvatarFromServer() {
-
-        if (!NetworkUtils.isNetworkAvailable(this)) return;
-
-        final String pathToAvatar = mUserData.getPublicInfo().getAvatar();
-
-        int photoWidth = getResources().getDimensionPixelSize(R.dimen.size_medium_64);
-
-        final GlideTargetIntoBitmap avatarTarget = new GlideTargetIntoBitmap(photoWidth, photoWidth, "avatar") {
-            @Override
-            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                super.onResourceReady(bitmap, anim);
-                mDataManager.getPreferencesManager().saveUserAvatar((getFile().getAbsolutePath()));
-                mUri_SelectedAvatarImage = getFile().getAbsolutePath();
-
-                NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-                if (navigationView != null) {
-                    RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-                    dr.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
-                    ImageView mRoundedAvatar_img = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.rounded_avatar);
-                    mRoundedAvatar_img.setImageDrawable(dr);
-                }
-            }
-
-            @Override
-            public void onLoadFailed(Exception e, Drawable errorDrawable) {
-                Log.e(TAG, "updateUserPhoto onLoadFailed: " + e.getMessage());
-                mUri_SelectedAvatarImage = null;
-            }
-        };
-
-        mToolbar.setTag(avatarTarget);
-
-        Glide.with(this)
-                .load(pathToAvatar)
-                .asBitmap()
-                .into(avatarTarget);
-    }
-    //endregion
-
-    /**
-     * enables or disables editing profile info
-     *
-     * @param mode if true - editing mode will be enabled
-     */
-    @SuppressWarnings("deprecation")
-    private void changeEditMode(boolean mode) {
-        Log.d(TAG, "changeEditMode: " + mode);
-        mCurrentEditMode = mode;
-        if (mode) {  //editing
-            mFloatingActionButton.setImageResource(R.drawable.ic_done_black_24dp);
-            collapseAppBar();
-            showProfilePhotoPlaceholder();
-            mCollapsingToolbarLayout.setExpandedTitleColor(Color.TRANSPARENT);
-
-            ButterKnife.apply(mEditTexts_userInfoList, setEnabledViews, true);
-            mEditTexts_userInfoList.get(0).requestFocus();
-        } else {    //stop edit mode
-            saveUserInfoData();
-            mFloatingActionButton.setImageResource(R.drawable.ic_edit_black_24dp);
-            hideProfilePhotoPlaceholder();
-            mCollapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.color_white));
-            for (int i = mEditTexts_userInfoList.size() - 1; i >= 0; i--) {    //don't change, magic
-                mEditTexts_userInfoList.get(i).setEnabled(false);
-                mEditTexts_userInfoList.get(i).setFocusable(false);
-                mEditTexts_userInfoList.get(i).setFocusableInTouchMode(false);
-                if (i != mEditTexts_userInfoList.size() - 1) {
-                    mTextInputLayouts_userInfoList.get(i).setError(null);
-                    mTextInputLayouts_userInfoList.get(i).setErrorEnabled(false);
-                }
-            }
-        }
-    }
-
-    public void loadPhotoFromGallery() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Intent takeFromGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            takeFromGalleryIntent.setType("image/*");
-            startActivityForResult(Intent.createChooser(takeFromGalleryIntent, getString(R.string.header_choosePhotoFromGallery)), Const.REQUEST_GALLERY_PICTURE);
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    Const.REQUEST_PERMISSIONS_READ_SDCARD);
-            Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, v -> {
-                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_READ_SDCARD_SETTINGS);
-                    }).show();
-        }
-    }
-
-    public void loadPhotoFromCamera() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            try {
-                mPhotoFile = createImageFile();
-            } catch (IOException e) {
-                showError(getString(R.string.error_cannot_save_file) + e.getMessage());
-            }
-            if (mPhotoFile != null) {
-                takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
-                startActivityForResult(takeCaptureIntent, Const.REQUEST_CAMERA_PICTURE);
-            }
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    Const.REQUEST_PERMISSIONS_CAMERA);
-            Snackbar.make(mCoordinatorLayout, R.string.error_access_permissions_needed, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.header_allow, v -> {
-                        openApplicationSetting(MainActivity.this, Const.REQUEST_PERMISSIONS_CAMERA_SETTINGS);
-                    }).show();
-        }
-    }
-
-    private void hideProfilePhotoPlaceholder() {
-        mPlaceholder_profilePhoto.setVisibility(View.GONE);
-    }
-
-    private void showProfilePhotoPlaceholder() {
-        mPlaceholder_profilePhoto.setVisibility(View.VISIBLE);
-    }
-
-    private void collapseAppBar() {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        if (displayMetrics.densityDpi < DisplayMetrics.DENSITY_XXHIGH) {
-            mAppBarLayout.setExpanded(false, true);
-        }
-    }
-
-    private void logout(int mode) {
-        Log.d(TAG, "logout: ");
-        mNotSavingUserValues = true;
-        if (mode == 1) {
-            runOperation(new DatabaseOperation(BaseChronosOperation.Action.CLEAR));
-            mDataManager.getPreferencesManager().totalLogout();
-        }
-        Intent intent = new Intent(getApplicationContext(), AuthActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
-    //endregion
+    //endregion :::::::::::::::::::::::::::::::::: Data Communication to Fragments
 }

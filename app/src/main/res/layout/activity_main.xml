@@ -1,76 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/navigation_drawerLayout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     tools:context=".ui.activities.MainActivity"
     tools:ignore="contentDescription">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_coordinatorLayout"
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- AppBar -->
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar_layout"
+        <FrameLayout
+            android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/color_grey"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:layout_height="wrap_content" />
 
-            <android.support.design.widget.CollapsingToolbarLayout
-                android:id="@+id/collapsing_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:contentScrim="@color/color_grey"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+        <!-- NavigationView -->
+        <android.support.design.widget.NavigationView
+            android:id="@+id/nav_View"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            app:headerLayout="@layout/item_nav_header_main"
+            app:menu="@menu/nav_menu_main"
+            tools:ignore="RtlHardcoded"
+            />
 
-                <!-- Photo -->
-                <include layout="@layout/content_profile_photo" />
+    </android.support.v4.widget.DrawerLayout>
 
-                <!-- Toolbar -->
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:layout_marginTop="@dimen/toolbar_top_offset"
-                    android:theme="@style/AppTheme.PopupOverlay"
-                    app:layout_collapseMode="pin" />
-
-            </android.support.design.widget.CollapsingToolbarLayout>
-
-        </android.support.design.widget.AppBarLayout>
-
-        <!-- ScoreBox -->
-        <include layout="@layout/content_score_box_layout" />
-
-        <!-- NestedScrollView with User Info inside -->
-        <include layout="@layout/content_main_profile_layout" />
-
-        <!-- FloatingActionButton -->
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/floating_action_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/fab_right_space"
-            android:layout_marginRight="@dimen/fab_right_space"
-            android:src="@drawable/ic_edit_black_24dp"
-            app:layout_anchor="@id/appbar_layout"
-            app:layout_anchorGravity="bottom|right" />
-
-    </android.support.design.widget.CoordinatorLayout>
-
-    <!-- NavigationView -->
-    <android.support.design.widget.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="left"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_menu"
-        tools:ignore="RtlHardcoded" />
-
-</android.support.v4.widget.DrawerLayout>
+</layout>
